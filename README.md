@@ -14,5 +14,5 @@ The sequel (re-write) of [Mockingjay-server](https://github.com/quii/mockingjay-
 ## Things i'm optimising for
 
 - MJ1 was _super_ fast, not just at spinning up, but leveraged concurrency to do the CDC checks, which was really nice
-- The error messaging in MJ1 wasn't amazing at times, hope to improve this
+- The error messaging in MJ1 wasn't amazing at times, especially when the CDC failed, hope to improve this.
 - MJ1 was simple becauuse it was very basic and strict, this was good but at times it meant it was unsuitable for some use-cases. Without turning it into a beast like Pact, I'd like to find a way of letting people add some flexibility to the way they define their contracts
