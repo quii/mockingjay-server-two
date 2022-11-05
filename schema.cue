@@ -1,7 +1,9 @@
-[...#Endpoint]
+package main
+
+endpoints: [...#Endpoint]
 
 #Endpoint: {
-	description: string
+	description?: string
 	request: {
 			method: *"GET" | "POST" | "PATCH" | "PUT" | "DELETE"
 			path: string

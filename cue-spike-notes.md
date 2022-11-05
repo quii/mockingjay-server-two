@@ -5,6 +5,8 @@
 see how good cue is for defining MJ configuration
 
 - cue is a superset of JSON
+- load cue into structs and validate against a schema ✅
+- the config file itself is way more powerful than json, it has templating
 
 ## resources
 
@@ -87,3 +89,53 @@ validate a potential mj config file
 ```
 
 Validate with `cue vet example_config.cue schema.cue -c`
+
+## In go
+
+```go
+package main
+
+import (
+	_ "embed"
+	"log"
+
+	"github.com/cue-exp/cueconfig"
+)
+
+type Response struct {
+	Status int
+	Body   string
+}
+
+type Request struct {
+	Method string
+	Path   string
+}
+
+type Endpoint struct {
+	Description string
+	Request     Request
+	Response    Response
+}
+
+type Endpoints struct {
+	Endpoints []Endpoint
+}
+
+var (
+	//go:embed schema.cue
+	schema []byte
+)
+
+func main() {
+	var endpoints Endpoints
+
+	if err := cueconfig.Load("endpoints.cue", schema, nil, nil, &endpoints); err != nil {
+		log.Fatal(err)
+	}
+
+	log.Println(endpoints)
+}
+```
+
+This gets validated by the schema, which is quite swish. 

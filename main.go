@@ -1,6 +1,7 @@
 package main
 
 import (
+	_ "embed"
 	"log"
 
 	"github.com/cue-exp/cueconfig"
@@ -26,10 +27,15 @@ type Endpoints struct {
 	Endpoints []Endpoint
 }
 
+var (
+	//go:embed schema.cue
+	schema []byte
+)
+
 func main() {
 	var endpoints Endpoints
 
-	if err := cueconfig.Load("endpoints.cue", nil, nil, nil, &endpoints); err != nil {
+	if err := cueconfig.Load("endpoints.cue", schema, nil, nil, &endpoints); err != nil {
 		log.Fatal(err)
 	}
 
