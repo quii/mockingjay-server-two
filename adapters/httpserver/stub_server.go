@@ -1,0 +1,36 @@
+package httpserver
+
+import (
+	"net/http"
+
+	"github.com/quii/mockingjay-server-two/domain/mj"
+)
+
+type EndpointMatcher interface {
+	FindMatchingResponse(r *http.Request) (mj.Response, error)
+}
+
+type StubServer struct {
+	matcher EndpointMatcher
+}
+
+func NewStubServer(matcher EndpointMatcher) *StubServer {
+	return &StubServer{matcher: matcher}
+}
+
+func (s StubServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	res, err := s.matcher.FindMatchingResponse(r)
+
+	if err == mj.ErrNoMatchingRequests {
+		http.Error(w, "not found", http.StatusNotFound)
+		return
+	}
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	_, _ = w.Write([]byte(res.Body))
+	w.WriteHeader(res.Status)
+}

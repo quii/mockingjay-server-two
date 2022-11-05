@@ -6,46 +6,46 @@ import (
 	"testing"
 
 	"github.com/alecthomas/assert/v2"
-	"github.com/quii/mockingjay-server-two/domain/config"
+	"github.com/quii/mockingjay-server-two/domain/mj"
 )
 
 type Configurer interface {
-	Configure(endpoints config.Endpoints) error
+	Configure(endpoints mj.Endpoints) error
 }
 
 type Client interface {
-	Do(request config.Request) (config.Response, error)
+	Do(request mj.Request) (mj.Response, error)
 }
 
 func GreetSpecification(t *testing.T, configurer Configurer, client Client) {
 	t.Run("mj can be configured with an endpoint, which can then be called by a client", func(t *testing.T) {
 		var (
-			helloWorldEndpoint = config.Endpoint{
+			helloWorldEndpoint = mj.Endpoint{
 				Description: "Hello world endpoint",
-				Request: config.Request{
+				Request: mj.Request{
 					Method: http.MethodGet,
 					Path:   "/hello/world",
 				},
-				Response: config.Response{
+				Response: mj.Response{
 					Status: http.StatusOK,
 					Body:   "Hello, world!",
 				},
 			}
-			helloPepperEndpoint = config.Endpoint{
+			helloPepperEndpoint = mj.Endpoint{
 				Description: "Hello pepper endpoint",
-				Request: config.Request{
+				Request: mj.Request{
 					Method: http.MethodGet,
 					Path:   "/hello/pepper",
 				},
-				Response: config.Response{
+				Response: mj.Response{
 					Status: http.StatusOK,
 					Body:   "Hello, Pepper!",
 				},
 			}
-			endpoints = []config.Endpoint{helloWorldEndpoint, helloPepperEndpoint}
+			endpoints = []mj.Endpoint{helloWorldEndpoint, helloPepperEndpoint}
 		)
 
-		assert.NoError(t, configurer.Configure(config.Endpoints{Endpoints: endpoints}))
+		assert.NoError(t, configurer.Configure(mj.Endpoints{Endpoints: endpoints}))
 
 		for _, endpoint := range endpoints {
 			t.Run(fmt.Sprintf("%q endpoint gets the correct response for its configured request", endpoint.Description), func(t *testing.T) {

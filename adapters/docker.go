@@ -19,7 +19,8 @@ const (
 
 func StartDockerServer(
 	t testing.TB,
-	port string,
+	stubServerPort string,
+	configServerPort string,
 	binToBuild string,
 ) {
 	t.Helper()
@@ -27,8 +28,11 @@ func StartDockerServer(
 	ctx := context.Background()
 	req := testcontainers.ContainerRequest{
 		FromDockerfile: newTCDockerfile(binToBuild),
-		ExposedPorts:   []string{fmt.Sprintf("%s:%s", port, port)},
-		WaitingFor:     wait.ForListeningPort(nat.Port(port)).WithStartupTimeout(startupTimeout),
+		ExposedPorts: []string{
+			fmt.Sprintf("%s:%s", stubServerPort, stubServerPort),
+			fmt.Sprintf("%s:%s", configServerPort, configServerPort),
+		},
+		WaitingFor: wait.ForListeningPort(nat.Port(stubServerPort)).WithStartupTimeout(startupTimeout),
 	}
 	container, err := testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
 		ContainerRequest: req,

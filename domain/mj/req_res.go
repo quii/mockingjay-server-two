@@ -1,4 +1,4 @@
-package config
+package mj
 
 type Response struct {
 	Status int    `json:"status,omitempty"`
@@ -14,8 +14,4 @@ type Endpoint struct {
 	Description string   `json:"description,omitempty"`
 	Request     Request  `json:"request"`
 	Response    Response `json:"response"`
-}
-
-type Endpoints struct {
-	Endpoints []Endpoint `json:"endpoints,omitempty"`
 }
