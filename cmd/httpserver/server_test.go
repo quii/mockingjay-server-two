@@ -18,7 +18,7 @@ func TestGreeterServer(t *testing.T) {
 	var (
 		port   = "8080"
 		driver = httpserver.Driver{
-			BaseURL: fmt.Sprintf("http://localhost:%s", port),
+			StubServerURL: fmt.Sprintf("http://localhost:%s", port),
 			Client: &http.Client{
 				Timeout: 1 * time.Second,
 			},
@@ -26,5 +26,5 @@ func TestGreeterServer(t *testing.T) {
 	)
 
 	adapters.StartDockerServer(t, port, "httpserver")
-	specifications.GreetSpecification(t, driver)
+	specifications.GreetSpecification(t, driver, driver)
 }
