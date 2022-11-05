@@ -1,10 +1,10 @@
 import "strings"
 
 basePath: "/hello/"
-defaultStatus: 200
 
-// this will set a default method if it is not set
+// set some defaults
 endpoints: [... { request: { method: *"GET" | _}}]
+endpoints: [... { response: { status: *200 | _}}]
 
 endpoints: [
 	{
@@ -13,7 +13,6 @@ endpoints: [
 				path: basePath + "world"
 			}
 			response: {
-				status: defaultStatus
 				body: """
 hello
 world!"""
@@ -25,7 +24,6 @@ world!"""
 				path: basePath + "chris"
 			}
 			response: {
-				status: defaultStatus
 				body: "hello chris!"
 			}
 	},
