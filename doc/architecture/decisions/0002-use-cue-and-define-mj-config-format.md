@@ -29,9 +29,9 @@ package main
 endpoints: [...#Endpoint]
 
 #Endpoint: {
-	description?: string
+	description: string | *"\(request.method) \(request.path)"
 	request: {
-			method: *"GET" | "POST" | "PATCH" | "PUT" | "DELETE"
+			method: *"GET" | "POST" | "PATCH" | "PUT" | "DELETE" | "OPTIONS" | "HEAD"
 			path: string
 	}
 	response: {
@@ -40,6 +40,10 @@ endpoints: [...#Endpoint]
 	}
 }
 ```
+
+Note how cue can:
+- Constrain and validate not only the structure of the config, but the values too
+- Generate a description from the rest of the configuration, if it's not provided
 
 ### Example configuration a user of MJ2 could provide
 
@@ -50,7 +54,6 @@ endpoints: [... { response: { status: *200 | _}}]
 
 endpoints: [
 	{
-			description: "hello, world"
 			request: {
 				path: basePath + "world"
 			}
@@ -61,7 +64,6 @@ world!"""
 			}
 	},
 		{
-			description: "hello, chris"
 			request: {
 				path: basePath + "chris"
 			}
