@@ -1,8 +1,5 @@
-import "strings"
-
-basePath: "/hello/"
-
 // set some defaults
+basePath: "/hello/"
 endpoints: [... { request: { method: *"GET" | _}}]
 endpoints: [... { response: { status: *200 | _}}]
 
