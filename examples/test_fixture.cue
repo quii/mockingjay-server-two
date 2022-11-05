@@ -1,25 +1,15 @@
 package examples
 
-basePath: "/hello/"
-endpoints: [... { request: { method: *"GET" | _}}]
-endpoints: [... { response: { status: *200 | _}}]
-
 endpoints: [
 	{
+		  description: "fizzbuzz"
 			request: {
-				path: basePath + "world"
+				method: "POST"
+				path: "/fizz"
 			}
 			response: {
-				body: "hello, world!"
+				status: 419
+				body: "buzz"
 			}
-	},
-		{
-			description: "hello pepper endpoint"
-			request: {
-				path: basePath + "pepper"
-			}
-			response: {
-				body: "hello pepper!"
-			}
-	},
+	}
 ]

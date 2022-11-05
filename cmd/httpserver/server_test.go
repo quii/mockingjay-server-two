@@ -3,6 +3,7 @@ package main_test
 import (
 	"fmt"
 	"net/http"
+	"os"
 	"testing"
 	"time"
 
@@ -18,7 +19,8 @@ func TestGreeterServer(t *testing.T) {
 		t.Skip()
 	}
 
-	endpoints, err := endpoints.NewEndpointsFromCue("../../examples/")
+	const testFixturesDir = "../../examples/"
+	endpoints, err := endpoints.NewEndpointsFromCue(testFixturesDir, os.DirFS(testFixturesDir))
 	assert.NoError(t, err)
 
 	var (

@@ -31,6 +31,6 @@ func (s StubServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, _ = w.Write([]byte(res.Body))
 	w.WriteHeader(res.Status)
+	_, _ = w.Write([]byte(res.Body))
 }
