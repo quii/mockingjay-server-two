@@ -5,11 +5,11 @@ import (
 	"net/http"
 
 	"github.com/quii/mockingjay-server-two/adapters/httpserver"
-	"github.com/quii/mockingjay-server-two/domain/mj"
+	"github.com/quii/mockingjay-server-two/domain/endpoints"
 )
 
 func main() {
-	var endpoints mj.Endpoints
+	var endpoints endpoints.Endpoints
 
 	go func() {
 		if err := http.ListenAndServe(":8081", httpserver.ConfigServer(&endpoints)); err != nil {

@@ -3,11 +3,11 @@ package httpserver
 import (
 	"net/http"
 
-	"github.com/quii/mockingjay-server-two/domain/mj"
+	"github.com/quii/mockingjay-server-two/domain/endpoints"
 )
 
 type EndpointMatcher interface {
-	FindMatchingResponse(r *http.Request) (mj.Response, error)
+	FindMatchingResponse(r *http.Request) (endpoints.Response, error)
 }
 
 type StubServer struct {
@@ -21,7 +21,7 @@ func NewStubServer(matcher EndpointMatcher) *StubServer {
 func (s StubServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	res, err := s.matcher.FindMatchingResponse(r)
 
-	if err == mj.ErrNoMatchingRequests {
+	if err == endpoints.ErrNoMatchingRequests {
 		http.Error(w, "not found", http.StatusNotFound)
 		return
 	}

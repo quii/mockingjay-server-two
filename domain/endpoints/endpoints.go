@@ -1,9 +1,11 @@
-package mj
+package endpoints
 
 import (
 	"errors"
 	"net/http"
 
+	"github.com/cue-exp/cueconfig"
+	mj "github.com/quii/mockingjay-server-two"
 	"golang.org/x/exp/slices"
 )
 
@@ -13,6 +15,16 @@ var (
 
 type Endpoints struct {
 	Endpoints []Endpoint `json:"endpoints,omitempty"`
+}
+
+func NewEndpointsFromCue(config string) (Endpoints, error) {
+	var endpoints Endpoints
+
+	if err := cueconfig.Load(config, mj.Schema, nil, nil, &endpoints); err != nil {
+		return Endpoints{}, err
+	}
+
+	return endpoints, nil
 }
 
 func (e Endpoints) FindMatchingResponse(req *http.Request) (Response, error) {

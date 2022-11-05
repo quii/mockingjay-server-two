@@ -7,7 +7,7 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/quii/mockingjay-server-two/domain/mj"
+	"github.com/quii/mockingjay-server-two/domain/endpoints"
 )
 
 /*
@@ -21,30 +21,30 @@ type Driver struct {
 	Client          *http.Client
 }
 
-func (d Driver) Do(request mj.Request) (mj.Response, error) {
+func (d Driver) Do(request endpoints.Request) (endpoints.Response, error) {
 	req, err := http.NewRequest(request.Method, d.StubServerURL+request.Path, nil)
 	if err != nil {
-		return mj.Response{}, err
+		return endpoints.Response{}, err
 	}
 
 	res, err := d.Client.Do(req)
 	if err != nil {
-		return mj.Response{}, err
+		return endpoints.Response{}, err
 	}
 
 	defer res.Body.Close()
 	body, err := io.ReadAll(res.Body)
 	if err != nil {
-		return mj.Response{}, err
+		return endpoints.Response{}, err
 	}
 
-	return mj.Response{
+	return endpoints.Response{
 		Status: res.StatusCode,
 		Body:   string(body),
 	}, nil
 }
 
-func (d Driver) Configure(endpoints mj.Endpoints) error {
+func (d Driver) Configure(endpoints endpoints.Endpoints) error {
 	endpointJSON, err := json.Marshal(endpoints)
 	if err != nil {
 		return err
