@@ -1,6 +1,7 @@
 package endpoints
 
 import (
+	"fmt"
 	"io/fs"
 
 	"github.com/cue-exp/cueconfig"
@@ -17,8 +18,9 @@ func NewEndpointsFromCue(basePath string, configDir fs.FS) (Endpoints, error) {
 
 	for _, f := range dir {
 		var endpoints Endpoints
-		if err := cueconfig.Load(basePath+f.Name(), mj.Schema, nil, nil, &endpoints); err != nil {
-			return Endpoints{}, err
+		path := basePath + f.Name()
+		if err := cueconfig.Load(path, mj.Schema, nil, nil, &endpoints); err != nil {
+			return Endpoints{}, fmt.Errorf("failed to parse %s, %v", path, err)
 		}
 		allEndpoints.Endpoints = append(allEndpoints.Endpoints, endpoints.Endpoints...)
 	}

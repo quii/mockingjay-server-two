@@ -1,6 +1,7 @@
 package endpoints
 
 import (
+	"io"
 	"net/http"
 	"net/textproto"
 
@@ -29,16 +30,23 @@ type RequestMatch struct {
 }
 
 func (r RequestMatch) Matched() bool {
-	return r.Matches.Path && r.Matches.Method && r.Matches.Headers
+	return r.Matches.Path && r.Matches.Method && r.Matches.Headers && r.Matches.Body
 }
 
 type Matches struct {
 	Path    bool `json:"path"`
 	Method  bool `json:"method"`
 	Headers bool `json:"headers"`
+	Body    bool `json:"body"`
 }
 
 func MatchReportFactory(req *http.Request) func(Endpoint) RequestMatch {
+	var body []byte
+	if req.Body != nil {
+		defer req.Body.Close()
+		body, _ = io.ReadAll(req.Body)
+	}
+
 	return func(e Endpoint) RequestMatch {
 		return RequestMatch{
 			Request:  e.Request,
@@ -47,6 +55,7 @@ func MatchReportFactory(req *http.Request) func(Endpoint) RequestMatch {
 				Path:    e.Request.Path == req.URL.String(),
 				Method:  e.Request.Method == req.Method,
 				Headers: matchHeaders(e, req.Header),
+				Body:    string(body) == e.Request.Body,
 			},
 		}
 	}

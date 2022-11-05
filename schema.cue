@@ -8,6 +8,7 @@ endpoints: [...#Endpoint]
 			method: *"GET" | "POST" | "PATCH" | "PUT" | "DELETE" | "OPTIONS" | "HEAD"
 			path: string
 			headers?: [string] : [...string]
+			body: string | *""
 	}
 	response: {
 			status: >=200 & <=599

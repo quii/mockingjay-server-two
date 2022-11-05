@@ -1,7 +1,9 @@
 package endpoints
 
 import (
+	"io"
 	"net/http"
+	"strings"
 )
 
 type Response struct {
@@ -13,10 +15,16 @@ type Request struct {
 	Method  string              `json:"method,omitempty"`
 	Path    string              `json:"path,omitempty"`
 	Headers map[string][]string `json:"headers,omitempty"`
+	Body    string              `json:"body,omitempty"`
 }
 
 func (r Request) ToHTTPRequest(basePath string) *http.Request {
 	req, _ := http.NewRequest(r.Method, basePath+r.Path, nil)
+
+	if r.Body != "" {
+		req.Body = io.NopCloser(strings.NewReader(r.Body))
+	}
+
 	for key, values := range r.Headers {
 		for _, value := range values {
 			req.Header.Add(key, value)
