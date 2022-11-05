@@ -1,13 +1,14 @@
 package httpserver
 
 import (
+	"encoding/json"
 	"net/http"
 
 	"github.com/quii/mockingjay-server-two/domain/endpoints"
 )
 
 type EndpointMatcher interface {
-	FindMatchingResponse(r *http.Request) (endpoints.Response, error)
+	GetMatchReport(r *http.Request) endpoints.MatchReport
 }
 
 type StubServer struct {
@@ -19,15 +20,15 @@ func NewStubServer(matcher EndpointMatcher) *StubServer {
 }
 
 func (s StubServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	res, err := s.matcher.FindMatchingResponse(r)
+	matchReport := s.matcher.GetMatchReport(r)
+	res, exists := matchReport.FindMatchingResponse()
 
-	if err == endpoints.ErrNoMatchingRequests {
-		http.Error(w, "not found", http.StatusNotFound)
-		return
-	}
-
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+	if !exists {
+		if err := json.NewEncoder(w).Encode(matchReport); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		w.WriteHeader(http.StatusNotFound)
 		return
 	}
 
