@@ -16,7 +16,7 @@ type Client interface {
 	Do(request endpoints.Request) (endpoints.Response, error)
 }
 
-func GreetSpecification(t *testing.T, endpoints endpoints.Endpoints, configurer Configurer, client Client) {
+func StubServerSpecification(t *testing.T, endpoints endpoints.Endpoints, configurer Configurer, client Client) {
 	t.Run("mj can be configured with an endpoint, which can then be called by a client", func(t *testing.T) {
 		assert.NoError(t, configurer.Configure(endpoints))
 
