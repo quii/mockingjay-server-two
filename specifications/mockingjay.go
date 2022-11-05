@@ -1,6 +1,7 @@
 package specifications
 
 import (
+	"fmt"
 	"net/http"
 	"testing"
 
@@ -19,7 +20,7 @@ type Client interface {
 func GreetSpecification(t *testing.T, configurer Configurer, client Client) {
 	t.Run("mj can be configured with an endpoint, which can then be called by a client", func(t *testing.T) {
 		var (
-			endpoint = config.Endpoint{
+			helloWorldEndpoint = config.Endpoint{
 				Description: "Hello world endpoint",
 				Request: config.Request{
 					Method: http.MethodGet,
@@ -30,13 +31,28 @@ func GreetSpecification(t *testing.T, configurer Configurer, client Client) {
 					Body:   "Hello, world!",
 				},
 			}
-			endpoints = []config.Endpoint{endpoint}
+			helloPepperEndpoint = config.Endpoint{
+				Description: "Hello pepper endpoint",
+				Request: config.Request{
+					Method: http.MethodGet,
+					Path:   "/hello/pepper",
+				},
+				Response: config.Response{
+					Status: http.StatusOK,
+					Body:   "Hello, Pepper!",
+				},
+			}
+			endpoints = []config.Endpoint{helloWorldEndpoint, helloPepperEndpoint}
 		)
 
 		assert.NoError(t, configurer.Configure(config.Endpoints{Endpoints: endpoints}))
 
-		res, err := client.Do(endpoint.Request)
-		assert.NoError(t, err)
-		assert.Equal(t, endpoint.Response, res)
+		for _, endpoint := range endpoints {
+			t.Run(fmt.Sprintf("%q endpoint gets the correct response for its configured request", endpoint.Description), func(t *testing.T) {
+				res, err := client.Do(endpoint.Request)
+				assert.NoError(t, err)
+				assert.Equal(t, endpoint.Response, res)
+			})
+		}
 	})
 }
