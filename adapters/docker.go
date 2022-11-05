@@ -21,13 +21,12 @@ func StartDockerServer(
 	t testing.TB,
 	stubServerPort string,
 	configServerPort string,
-	binToBuild string,
 ) {
 	t.Helper()
 
 	ctx := context.Background()
 	req := testcontainers.ContainerRequest{
-		FromDockerfile: newTCDockerfile(binToBuild),
+		FromDockerfile: newTCDockerfile(),
 		ExposedPorts: []string{
 			fmt.Sprintf("%s:%s", stubServerPort, stubServerPort),
 			fmt.Sprintf("%s:%s", configServerPort, configServerPort),
@@ -45,13 +44,10 @@ func StartDockerServer(
 	})
 }
 
-func newTCDockerfile(binToBuild string) testcontainers.FromDockerfile {
+func newTCDockerfile() testcontainers.FromDockerfile {
 	return testcontainers.FromDockerfile{
-		Context:    "../../.",
-		Dockerfile: dockerfileName,
-		BuildArgs: map[string]*string{
-			"bin_to_build": &binToBuild,
-		},
+		Context:       "../../.",
+		Dockerfile:    dockerfileName,
 		PrintBuildLog: true,
 	}
 }
