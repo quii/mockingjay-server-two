@@ -5,7 +5,6 @@ endpoints: [... { response: { status: *200 | _}}]
 
 endpoints: [
 	{
-			description: "hello, world"
 			request: {
 				path: basePath + "world"
 			}

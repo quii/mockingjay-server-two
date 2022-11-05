@@ -3,7 +3,7 @@ package main
 endpoints: [...#Endpoint]
 
 #Endpoint: {
-	description?: string
+	description: string | *"\(request.method) \(request.path)"
 	request: {
 			method: *"GET" | "POST" | "PATCH" | "PUT" | "DELETE"
 			path: string

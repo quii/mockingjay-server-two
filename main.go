@@ -39,5 +39,5 @@ func main() {
 		log.Fatal(err)
 	}
 
-	log.Println(endpoints)
+	log.Printf("%+v", endpoints)
 }
