@@ -65,13 +65,9 @@ func matchHeaders(e Endpoint, incomingHeaders http.Header) bool {
 	headersMatch := len(e.Request.Headers) == 0
 
 	for key, values := range e.Request.Headers {
-		headerValues := incomingHeaders[textproto.CanonicalMIMEHeaderKey(key)]
-		if len(headerValues) == 0 {
-			continue
-		}
-		for _, vInReq := range headerValues {
-			for _, vInEndpoint := range values {
-				if vInReq == vInEndpoint {
+		for _, valuesInIncomingRequestHeader := range incomingHeaders[textproto.CanonicalMIMEHeaderKey(key)] {
+			for _, valuesInEndpoint := range values {
+				if valuesInIncomingRequestHeader == valuesInEndpoint {
 					headersMatch = true
 				}
 			}
