@@ -15,7 +15,6 @@ world!"""
 			}
 	},
 		{
-			description: "hello, chris"
 			request: {
 				path: basePath + "chris"
 			}

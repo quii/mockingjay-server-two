@@ -39,5 +39,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	log.Printf("%+v", endpoints)
+	for _, endpoint := range endpoints.Endpoints {
+		log.Printf("%+v\n", endpoint)
+	}
 }
