@@ -7,20 +7,12 @@ import (
 	"github.com/quii/mockingjay-server-two/domain/endpoints"
 )
 
-type EndpointMatcher interface {
-	GetMatchReport(r *http.Request) endpoints.MatchReport
+type App struct {
+	endpoints endpoints.Endpoints
 }
 
-type StubServer struct {
-	matcher EndpointMatcher
-}
-
-func NewStubServer(matcher EndpointMatcher) *StubServer {
-	return &StubServer{matcher: matcher}
-}
-
-func (s StubServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	matchReport := s.matcher.GetMatchReport(r)
+func (a *App) StubHandler(w http.ResponseWriter, r *http.Request) {
+	matchReport := a.endpoints.GetMatchReport(r)
 	res, exists := matchReport.FindMatchingResponse()
 
 	if !exists {
@@ -39,4 +31,12 @@ func (s StubServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	w.WriteHeader(res.Status)
 	_, _ = w.Write([]byte(res.Body))
+}
+
+func (a *App) ConfigHandler(w http.ResponseWriter, r *http.Request) {
+	if err := json.NewDecoder(r.Body).Decode(&a.endpoints); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	w.WriteHeader(http.StatusAccepted)
 }

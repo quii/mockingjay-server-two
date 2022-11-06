@@ -21,7 +21,7 @@ type Driver struct {
 	Client          *http.Client
 }
 
-func (d Driver) Do(request endpoints.Request) (endpoints.Response, error) {
+func (d Driver) Send(request endpoints.Request) (endpoints.Response, error) {
 	req := request.ToHTTPRequest(d.StubServerURL)
 	res, err := d.Client.Do(req)
 	if err != nil {

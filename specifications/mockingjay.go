@@ -9,21 +9,26 @@ import (
 	"golang.org/x/exp/slices"
 )
 
+type Mockingjay interface {
+	Configurer
+	Client
+}
+
 type Configurer interface {
 	Configure(endpoints endpoints.Endpoints) error
 }
 
 type Client interface {
-	Do(request endpoints.Request) (endpoints.Response, error)
+	Send(request endpoints.Request) (endpoints.Response, error)
 }
 
-func StubServerSpecification(t *testing.T, endpoints endpoints.Endpoints, configurer Configurer, client Client) {
+func StubServerSpecification(t *testing.T, endpoints endpoints.Endpoints, mockingjay Mockingjay) {
 	t.Run("mj can be configured with an endpoint, which can then be called by a client", func(t *testing.T) {
-		assert.NoError(t, configurer.Configure(endpoints))
+		assert.NoError(t, mockingjay.Configure(endpoints))
 
 		for _, endpoint := range endpoints.Endpoints {
 			t.Run(endpoint.Description, func(t *testing.T) {
-				res, err := client.Do(endpoint.Request)
+				res, err := mockingjay.Send(endpoint.Request)
 				assert.NoError(t, err)
 				assertResponseMatches(t, endpoint.Response, res)
 			})
