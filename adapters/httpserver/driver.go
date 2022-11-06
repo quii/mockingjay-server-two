@@ -25,6 +25,7 @@ func (d Driver) Send(request endpoints.Request) (endpoints.Response, endpoints.M
 	var matchReport endpoints.MatchReport
 
 	req := request.ToHTTPRequest(d.StubServerURL)
+
 	res, err := d.Client.Do(req)
 	if err != nil {
 		return endpoints.Response{}, matchReport, err

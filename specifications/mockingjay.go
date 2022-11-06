@@ -22,16 +22,15 @@ type Client interface {
 	Send(request endpoints.Request) (endpoints.Response, endpoints.MatchReport, error)
 }
 
+type RequestDescription struct {
+	Description string            `json:"description,omitempty"`
+	Request     endpoints.Request `json:"request"`
+}
+
 type TestFixture struct {
-	Endpoint         endpoints.Endpoint `json:"endpoint"`
-	MatchingRequests []struct {
-		Description string            `json:"description,omitempty"`
-		Request     endpoints.Request `json:"request"`
-	} `json:"matchingRequests,omitempty"`
-	NonMatchingRequests []struct {
-		Description string            `json:"description,omitempty"`
-		Request     endpoints.Request `json:"request"`
-	} `json:"nonMatchingRequests,omitempty"`
+	Endpoint            endpoints.Endpoint   `json:"endpoint"`
+	MatchingRequests    []RequestDescription `json:"matchingRequests,omitempty"`
+	NonMatchingRequests []RequestDescription `json:"nonMatchingRequests,omitempty"`
 }
 
 func MockingjaySpec(t *testing.T, mockingjay Mockingjay, examples endpoints.Endpoints, testFixtures []TestFixture) {
@@ -58,13 +57,13 @@ func MockingjaySpec(t *testing.T, mockingjay Mockingjay, examples endpoints.Endp
 
 			for _, request := range f.MatchingRequests {
 				t.Run(request.Description, func(t *testing.T) {
-					_, report, err := mockingjay.Send(request.Request)
+					res, _, err := mockingjay.Send(request.Request)
 					assert.NoError(t, err)
-					assert.True(t, report.HadMatch())
+					assertResponseMatches(t, f.Endpoint.Response, res)
 				})
 			}
 
-			for _, request := range f.MatchingRequests {
+			for _, request := range f.NonMatchingRequests {
 				t.Run(request.Description, func(t *testing.T) {
 					_, report, err := mockingjay.Send(request.Request)
 					assert.NoError(t, err)

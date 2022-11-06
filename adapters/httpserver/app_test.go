@@ -29,5 +29,49 @@ func TestApp(t *testing.T) {
 		Client:          &http.Client{},
 	}
 
-	specifications.MockingjaySpec(t, driver, examples, nil)
+	fixture := specifications.TestFixture{
+		Endpoint: endpoints.Endpoint{
+			Description: "This will be loaded from file later",
+			Request: endpoints.Request{
+				Method: http.MethodGet,
+				Path:   "/",
+				Headers: endpoints.Headers{
+					"Accept": {"application/xml"},
+				},
+			},
+			Response: endpoints.Response{
+				Status: http.StatusOK,
+				Body:   `<hello>World</hello>`,
+				Headers: endpoints.Headers{
+					"Content-Type": {"application/xml"},
+				},
+			},
+		},
+		MatchingRequests: []specifications.RequestDescription{
+			{
+				Description: "Works even though the header is not the first one",
+				Request: endpoints.Request{
+					Method: http.MethodGet,
+					Path:   "/",
+					Headers: endpoints.Headers{
+						"Accept": {"text/html", "application/xml"},
+					},
+				},
+			},
+		},
+		NonMatchingRequests: []specifications.RequestDescription{
+			{
+				Description: "Doesn't match as it has the wrong header",
+				Request: endpoints.Request{
+					Method: http.MethodGet,
+					Path:   "/",
+					Headers: endpoints.Headers{
+						"Accept": {"text/html"},
+					},
+				},
+			},
+		},
+	}
+
+	specifications.MockingjaySpec(t, driver, examples, []specifications.TestFixture{fixture})
 }
