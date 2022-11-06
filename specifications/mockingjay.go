@@ -15,18 +15,30 @@ type Mockingjay interface {
 }
 
 type Configurer interface {
-	Configure(endpoints endpoints.Endpoints) error
+	Configure(endpoints ...endpoints.Endpoint) error
 }
 
 type Client interface {
 	Send(request endpoints.Request) (endpoints.Response, endpoints.MatchReport, error)
 }
 
-func StubServerSpecification(t *testing.T, endpoints endpoints.Endpoints, mockingjay Mockingjay) {
-	t.Run("mj can be configured with an endpoint, which can then be called by a client", func(t *testing.T) {
-		assert.NoError(t, mockingjay.Configure(endpoints))
+type TestFixture struct {
+	Endpoint         endpoints.Endpoint `json:"endpoint"`
+	MatchingRequests []struct {
+		Description string            `json:"description,omitempty"`
+		Request     endpoints.Request `json:"request"`
+	} `json:"matchingRequests,omitempty"`
+	NonMatchingRequests []struct {
+		Description string            `json:"description,omitempty"`
+		Request     endpoints.Request `json:"request"`
+	} `json:"nonMatchingRequests,omitempty"`
+}
 
-		for _, endpoint := range endpoints.Endpoints {
+func MockingjaySpec(t *testing.T, mockingjay Mockingjay, examples endpoints.Endpoints, testFixtures []TestFixture) {
+	t.Run("mj can be configured with request/response pairs, which can then be called by a client with a request to get matching response", func(t *testing.T) {
+		assert.NoError(t, mockingjay.Configure(examples.Endpoints...))
+
+		for _, endpoint := range examples.Endpoints {
 			t.Run(endpoint.Description, func(t *testing.T) {
 				res, report, err := mockingjay.Send(endpoint.Request)
 
@@ -39,6 +51,28 @@ func StubServerSpecification(t *testing.T, endpoints endpoints.Endpoints, mockin
 			})
 		}
 	})
+
+	for _, f := range testFixtures {
+		t.Run(f.Endpoint.Description, func(t *testing.T) {
+			assert.NoError(t, mockingjay.Configure(f.Endpoint))
+
+			for _, request := range f.MatchingRequests {
+				t.Run(request.Description, func(t *testing.T) {
+					_, report, err := mockingjay.Send(request.Request)
+					assert.NoError(t, err)
+					assert.True(t, report.HadMatch())
+				})
+			}
+
+			for _, request := range f.MatchingRequests {
+				t.Run(request.Description, func(t *testing.T) {
+					_, report, err := mockingjay.Send(request.Request)
+					assert.NoError(t, err)
+					assert.False(t, report.HadMatch())
+				})
+			}
+		})
+	}
 }
 
 func assertResponseMatches(t *testing.T, want, got endpoints.Response) {

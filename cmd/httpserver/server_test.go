@@ -20,7 +20,7 @@ func TestGreeterServer(t *testing.T) {
 	}
 
 	const testFixturesDir = "../../examples/"
-	endpoints, err := endpoints.NewEndpointsFromCue(testFixturesDir, os.DirFS(testFixturesDir))
+	examples, err := endpoints.NewEndpointsFromCue(testFixturesDir, os.DirFS(testFixturesDir))
 	assert.NoError(t, err)
 
 	var (
@@ -36,5 +36,5 @@ func TestGreeterServer(t *testing.T) {
 	)
 
 	adapters.StartDockerServer(t, stubServerPort, configServerPort)
-	specifications.StubServerSpecification(t, endpoints, driver)
+	specifications.MockingjaySpec(t, driver, examples, nil)
 }

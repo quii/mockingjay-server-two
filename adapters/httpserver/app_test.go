@@ -14,7 +14,7 @@ import (
 
 func TestApp(t *testing.T) {
 	const testFixturesDir = "../../examples/"
-	fixtures, err := endpoints.NewEndpointsFromCue(testFixturesDir, os.DirFS(testFixturesDir))
+	examples, err := endpoints.NewEndpointsFromCue(testFixturesDir, os.DirFS(testFixturesDir))
 	assert.NoError(t, err)
 
 	app := new(httpserver.App)
@@ -29,5 +29,5 @@ func TestApp(t *testing.T) {
 		Client:          &http.Client{},
 	}
 
-	specifications.StubServerSpecification(t, fixtures, driver)
+	specifications.MockingjaySpec(t, driver, examples, nil)
 }
