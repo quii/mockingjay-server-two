@@ -23,6 +23,11 @@ func (m MatchReport) FindMatchingResponse() (Response, bool) {
 	return m.Matches[i].Response, true
 }
 
+func (m MatchReport) HadMatch() bool {
+	_, found := m.FindMatchingResponse()
+	return found
+}
+
 type RequestMatch struct {
 	Request  Request  `json:"request"`
 	Response Response `json:"response"`

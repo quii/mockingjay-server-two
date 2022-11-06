@@ -19,7 +19,7 @@ type Configurer interface {
 }
 
 type Client interface {
-	Send(request endpoints.Request) (endpoints.Response, error)
+	Send(request endpoints.Request) (endpoints.Response, endpoints.MatchReport, error)
 }
 
 func StubServerSpecification(t *testing.T, endpoints endpoints.Endpoints, mockingjay Mockingjay) {
@@ -28,7 +28,12 @@ func StubServerSpecification(t *testing.T, endpoints endpoints.Endpoints, mockin
 
 		for _, endpoint := range endpoints.Endpoints {
 			t.Run(endpoint.Description, func(t *testing.T) {
-				res, err := mockingjay.Send(endpoint.Request)
+				res, report, err := mockingjay.Send(endpoint.Request)
+
+				if !report.HadMatch() {
+					t.Logf("Match report %#v", report)
+				}
+
 				assert.NoError(t, err)
 				assertResponseMatches(t, endpoint.Response, res)
 			})

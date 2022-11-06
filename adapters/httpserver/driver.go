@@ -21,24 +21,28 @@ type Driver struct {
 	Client          *http.Client
 }
 
-func (d Driver) Send(request endpoints.Request) (endpoints.Response, error) {
+func (d Driver) Send(request endpoints.Request) (endpoints.Response, endpoints.MatchReport, error) {
+	var matchReport endpoints.MatchReport
+
 	req := request.ToHTTPRequest(d.StubServerURL)
 	res, err := d.Client.Do(req)
 	if err != nil {
-		return endpoints.Response{}, err
+		return endpoints.Response{}, matchReport, err
 	}
 
 	defer res.Body.Close()
 	body, err := io.ReadAll(res.Body)
 	if err != nil {
-		return endpoints.Response{}, err
+		return endpoints.Response{}, matchReport, err
 	}
+
+	_ = json.Unmarshal(body, &matchReport)
 
 	return endpoints.Response{
 		Status:  res.StatusCode,
 		Body:    string(body),
 		Headers: endpoints.Headers(res.Header),
-	}, nil
+	}, matchReport, nil
 }
 
 func (d Driver) Configure(endpoints endpoints.Endpoints) error {
