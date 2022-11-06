@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 
 	"github.com/quii/mockingjay-server-two/domain/endpoints"
@@ -24,7 +23,6 @@ type Driver struct {
 
 func (d Driver) Do(request endpoints.Request) (endpoints.Response, error) {
 	req := request.ToHTTPRequest(d.StubServerURL)
-	log.Println(req)
 	res, err := d.Client.Do(req)
 	if err != nil {
 		return endpoints.Response{}, err
@@ -37,8 +35,9 @@ func (d Driver) Do(request endpoints.Request) (endpoints.Response, error) {
 	}
 
 	return endpoints.Response{
-		Status: res.StatusCode,
-		Body:   string(body),
+		Status:  res.StatusCode,
+		Body:    string(body),
+		Headers: endpoints.Headers(res.Header),
 	}, nil
 }
 

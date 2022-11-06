@@ -6,16 +6,19 @@ import (
 	"strings"
 )
 
+type Headers map[string][]string
+
 type Response struct {
-	Status int    `json:"status,omitempty"`
-	Body   string `json:"body,omitempty"`
+	Status  int     `json:"status,omitempty"`
+	Body    string  `json:"body,omitempty"`
+	Headers Headers `json:"headers,omitempty"`
 }
 
 type Request struct {
-	Method  string              `json:"method,omitempty"`
-	Path    string              `json:"path,omitempty"`
-	Headers map[string][]string `json:"headers,omitempty"`
-	Body    string              `json:"body,omitempty"`
+	Method  string  `json:"method,omitempty"`
+	Path    string  `json:"path,omitempty"`
+	Headers Headers `json:"headers,omitempty"`
+	Body    string  `json:"body,omitempty"`
 }
 
 func (r Request) ToHTTPRequest(basePath string) *http.Request {

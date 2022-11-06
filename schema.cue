@@ -13,5 +13,6 @@ endpoints: [...#Endpoint]
 	response: {
 			status: >=200 & <=599
 			body: string
+			headers?: [string] : [...string]
 	}
 }

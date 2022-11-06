@@ -32,6 +32,11 @@ func (s StubServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	for key, v := range res.Headers {
+		for _, value := range v {
+			w.Header().Add(key, value)
+		}
+	}
 	w.WriteHeader(res.Status)
 	_, _ = w.Write([]byte(res.Body))
 }

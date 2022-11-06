@@ -21,25 +21,36 @@ func TestEndpointMatcher(t *testing.T) {
 	specifications.StubServerSpecification(t, fixtures, &driver, &driver)
 
 	t.Run("it matches headers when the required header is not the first one", func(t *testing.T) {
+		expectedResponse := endpoints.Response{
+			Status: http.StatusTeapot,
+			Body:   "whatever",
+			Headers: endpoints.Headers{
+				"content-type": {"application/json"},
+			},
+		}
 		testEndpoints := endpoints.Endpoints{
 			Endpoints: []endpoints.Endpoint{
-				{Request: endpoints.Request{
-					Method: http.MethodGet,
-					Path:   "/",
-					Headers: map[string][]string{
-						"content-type": {"application/json"},
+				{
+					Request: endpoints.Request{
+						Method: http.MethodGet,
+						Path:   "/",
+						Headers: map[string][]string{
+							"Accept": {"application/json"},
+						},
 					},
-				}},
+					Response: expectedResponse,
+				},
 			},
 		}
 		req := httptest.NewRequest(http.MethodGet, "/", nil)
 		req.Header = http.Header{
 			"accept-encoding": {"gzip"},
-			"Content-Type":    {"whatever", "application/json"},
+			"Accept":          {"whatever", "application/json"},
 		}
 
 		report := testEndpoints.GetMatchReport(req)
-		_, exists := report.FindMatchingResponse()
+		res, exists := report.FindMatchingResponse()
+		assert.Equal(t, expectedResponse, res)
 		assert.True(t, exists)
 	})
 }

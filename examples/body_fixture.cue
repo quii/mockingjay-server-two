@@ -7,7 +7,7 @@ endpoints: [... { response: { body: "whatever"}}]
 
 endpoints: [
 	{
-		description: "match on body"
+		description: "match on request body"
 		request: {
 			body: "whatever"
 		}
@@ -16,7 +16,7 @@ endpoints: [
 		}
 	},
 		{
-		description: "match on a different body"
+		description: "match on a different request body"
 		request: {
 			body: "lol"
 		}

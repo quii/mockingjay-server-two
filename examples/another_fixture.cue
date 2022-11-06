@@ -2,7 +2,7 @@ package examples
 
 endpoints: [
 	{
-		  description: "fizzbuzz"
+		  description: "an example fixture"
 			request: {
 				method: "POST"
 				path: "/fizz"

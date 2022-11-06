@@ -13,7 +13,7 @@ func (e Endpoints) GetMatchReport(req *http.Request) MatchReport {
 		IncomingRequest: Request{
 			Method:  req.Method,
 			Path:    req.URL.String(),
-			Headers: req.Header,
+			Headers: Headers(req.Header),
 		},
 	}
 	reporter := MatchReportFactory(req)

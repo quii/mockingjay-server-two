@@ -7,29 +7,35 @@ endpoints: [... { response: { status: *201 | _}}]
 
 endpoints: [
 	{
-		description: "match on xml"
+		description: "match on request header"
 		request: {
 			headers: {
-				"Content-Type": ["application/xml"]
+				"Accept": ["application/xml"]
 			}
 		}
 		response: {
 			body: """
 <hello>Ruth</hello>
 """
+			headers: {
+				"Content-Type": ["application/xml"]
+			}
 		}
 	},
 		{
-		description: "match on json (headers not case-sensitive)"
+		description: "headers are not case-sensitive"
 		request: {
 			headers: {
-				"content-type": ["application/json"]
+				"aCCepT": ["application/json"]
 			}
 		}
 		response: {
 			body: """
 {"hello":"Ruth"}
 """
+			headers: {
+				"Content-Type": ["application/json"]
+			}
 		}
 	}
 ]
