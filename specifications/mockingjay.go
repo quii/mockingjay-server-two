@@ -5,7 +5,8 @@ import (
 	"testing"
 
 	"github.com/alecthomas/assert/v2"
-	"github.com/quii/mockingjay-server-two/domain/endpoints"
+	"github.com/quii/mockingjay-server-two/domain/mockingjay"
+	"github.com/quii/mockingjay-server-two/domain/mockingjay/matching"
 	"golang.org/x/exp/slices"
 )
 
@@ -15,25 +16,25 @@ type Mockingjay interface {
 }
 
 type Configurer interface {
-	Configure(endpoints ...endpoints.Endpoint) error
+	Configure(endpoints ...mockingjay.Endpoint) error
 }
 
 type Client interface {
-	Send(request endpoints.Request) (endpoints.Response, endpoints.MatchReport, error)
+	Send(request mockingjay.Request) (mockingjay.Response, matching.Report, error)
 }
 
 type RequestDescription struct {
-	Description string            `json:"description,omitempty"`
-	Request     endpoints.Request `json:"request"`
+	Description string             `json:"description,omitempty"`
+	Request     mockingjay.Request `json:"request"`
 }
 
 type TestFixture struct {
-	Endpoint            endpoints.Endpoint   `json:"endpoint"`
+	Endpoint            mockingjay.Endpoint  `json:"endpoint"`
 	MatchingRequests    []RequestDescription `json:"matchingRequests,omitempty"`
 	NonMatchingRequests []RequestDescription `json:"nonMatchingRequests,omitempty"`
 }
 
-func MockingjaySpec(t *testing.T, mockingjay Mockingjay, examples endpoints.Endpoints, testFixtures []TestFixture) {
+func MockingjaySpec(t *testing.T, mockingjay Mockingjay, examples mockingjay.Endpoints, testFixtures []TestFixture) {
 	t.Run("mj can be configured with request/response pairs, which can then be called by a client with a request to get matching response", func(t *testing.T) {
 		assert.NoError(t, mockingjay.Configure(examples...))
 
@@ -74,7 +75,7 @@ func MockingjaySpec(t *testing.T, mockingjay Mockingjay, examples endpoints.Endp
 	}
 }
 
-func assertResponseMatches(t *testing.T, want, got endpoints.Response) {
+func assertResponseMatches(t *testing.T, want, got mockingjay.Response) {
 	t.Helper()
 	assert.Equal(t, want.Body, got.Body)
 	assert.Equal(t, want.Status, want.Status)

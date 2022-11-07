@@ -8,13 +8,13 @@ import (
 
 	"github.com/alecthomas/assert/v2"
 	"github.com/quii/mockingjay-server-two/adapters/httpserver"
-	"github.com/quii/mockingjay-server-two/domain/endpoints"
+	"github.com/quii/mockingjay-server-two/domain/mockingjay"
 	"github.com/quii/mockingjay-server-two/specifications"
 )
 
 func TestApp(t *testing.T) {
 	const examplesDir = "../../examples/"
-	examples, err := endpoints.NewEndpointsFromCue(examplesDir, os.DirFS(examplesDir))
+	examples, err := mockingjay.NewEndpointsFromCue(examplesDir, os.DirFS(examplesDir))
 	assert.NoError(t, err)
 
 	app := new(httpserver.App)
@@ -30,19 +30,19 @@ func TestApp(t *testing.T) {
 	}
 
 	fixture := specifications.TestFixture{
-		Endpoint: endpoints.Endpoint{
+		Endpoint: mockingjay.Endpoint{
 			Description: "This will be loaded from file later",
-			Request: endpoints.Request{
+			Request: mockingjay.Request{
 				Method: http.MethodGet,
 				Path:   "/",
-				Headers: endpoints.Headers{
+				Headers: mockingjay.Headers{
 					"Accept": {"application/xml"},
 				},
 			},
-			Response: endpoints.Response{
+			Response: mockingjay.Response{
 				Status: http.StatusOK,
 				Body:   `<hello>World</hello>`,
-				Headers: endpoints.Headers{
+				Headers: mockingjay.Headers{
 					"Content-Type": {"application/xml"},
 				},
 			},
@@ -50,10 +50,10 @@ func TestApp(t *testing.T) {
 		MatchingRequests: []specifications.RequestDescription{
 			{
 				Description: "Works even though the header is not the first one",
-				Request: endpoints.Request{
+				Request: mockingjay.Request{
 					Method: http.MethodGet,
 					Path:   "/",
-					Headers: endpoints.Headers{
+					Headers: mockingjay.Headers{
 						"Accept": {"text/html", "application/xml"},
 					},
 				},
@@ -62,10 +62,10 @@ func TestApp(t *testing.T) {
 		NonMatchingRequests: []specifications.RequestDescription{
 			{
 				Description: "Doesn't match as it has the wrong header",
-				Request: endpoints.Request{
+				Request: mockingjay.Request{
 					Method: http.MethodGet,
 					Path:   "/",
-					Headers: endpoints.Headers{
+					Headers: mockingjay.Headers{
 						"Accept": {"text/html"},
 					},
 				},

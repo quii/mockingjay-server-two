@@ -4,15 +4,16 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/quii/mockingjay-server-two/domain/endpoints"
+	"github.com/quii/mockingjay-server-two/domain/mockingjay"
+	"github.com/quii/mockingjay-server-two/domain/mockingjay/matching"
 )
 
 type App struct {
-	endpoints endpoints.Endpoints
+	endpoints mockingjay.Endpoints
 }
 
 func (a *App) StubHandler(w http.ResponseWriter, r *http.Request) {
-	matchReport := a.endpoints.GetMatchReport(r)
+	matchReport := matching.NewReport(r, a.endpoints)
 	res, exists := matchReport.FindMatchingResponse()
 
 	if !exists {

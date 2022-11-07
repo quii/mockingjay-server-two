@@ -1,4 +1,4 @@
-package endpoints
+package mockingjay
 
 import (
 	"io"
@@ -6,7 +6,13 @@ import (
 	"strings"
 )
 
-type Headers map[string][]string
+type Endpoints []Endpoint
+
+type Endpoint struct {
+	Description string   `json:"description,omitempty"`
+	Request     Request  `json:"request"`
+	Response    Response `json:"response"`
+}
 
 type Response struct {
 	Status  int     `json:"status,omitempty"`
@@ -36,8 +42,4 @@ func (r Request) ToHTTPRequest(basePath string) *http.Request {
 	return req
 }
 
-type Endpoint struct {
-	Description string   `json:"description,omitempty"`
-	Request     Request  `json:"request"`
-	Response    Response `json:"response"`
-}
+type Headers map[string][]string

@@ -7,7 +7,8 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/quii/mockingjay-server-two/domain/endpoints"
+	"github.com/quii/mockingjay-server-two/domain/mockingjay"
+	"github.com/quii/mockingjay-server-two/domain/mockingjay/matching"
 )
 
 /*
@@ -21,32 +22,32 @@ type Driver struct {
 	Client          *http.Client
 }
 
-func (d Driver) Send(request endpoints.Request) (endpoints.Response, endpoints.MatchReport, error) {
-	var matchReport endpoints.MatchReport
+func (d Driver) Send(request mockingjay.Request) (mockingjay.Response, matching.Report, error) {
+	var matchReport matching.Report
 
 	req := request.ToHTTPRequest(d.StubServerURL)
 
 	res, err := d.Client.Do(req)
 	if err != nil {
-		return endpoints.Response{}, matchReport, err
+		return mockingjay.Response{}, matchReport, err
 	}
 
 	defer res.Body.Close()
 	body, err := io.ReadAll(res.Body)
 	if err != nil {
-		return endpoints.Response{}, matchReport, err
+		return mockingjay.Response{}, matchReport, err
 	}
 
 	_ = json.Unmarshal(body, &matchReport)
 
-	return endpoints.Response{
+	return mockingjay.Response{
 		Status:  res.StatusCode,
 		Body:    string(body),
-		Headers: endpoints.Headers(res.Header),
+		Headers: mockingjay.Headers(res.Header),
 	}, matchReport, nil
 }
 
-func (d Driver) Configure(es ...endpoints.Endpoint) error {
+func (d Driver) Configure(es ...mockingjay.Endpoint) error {
 	endpointJSON, err := json.Marshal(es)
 	if err != nil {
 		return err

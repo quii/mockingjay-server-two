@@ -10,7 +10,7 @@ import (
 	"github.com/alecthomas/assert/v2"
 	"github.com/quii/mockingjay-server-two/adapters"
 	"github.com/quii/mockingjay-server-two/adapters/httpserver"
-	"github.com/quii/mockingjay-server-two/domain/endpoints"
+	"github.com/quii/mockingjay-server-two/domain/mockingjay"
 	"github.com/quii/mockingjay-server-two/specifications"
 )
 
@@ -20,7 +20,7 @@ func TestGreeterServer(t *testing.T) {
 	}
 
 	const testFixturesDir = "../../examples/"
-	examples, err := endpoints.NewEndpointsFromCue(testFixturesDir, os.DirFS(testFixturesDir))
+	examples, err := mockingjay.NewEndpointsFromCue(testFixturesDir, os.DirFS(testFixturesDir))
 	assert.NoError(t, err)
 
 	var (
