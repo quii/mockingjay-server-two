@@ -6,49 +6,11 @@ import (
 	"net/textproto"
 
 	"github.com/quii/mockingjay-server-two/domain/mockingjay"
-	"golang.org/x/exp/slices"
 )
 
-type Report struct {
-	Matches         []RequestMatch     `json:"matches"`
-	IncomingRequest mockingjay.Request `json:"incomingRequest"`
-}
-
-func NewReport(req *http.Request, endpoints mockingjay.Endpoints) Report {
-	overallReport := Report{
-		IncomingRequest: mockingjay.Request{
-			Method:  req.Method,
-			Path:    req.URL.String(),
-			Headers: mockingjay.Headers(req.Header),
-		},
-	}
-	reporter := newMatcher(req)
-	for _, endpoint := range endpoints {
-		overallReport.Matches = append(overallReport.Matches, reporter(endpoint))
-	}
-
-	return overallReport
-}
-
-func (m Report) FindMatchingResponse() (mockingjay.Response, bool) {
-	i := slices.IndexFunc(m.Matches, func(r RequestMatch) bool {
-		return r.Matched()
-	})
-	if i == -1 {
-		return mockingjay.Response{}, false
-	}
-	return m.Matches[i].Response, true
-}
-
-func (m Report) HadMatch() bool {
-	_, found := m.FindMatchingResponse()
-	return found
-}
-
 type RequestMatch struct {
-	Request  mockingjay.Request  `json:"request"`
-	Response mockingjay.Response `json:"response"`
-	Match    Match               `json:"match"`
+	Endpoint mockingjay.Endpoint
+	Match    Match `json:"match"`
 }
 
 func (r RequestMatch) Matched() bool {
@@ -71,8 +33,7 @@ func newMatcher(req *http.Request) func(mockingjay.Endpoint) RequestMatch {
 
 	return func(e mockingjay.Endpoint) RequestMatch {
 		return RequestMatch{
-			Request:  e.Request,
-			Response: e.Response,
+			Endpoint: e,
 			Match: Match{
 				Path:    e.Request.Path == req.URL.String(),
 				Method:  e.Request.Method == req.Method,

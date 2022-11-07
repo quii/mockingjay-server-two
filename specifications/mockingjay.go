@@ -42,7 +42,7 @@ func MockingjaySpec(t *testing.T, mockingjay Mockingjay, examples mockingjay.End
 			t.Run(endpoint.Description, func(t *testing.T) {
 				res, report, err := mockingjay.Send(endpoint.Request)
 
-				if !report.HadMatch() {
+				if !report.HadMatch {
 					t.Logf("Match report %#v", report)
 				}
 
@@ -68,7 +68,7 @@ func MockingjaySpec(t *testing.T, mockingjay Mockingjay, examples mockingjay.End
 				t.Run(request.Description, func(t *testing.T) {
 					_, report, err := mockingjay.Send(request.Request)
 					assert.NoError(t, err)
-					assert.False(t, report.HadMatch())
+					assert.False(t, report.HadMatch)
 				})
 			}
 		})

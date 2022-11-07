@@ -14,9 +14,8 @@ type App struct {
 
 func (a *App) StubHandler(w http.ResponseWriter, r *http.Request) {
 	matchReport := matching.NewReport(r, a.endpoints)
-	res, exists := matchReport.FindMatchingResponse()
 
-	if !exists {
+	if !matchReport.HadMatch {
 		if err := json.NewEncoder(w).Encode(matchReport); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -25,6 +24,7 @@ func (a *App) StubHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	res := matchReport.SuccessfulMatch
 	for key, v := range res.Headers {
 		for _, value := range v {
 			w.Header().Add(key, value)
