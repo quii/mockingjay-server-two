@@ -4,9 +4,7 @@ import (
 	"net/http"
 )
 
-type Endpoints struct {
-	Endpoints []Endpoint `json:"endpoints,omitempty"`
-}
+type Endpoints []Endpoint
 
 func (e Endpoints) GetMatchReport(req *http.Request) MatchReport {
 	overallReport := MatchReport{
@@ -17,7 +15,7 @@ func (e Endpoints) GetMatchReport(req *http.Request) MatchReport {
 		},
 	}
 	reporter := MatchReportFactory(req)
-	for _, endpoint := range e.Endpoints {
+	for _, endpoint := range e {
 		overallReport.Matches = append(overallReport.Matches, reporter(endpoint))
 	}
 

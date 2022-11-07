@@ -8,8 +8,12 @@ import (
 	"github.com/quii/mockingjay-server-two"
 )
 
+type endpointsCue struct {
+	Endpoints []Endpoint
+}
+
 func NewEndpointsFromCue(basePath string, configDir fs.FS) (Endpoints, error) {
-	var allEndpoints Endpoints
+	var allEndpoints endpointsCue
 
 	dir, err := fs.ReadDir(configDir, ".")
 	if err != nil {
@@ -17,7 +21,7 @@ func NewEndpointsFromCue(basePath string, configDir fs.FS) (Endpoints, error) {
 	}
 
 	for _, f := range dir {
-		var endpoints Endpoints
+		var endpoints endpointsCue
 		path := basePath + f.Name()
 		if err := cueconfig.Load(path, mj.Schema, nil, nil, &endpoints); err != nil {
 			return Endpoints{}, fmt.Errorf("failed to parse %s, %v", path, err)
@@ -25,5 +29,5 @@ func NewEndpointsFromCue(basePath string, configDir fs.FS) (Endpoints, error) {
 		allEndpoints.Endpoints = append(allEndpoints.Endpoints, endpoints.Endpoints...)
 	}
 
-	return allEndpoints, nil
+	return allEndpoints.Endpoints, nil
 }

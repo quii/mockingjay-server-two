@@ -47,9 +47,7 @@ func (d Driver) Send(request endpoints.Request) (endpoints.Response, endpoints.M
 }
 
 func (d Driver) Configure(es ...endpoints.Endpoint) error {
-	endpointJSON, err := json.Marshal(endpoints.Endpoints{
-		Endpoints: es,
-	})
+	endpointJSON, err := json.Marshal(es)
 	if err != nil {
 		return err
 	}

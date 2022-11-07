@@ -13,8 +13,8 @@ import (
 )
 
 func TestApp(t *testing.T) {
-	const testFixturesDir = "../../examples/"
-	examples, err := endpoints.NewEndpointsFromCue(testFixturesDir, os.DirFS(testFixturesDir))
+	const examplesDir = "../../examples/"
+	examples, err := endpoints.NewEndpointsFromCue(examplesDir, os.DirFS(examplesDir))
 	assert.NoError(t, err)
 
 	app := new(httpserver.App)

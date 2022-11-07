@@ -35,9 +35,9 @@ type TestFixture struct {
 
 func MockingjaySpec(t *testing.T, mockingjay Mockingjay, examples endpoints.Endpoints, testFixtures []TestFixture) {
 	t.Run("mj can be configured with request/response pairs, which can then be called by a client with a request to get matching response", func(t *testing.T) {
-		assert.NoError(t, mockingjay.Configure(examples.Endpoints...))
+		assert.NoError(t, mockingjay.Configure(examples...))
 
-		for _, endpoint := range examples.Endpoints {
+		for _, endpoint := range examples {
 			t.Run(endpoint.Description, func(t *testing.T) {
 				res, report, err := mockingjay.Send(endpoint.Request)
 
