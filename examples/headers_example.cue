@@ -4,13 +4,15 @@ package examples
 
 endpoints: [... { request: { method: *"GET" | _, path: "/hello/Ruth"}}]
 endpoints: [... { response: { status: *201 | _}}]
+someContentType: "application/xml"
+anotherContentType: "application/json"
 
 endpoints: [
 	{
 		description: "match on request header"
 		request: {
 			headers: {
-				"Accept": ["application/xml"]
+				"Accept": [someContentType]
 			}
 		}
 		response: {
@@ -18,7 +20,7 @@ endpoints: [
 <hello>Ruth</hello>
 """
 			headers: {
-				"Content-Type": ["application/xml"]
+				"Content-Type": [someContentType]
 			}
 		}
 	},
@@ -26,7 +28,7 @@ endpoints: [
 		description: "headers are not case-sensitive"
 		request: {
 			headers: {
-				"aCCepT": ["application/json"]
+				"aCCepT": [anotherContentType]
 			}
 		}
 		response: {
@@ -34,7 +36,7 @@ endpoints: [
 {"hello":"Ruth"}
 """
 			headers: {
-				"Content-Type": ["application/json"]
+				"Content-Type": [anotherContentType]
 			}
 		}
 	}
