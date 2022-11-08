@@ -14,7 +14,11 @@ import (
 
 func TestApp(t *testing.T) {
 	const examplesDir = "../../examples/"
+	const fixturesDir = "../../testfixtures/"
+
 	examples, err := mockingjay.NewEndpointsFromCue(examplesDir, os.DirFS(examplesDir))
+	assert.NoError(t, err)
+	fixtures, err := mockingjay.NewFixturesFromCue(fixturesDir, os.DirFS(fixturesDir))
 	assert.NoError(t, err)
 
 	app := new(httpserver.App)
@@ -29,49 +33,5 @@ func TestApp(t *testing.T) {
 		Client:          &http.Client{},
 	}
 
-	fixture := specifications.TestFixture{
-		Endpoint: mockingjay.Endpoint{
-			Description: "This will be loaded from file later",
-			Request: mockingjay.Request{
-				Method: http.MethodGet,
-				Path:   "/",
-				Headers: mockingjay.Headers{
-					"Accept": {"application/xml"},
-				},
-			},
-			Response: mockingjay.Response{
-				Status: http.StatusOK,
-				Body:   `<hello>World</hello>`,
-				Headers: mockingjay.Headers{
-					"Content-Type": {"application/xml"},
-				},
-			},
-		},
-		MatchingRequests: []specifications.RequestDescription{
-			{
-				Description: "Works even though the header is not the first one",
-				Request: mockingjay.Request{
-					Method: http.MethodGet,
-					Path:   "/",
-					Headers: mockingjay.Headers{
-						"Accept": {"text/html", "application/xml"},
-					},
-				},
-			},
-		},
-		NonMatchingRequests: []specifications.RequestDescription{
-			{
-				Description: "Doesn't match as it has the wrong header",
-				Request: mockingjay.Request{
-					Method: http.MethodGet,
-					Path:   "/",
-					Headers: mockingjay.Headers{
-						"Accept": {"text/html"},
-					},
-				},
-			},
-		},
-	}
-
-	specifications.MockingjaySpec(t, driver, examples, []specifications.TestFixture{fixture})
+	specifications.MockingjaySpec(t, driver, examples, fixtures)
 }
