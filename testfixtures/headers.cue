@@ -1,3 +1,9 @@
+theRequest: {
+	method: "GET"
+	path: "/hello/ruth"
+}
+
+fixtures: [... {endpoint:{ response: { status: 201 , body: "<hello>Ruth</hello>"}}}]
 someContentType: "application/xml"
 anotherContentType: "application/json"
 
@@ -5,38 +11,29 @@ fixtures: [
 	{
 		endpoint: {
 			description: "matching of request headers"
-			request: {
-				method: "GET"
-				path: "/"
+			request: theRequest & {
 				headers: {
 					"Accept": [someContentType]
 				}
-			}
-			response: {
-				status: 200
-				body: "whatever"
 			}
 		}
 		matchingRequests: [
 			{
 				description: "order of headers and extra headers dont matter",
-				request: {
-					method: "GET"
-					path: "/"
+				request: theRequest & {
 					headers: {
 						"Accept": [anotherContentType, someContentType]
 					}
 				}
 			}
 		]
+		//todo: this should fail! it has the matching content type
 		nonMatchingRequests: [
 			{
 				description: "wont match if header isn't present",
-				request: {
-					method: "GET"
-					path: "/"
+				request: theRequest & {
 					headers: {
-						"Accept": [anotherContentType]
+						"Accept": [anotherContentType, someContentType]
 					}
 				}
 			}
