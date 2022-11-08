@@ -1,4 +1,4 @@
-package main
+package mockingjay
 
 endpoints: [...#Endpoint]
 
@@ -6,6 +6,7 @@ endpoints: [...#Endpoint]
 	description: string | *"\(request.method) \(request.path)"
 	request: #Request
 	response: #Response
+	cdcs?: [#CDC]
 }
 
 #Request: {
@@ -19,4 +20,10 @@ endpoints: [...#Endpoint]
 		status: >=200 & <=599
 		body: string
 		headers?: [string] : [...string]
+}
+
+#CDC: {
+	baseURL: string
+	retries: int | *0
+	timeoutMS: int | *5000
 }
