@@ -12,10 +12,12 @@ import (
 	"github.com/quii/mockingjay-server-two/specifications"
 )
 
-func TestApp(t *testing.T) {
-	const examplesDir = "../../examples/"
-	const fixturesDir = "../../testfixtures/"
+const (
+	examplesDir = "../../examples/"
+	fixturesDir = "../../testfixtures/"
+)
 
+func TestApp(t *testing.T) {
 	examples, err := mockingjay.NewEndpointsFromCue(examplesDir, os.DirFS(examplesDir))
 	assert.NoError(t, err)
 	fixtures, err := mockingjay.NewFixturesFromCue(fixturesDir, os.DirFS(fixturesDir))

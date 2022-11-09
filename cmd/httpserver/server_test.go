@@ -14,13 +14,19 @@ import (
 	"github.com/quii/mockingjay-server-two/specifications"
 )
 
+const (
+	examplesDir = "../../examples/"
+	fixturesDir = "../../testfixtures/"
+)
+
 func TestGreeterServer(t *testing.T) {
 	if testing.Short() {
 		t.Skip()
 	}
 
-	const testFixturesDir = "../../examples/"
-	examples, err := mockingjay.NewEndpointsFromCue(testFixturesDir, os.DirFS(testFixturesDir))
+	examples, err := mockingjay.NewEndpointsFromCue(examplesDir, os.DirFS(examplesDir))
+	assert.NoError(t, err)
+	fixtures, err := mockingjay.NewFixturesFromCue(fixturesDir, os.DirFS(fixturesDir))
 	assert.NoError(t, err)
 
 	var (
@@ -36,5 +42,5 @@ func TestGreeterServer(t *testing.T) {
 	)
 
 	adapters.StartDockerServer(t, stubServerPort, configServerPort)
-	specifications.MockingjaySpec(t, driver, examples, nil)
+	specifications.MockingjaySpec(t, driver, examples, fixtures)
 }
