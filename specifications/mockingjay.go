@@ -2,6 +2,7 @@ package specifications
 
 import (
 	"fmt"
+	"net/http"
 	"testing"
 
 	"github.com/alecthomas/assert/v2"
@@ -57,9 +58,9 @@ func MockingjaySpec(t *testing.T, mockingjay Mockingjay, examples mockingjay.End
 
 				for _, request := range f.NonMatchingRequests {
 					t.Run(request.Description, func(t *testing.T) {
-						_, report, err := mockingjay.Send(request.Request)
+						response, _, err := mockingjay.Send(request.Request)
 						assert.NoError(t, err)
-						assert.False(t, report.HadMatch)
+						assert.Equal(t, response.Status, http.StatusNotFound) //todo: match report is a poor way to do this, dont respond with match report, send header and direct them to debug page
 					})
 				}
 			})

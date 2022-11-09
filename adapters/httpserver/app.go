@@ -16,11 +16,11 @@ func (a *App) StubHandler(w http.ResponseWriter, r *http.Request) {
 	matchReport := matching.NewReport(r, a.endpoints)
 
 	if !matchReport.HadMatch {
+		w.WriteHeader(http.StatusNotFound)
 		if err := json.NewEncoder(w).Encode(matchReport); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		w.WriteHeader(http.StatusNotFound)
 		return
 	}
 

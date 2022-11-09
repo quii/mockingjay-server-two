@@ -27,13 +27,12 @@ fixtures: [
 				}
 			}
 		]
-		//todo: this should fail! it has the matching content type
 		nonMatchingRequests: [
 			{
 				description: "wont match if header isn't present",
 				request: theRequest & {
 					headers: {
-						"Accept": [anotherContentType, someContentType]
+						"Accept": [anotherContentType]
 					}
 				}
 			}
