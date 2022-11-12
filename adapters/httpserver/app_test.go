@@ -25,15 +25,11 @@ func TestApp(t *testing.T) {
 
 	app := httpserver.New()
 	stubServer := httptest.NewServer(http.HandlerFunc(app.StubHandler))
-	configServer := httptest.NewServer(app.AdminRouter)
-	defer configServer.Close()
+	adminServer := httptest.NewServer(app.AdminRouter)
+	defer adminServer.Close()
 	defer stubServer.Close()
 
-	driver := httpserver.Driver{
-		StubServerURL:   stubServer.URL,
-		ConfigServerURL: configServer.URL,
-		Client:          &http.Client{},
-	}
+	driver := httpserver.NewDriver(stubServer.URL, adminServer.URL, &http.Client{})
 
 	specifications.MockingjaySpec(t, driver, examples, fixtures)
 }

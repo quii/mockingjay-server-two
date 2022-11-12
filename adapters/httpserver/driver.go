@@ -17,17 +17,24 @@ notes
 */
 
 type Driver struct {
-	StubServerURL   string
-	ConfigServerURL string
-	Client          *http.Client
+	stubServerURL      string
+	client             *http.Client
+	matchReportURL     string
+	configEndpointsURL string
+}
+
+func NewDriver(stubServerURL string, configServerURL string, client *http.Client) *Driver {
+	return &Driver{
+		stubServerURL:      stubServerURL,
+		client:             client,
+		matchReportURL:     configServerURL + ReportsPath,
+		configEndpointsURL: configServerURL + ConfigEndpointsPath,
+	}
 }
 
 func (d Driver) GetReports() ([]matching.Report, error) {
 	var reports []matching.Report
-
-	matchReportURL := d.ConfigServerURL + ReportsPath
-
-	res, err := d.Client.Get(matchReportURL)
+	res, err := d.client.Get(d.matchReportURL)
 
 	if err != nil {
 		return nil, err
@@ -35,7 +42,7 @@ func (d Driver) GetReports() ([]matching.Report, error) {
 	defer res.Body.Close()
 
 	if res.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("unexpected status of %d from %s", res.StatusCode, matchReportURL)
+		return nil, fmt.Errorf("unexpected status of %d from %s", res.StatusCode, d.matchReportURL)
 	}
 
 	err = json.NewDecoder(res.Body).Decode(&reports)
@@ -49,9 +56,9 @@ func (d Driver) GetReports() ([]matching.Report, error) {
 func (d Driver) Send(request mockingjay.Request) (mockingjay.Response, matching.Report, error) {
 	var matchReport matching.Report
 
-	req := request.ToHTTPRequest(d.StubServerURL)
+	req := request.ToHTTPRequest(d.stubServerURL)
 
-	res, err := d.Client.Do(req)
+	res, err := d.client.Do(req)
 	if err != nil {
 		return mockingjay.Response{}, matchReport, err
 	}
@@ -83,18 +90,18 @@ func (d Driver) Configure(es ...mockingjay.Endpoint) error {
 		return err
 	}
 
-	req, err := http.NewRequest(http.MethodPost, d.ConfigServerURL+ConfigEndpointsPath, bytes.NewReader(endpointJSON))
+	req, err := http.NewRequest(http.MethodPost, d.configEndpointsURL, bytes.NewReader(endpointJSON))
 	if err != nil {
 		return err
 	}
 
-	res, err := d.Client.Do(req)
+	res, err := d.client.Do(req)
 	if err != nil {
 		return err
 	}
 	defer res.Body.Close()
 	if res.StatusCode != http.StatusAccepted {
-		return fmt.Errorf("got unexpected %d when trying to configure mj", res.StatusCode)
+		return fmt.Errorf("got unexpected %d when trying to configure mj at %s", res.StatusCode, d.configEndpointsURL)
 	}
 
 	return nil

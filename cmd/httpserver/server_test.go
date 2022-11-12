@@ -32,13 +32,13 @@ func TestGreeterServer(t *testing.T) {
 	var (
 		stubServerPort   = "8080"
 		configServerPort = "8081"
-		driver           = httpserver.Driver{
-			StubServerURL:   fmt.Sprintf("http://localhost:%s", stubServerPort),
-			ConfigServerURL: fmt.Sprintf("http://localhost:%s", configServerPort),
-			Client: &http.Client{
+		driver           = httpserver.NewDriver(
+			fmt.Sprintf("http://localhost:%s", stubServerPort),
+			fmt.Sprintf("http://localhost:%s", configServerPort),
+			&http.Client{
 				Timeout: 1 * time.Second,
 			},
-		}
+		)
 	)
 
 	adapters.StartDockerServer(t, stubServerPort, configServerPort)
