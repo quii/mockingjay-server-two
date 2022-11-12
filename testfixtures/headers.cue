@@ -1,41 +1,44 @@
-theRequest: {
+baseRequest: {
 	method: "GET"
-	path: "/hello/ruth"
+	path:   "/hello/ruth"
 }
 
-fixtures: [... {endpoint:{ response: { status: 201 , body: "<hello>Ruth</hello>"}}}]
-someContentType: "application/xml"
+someContentType:    "application/xml"
 anotherContentType: "application/json"
 
 fixtures: [
 	{
 		endpoint: {
 			description: "matching of request headers"
-			request: theRequest & {
+			request:     baseRequest & {
 				headers: {
 					"Accept": [someContentType]
 				}
 			}
+			response: {
+				status: 201
+				body:   "<hello>Ruth</hello>"
+			}
 		}
 		matchingRequests: [
 			{
-				description: "order of headers and extra headers dont matter",
-				request: theRequest & {
+				description: "order of headers and extra headers dont matter"
+				request:     baseRequest & {
 					headers: {
 						"Accept": [anotherContentType, someContentType]
 					}
 				}
-			}
+			},
 		]
 		nonMatchingRequests: [
 			{
-				description: "wont match if header isn't present",
-				request: theRequest & {
+				description: "wont match if header isn't present"
+				request:     baseRequest & {
 					headers: {
 						"Accept": [anotherContentType]
 					}
 				}
-			}
+			},
 		]
-	}
+	},
 ]

@@ -2,9 +2,9 @@ package examples
 
 // content negotiation examples, note the method and path for all these requests are the same, only variance are headers and response
 
-endpoints: [... { request: { method: *"GET" | _, path: "/hello/Ruth"}}]
-endpoints: [... { response: { status: *201 | _}}]
-someContentType: "application/xml"
+endpoints: [... {request: {method: *"GET" | _, path: "/hello/Ruth"}}]
+endpoints: [... {response: {status: *201 | _}}]
+someContentType:    "application/xml"
 anotherContentType: "application/json"
 
 endpoints: [
@@ -17,14 +17,14 @@ endpoints: [
 		}
 		response: {
 			body: """
-<hello>Ruth</hello>
-"""
+				<hello>Ruth</hello>
+				"""
 			headers: {
 				"Content-Type": [someContentType]
 			}
 		}
 	},
-		{
+	{
 		description: "headers are not case-sensitive"
 		request: {
 			headers: {
@@ -33,11 +33,11 @@ endpoints: [
 		}
 		response: {
 			body: """
-{"hello":"Ruth"}
-"""
+				{"hello":"Ruth"}
+				"""
 			headers: {
 				"Content-Type": [anotherContentType]
 			}
 		}
-	}
+	},
 ]

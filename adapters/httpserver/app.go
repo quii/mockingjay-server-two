@@ -12,10 +12,13 @@ type App struct {
 	endpoints mockingjay.Endpoints
 }
 
+const HeaderMockingjayMatched = "x-mockingjay-matched"
+
 func (a *App) StubHandler(w http.ResponseWriter, r *http.Request) {
 	matchReport := matching.NewReport(r, a.endpoints)
 
 	if !matchReport.HadMatch {
+		w.Header().Add(HeaderMockingjayMatched, "false")
 		w.WriteHeader(http.StatusNotFound)
 		if err := json.NewEncoder(w).Encode(matchReport); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -24,6 +27,7 @@ func (a *App) StubHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	w.Header().Add(HeaderMockingjayMatched, "true")
 	res := matchReport.SuccessfulMatch
 	for key, v := range res.Headers {
 		for _, value := range v {
@@ -35,9 +39,11 @@ func (a *App) StubHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *App) ConfigHandler(w http.ResponseWriter, r *http.Request) {
-	if err := json.NewDecoder(r.Body).Decode(&a.endpoints); err != nil {
+	var newEndpoints mockingjay.Endpoints
+	if err := json.NewDecoder(r.Body).Decode(&newEndpoints); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
+	a.endpoints = newEndpoints
 	w.WriteHeader(http.StatusAccepted)
 }

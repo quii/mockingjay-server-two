@@ -2,9 +2,9 @@ package specifications
 
 import (
 	"fmt"
-	"net/http"
 	"testing"
 
+	"github.com/adamluzsi/testcase/pp"
 	"github.com/alecthomas/assert/v2"
 	"github.com/quii/mockingjay-server-two/domain/mockingjay"
 	"github.com/quii/mockingjay-server-two/domain/mockingjay/matching"
@@ -50,17 +50,18 @@ func MockingjaySpec(t *testing.T, mockingjay Mockingjay, examples mockingjay.End
 
 				for _, request := range f.MatchingRequests {
 					t.Run(request.Description, func(t *testing.T) {
-						res, _, err := mockingjay.Send(request.Request)
+						res, report, err := mockingjay.Send(request.Request)
 						assert.NoError(t, err)
+						assert.True(t, report.HadMatch, pp.Format(report))
 						assertResponseMatches(t, f.Endpoint.Response, res)
 					})
 				}
 
 				for _, request := range f.NonMatchingRequests {
 					t.Run(request.Description, func(t *testing.T) {
-						response, _, err := mockingjay.Send(request.Request)
+						_, report, err := mockingjay.Send(request.Request)
 						assert.NoError(t, err)
-						assert.Equal(t, response.Status, http.StatusNotFound) //todo: match report is a poor way to do this, dont respond with match report, send header and direct them to debug page
+						assert.False(t, report.HadMatch)
 					})
 				}
 			})

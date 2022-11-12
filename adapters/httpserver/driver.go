@@ -38,7 +38,13 @@ func (d Driver) Send(request mockingjay.Request) (mockingjay.Response, matching.
 		return mockingjay.Response{}, matchReport, err
 	}
 
-	_ = json.Unmarshal(body, &matchReport)
+	//todo: driver should not rely on request body, instead it should get from admin
+	//send a location header with an uuid, that gets written to the admin server report map
+	if res.Header.Get(HeaderMockingjayMatched) == "false" {
+		_ = json.Unmarshal(body, &matchReport)
+	} else {
+		matchReport.HadMatch = true
+	}
 
 	return mockingjay.Response{
 		Status:  res.StatusCode,

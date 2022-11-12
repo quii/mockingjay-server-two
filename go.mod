@@ -3,6 +3,7 @@ module github.com/quii/mockingjay-server-two
 go 1.18
 
 require (
+	github.com/adamluzsi/testcase v0.117.2
 	github.com/alecthomas/assert/v2 v2.2.0
 	github.com/cue-exp/cueconfig v0.0.1
 	github.com/docker/go-connections v0.4.0

@@ -2,8 +2,8 @@ package examples
 
 // request body examples
 
-endpoints: [... { request: { method: "POST", path: "/posts"}}]
-endpoints: [... { response: { body: "whatever"}}]
+endpoints: [... {request: {method: "POST", path: "/posts"}}]
+endpoints: [... {response: {body: "whatever"}}]
 
 endpoints: [
 	{
@@ -15,7 +15,7 @@ endpoints: [
 			status: 200
 		}
 	},
-		{
+	{
 		description: "match on a different request body"
 		request: {
 			body: "lol"
