@@ -7,6 +7,8 @@ require (
 	github.com/alecthomas/assert/v2 v2.2.0
 	github.com/cue-exp/cueconfig v0.0.1
 	github.com/docker/go-connections v0.4.0
+	github.com/google/uuid v1.3.0
+	github.com/gorilla/mux v1.7.3
 	github.com/peterbourgon/ff/v3 v3.3.0
 	github.com/testcontainers/testcontainers-go v0.15.0
 	golang.org/x/exp v0.0.0-20221031165847-c99f073a8326
@@ -30,7 +32,6 @@ require (
 	github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
-	github.com/google/uuid v1.3.0 // indirect
 	github.com/hexops/gotextdiff v1.0.3 // indirect
 	github.com/magiconair/properties v1.8.6 // indirect
 	github.com/moby/sys/mount v0.3.3 // indirect

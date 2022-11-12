@@ -65,6 +65,7 @@ func printStartupMessage(endpointsFolder *string, adminPort *string, stubPort *s
 	if *endpointsFolder == config.DefaultEndpointsLocation {
 		log.Println("‼️  no endpoints specified, loading default examples")
 	} else {
-		log.Printf("📂 endpoints loaded from %s/%s", executable, fullPathOfEndpointsFile)
+		log.Printf("📂 endpoints loaded from %s/%s\n", executable, fullPathOfEndpointsFile)
 	}
+	log.Printf("💡 visit $HOST:%s/endpoints to see the current configuration", *adminPort)
 }

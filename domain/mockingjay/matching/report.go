@@ -2,15 +2,17 @@ package matching
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/quii/mockingjay-server-two/domain/mockingjay"
 )
 
 type Report struct {
+	HadMatch        bool                `json:"hadMatch"`
+	IncomingRequest mockingjay.Request  `json:"incomingRequest"`
 	FailedMatches   []RequestMatch      `json:"failed_matches"`
 	SuccessfulMatch mockingjay.Response `json:"successfulMatch"`
-	IncomingRequest mockingjay.Request  `json:"incomingRequest"`
-	HadMatch        bool                `json:"hadMatch"`
+	CreatedAt       time.Time           `json:"createdAt"`
 }
 
 func NewReport(req *http.Request, endpoints mockingjay.Endpoints) Report {
@@ -20,6 +22,7 @@ func NewReport(req *http.Request, endpoints mockingjay.Endpoints) Report {
 			Path:    req.URL.String(),
 			Headers: mockingjay.Headers(req.Header),
 		},
+		CreatedAt: time.Now().UTC(),
 	}
 	matcher := newMatcher(req)
 	for _, endpoint := range endpoints {

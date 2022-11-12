@@ -21,14 +21,16 @@ type Driver struct {
 	client             *http.Client
 	matchReportURL     string
 	configEndpointsURL string
+	adminServerURL     string
 }
 
-func NewDriver(stubServerURL string, configServerURL string, client *http.Client) *Driver {
+func NewDriver(stubServerURL string, adminServerURL string, client *http.Client) *Driver {
 	return &Driver{
 		stubServerURL:      stubServerURL,
+		adminServerURL:     adminServerURL,
 		client:             client,
-		matchReportURL:     configServerURL + ReportsPath,
-		configEndpointsURL: configServerURL + ConfigEndpointsPath,
+		matchReportURL:     adminServerURL + ReportsPath,
+		configEndpointsURL: adminServerURL + ConfigEndpointsPath,
 	}
 }
 
@@ -69,13 +71,21 @@ func (d Driver) Send(request mockingjay.Request) (mockingjay.Response, matching.
 		return mockingjay.Response{}, matchReport, err
 	}
 
-	//todo: driver should not rely on request body, instead it should get from admin
-	//send a location header with an uuid, that gets written to the admin server report map
 	if res.Header.Get(HeaderMockingjayMatched) == "false" {
-		_ = json.Unmarshal(body, &matchReport)
-	} else {
-		matchReport.HadMatch = true
+		reportURL := d.adminServerURL + res.Header.Get("location")
+		res, err := d.client.Get(reportURL)
+		if err != nil {
+			return mockingjay.Response{}, matchReport, err
+		}
+		defer res.Body.Close()
+		if res.StatusCode != http.StatusOK {
+			return mockingjay.Response{}, matchReport, fmt.Errorf("unexpected %d from %s", res.StatusCode, reportURL)
+		}
+		json.NewDecoder(res.Body).Decode(&matchReport)
+		return mockingjay.Response{}, matchReport, nil
 	}
+
+	matchReport.HadMatch = true
 
 	return mockingjay.Response{
 		Status:  res.StatusCode,
@@ -90,7 +100,7 @@ func (d Driver) Configure(es ...mockingjay.Endpoint) error {
 		return err
 	}
 
-	req, err := http.NewRequest(http.MethodPost, d.configEndpointsURL, bytes.NewReader(endpointJSON))
+	req, err := http.NewRequest(http.MethodPut, d.configEndpointsURL, bytes.NewReader(endpointJSON))
 	if err != nil {
 		return err
 	}
@@ -105,4 +115,21 @@ func (d Driver) Configure(es ...mockingjay.Endpoint) error {
 	}
 
 	return nil
+}
+
+func (d Driver) GetCurrentConfiguration() (mockingjay.Endpoints, error) {
+	res, err := d.client.Get(d.configEndpointsURL)
+	if err != nil {
+		return nil, err
+	}
+	defer res.Body.Close()
+	if res.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("unexpected status %d from %s", res.StatusCode, d.configEndpointsURL)
+	}
+	var endpoints mockingjay.Endpoints
+
+	if err := json.NewDecoder(res.Body).Decode(&endpoints); err != nil {
+		return nil, err
+	}
+	return endpoints, nil
 }

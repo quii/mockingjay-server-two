@@ -2,10 +2,14 @@ package httpserver
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
+	"github.com/google/uuid"
+	"github.com/gorilla/mux"
 	"github.com/quii/mockingjay-server-two/domain/mockingjay"
 	"github.com/quii/mockingjay-server-two/domain/mockingjay/matching"
+	"golang.org/x/exp/slices"
 )
 
 const (
@@ -15,18 +19,23 @@ const (
 )
 
 type App struct {
-	AdminRouter *http.ServeMux
+	AdminRouter http.Handler
 
 	endpoints    mockingjay.Endpoints
-	matchReports []matching.Report
+	matchReports map[uuid.UUID]matching.Report
 }
 
 func New(endpoints mockingjay.Endpoints) *App {
-	app := &App{endpoints: endpoints}
+	app := &App{
+		endpoints:    endpoints,
+		matchReports: make(map[uuid.UUID]matching.Report),
+	}
 
-	adminRouter := http.NewServeMux()
-	adminRouter.HandleFunc(ReportsPath, app.matchReportsHandler)
-	adminRouter.HandleFunc(ConfigEndpointsPath, app.configEndpointsHandler)
+	adminRouter := mux.NewRouter()
+	adminRouter.HandleFunc(ReportsPath, app.allReports)
+	adminRouter.HandleFunc(fmt.Sprintf("%s/{reportID}", ReportsPath), app.viewReport)
+	adminRouter.HandleFunc(ConfigEndpointsPath, app.putEndpoints).Methods(http.MethodPut)
+	adminRouter.HandleFunc(ConfigEndpointsPath, app.getEndpoints).Methods(http.MethodGet)
 
 	app.AdminRouter = adminRouter
 	return app
@@ -34,16 +43,15 @@ func New(endpoints mockingjay.Endpoints) *App {
 
 func (a *App) StubHandler(w http.ResponseWriter, r *http.Request) {
 	matchReport := matching.NewReport(r, a.endpoints)
-	a.matchReports = append(a.matchReports, matchReport)
+
+	reportID := uuid.New()
+	a.matchReports[reportID] = matchReport
 
 	if !matchReport.HadMatch {
 		w.Header().Add(HeaderMockingjayMatched, "false")
+		w.Header().Add("location", ReportsPath+"/"+reportID.String())
 		w.Header().Add("content-type", "application/json")
 		w.WriteHeader(http.StatusNotFound)
-		if err := json.NewEncoder(w).Encode(matchReport); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
 		return
 	}
 
@@ -58,11 +66,18 @@ func (a *App) StubHandler(w http.ResponseWriter, r *http.Request) {
 	_, _ = w.Write([]byte(res.Body))
 }
 
-func (a *App) matchReportsHandler(w http.ResponseWriter, r *http.Request) {
-	_ = json.NewEncoder(w).Encode(a.matchReports)
+func (a *App) allReports(w http.ResponseWriter, r *http.Request) {
+	var reports []matching.Report
+	for _, report := range a.matchReports {
+		reports = append(reports, report)
+	}
+	slices.SortFunc(reports, func(a, b matching.Report) bool {
+		return a.CreatedAt.Before(b.CreatedAt)
+	})
+	_ = json.NewEncoder(w).Encode(reports)
 }
 
-func (a *App) configEndpointsHandler(w http.ResponseWriter, r *http.Request) {
+func (a *App) putEndpoints(w http.ResponseWriter, r *http.Request) {
 	var newEndpoints mockingjay.Endpoints
 	if err := json.NewDecoder(r.Body).Decode(&newEndpoints); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -78,4 +93,21 @@ func (a *App) configEndpointsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusAccepted)
+}
+
+func (a *App) viewReport(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	reportID := vars["reportID"]
+
+	if report, exists := a.matchReports[uuid.MustParse(reportID)]; exists {
+		w.Header().Add("content-type", "application/json")
+		json.NewEncoder(w).Encode(report)
+	} else {
+		http.NotFound(w, r)
+	}
+}
+
+func (a *App) getEndpoints(w http.ResponseWriter, r *http.Request) {
+	w.Header().Add("content-type", "application/json")
+	json.NewEncoder(w).Encode(a.endpoints)
 }
