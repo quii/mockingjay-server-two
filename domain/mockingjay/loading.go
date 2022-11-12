@@ -16,8 +16,26 @@ type testFixtureCue struct {
 	Fixtures []TestFixture
 }
 
+//func load[DTO any, Data any](basePath string, configDir fs.FS) (Data, error) {
+//	var allData Data
+//
+//	dir, err := fs.ReadDir(configDir, ".")
+//	if err != nil {
+//		return allData, err
+//	}
+//
+//	for _, f := range dir {
+//		var data DTO
+//		path := basePath + f.Name()
+//		if err := cueconfig.Load(path, mj.Schema, nil, nil, &data); err != nil {
+//			return allData, fmt.Errorf("failed to parse %s, %v", path, err)
+//		}
+//		allData.Endpoints = append(allEndpoints.Endpoints, endpoints.Endpoints...)
+//	}
+//}
+
 func NewEndpointsFromCue(basePath string, configDir fs.FS) (Endpoints, error) {
-	var allEndpoints endpointsCue
+	var allEndpoints Endpoints
 
 	dir, err := fs.ReadDir(configDir, ".")
 	if err != nil {
@@ -30,14 +48,14 @@ func NewEndpointsFromCue(basePath string, configDir fs.FS) (Endpoints, error) {
 		if err := cueconfig.Load(path, mj.Schema, nil, nil, &endpoints); err != nil {
 			return Endpoints{}, fmt.Errorf("failed to parse %s, %v", path, err)
 		}
-		allEndpoints.Endpoints = append(allEndpoints.Endpoints, endpoints.Endpoints...)
+		allEndpoints = append(allEndpoints, endpoints.Endpoints...)
 	}
 
-	return allEndpoints.Endpoints, nil
+	return allEndpoints, nil
 }
 
 func NewFixturesFromCue(basePath string, configDir fs.FS) ([]TestFixture, error) {
-	var allFixtures testFixtureCue
+	var allFixtures []TestFixture
 
 	dir, err := fs.ReadDir(configDir, ".")
 	if err != nil {
@@ -50,8 +68,8 @@ func NewFixturesFromCue(basePath string, configDir fs.FS) ([]TestFixture, error)
 		if err := cueconfig.Load(path, mj.FixtureSchema, nil, nil, &fixtures); err != nil {
 			return nil, fmt.Errorf("failed to parse %s, %v", path, err)
 		}
-		allFixtures.Fixtures = append(allFixtures.Fixtures, fixtures.Fixtures...)
+		allFixtures = append(allFixtures, fixtures.Fixtures...)
 	}
 
-	return allFixtures.Fixtures, nil
+	return allFixtures, nil
 }
