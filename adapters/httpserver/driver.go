@@ -56,42 +56,47 @@ func (d Driver) GetReports() ([]matching.Report, error) {
 }
 
 func (d Driver) Send(request mockingjay.Request) (mockingjay.Response, matching.Report, error) {
-	var matchReport matching.Report
-
 	req := request.ToHTTPRequest(d.stubServerURL)
 
 	res, err := d.client.Do(req)
 	if err != nil {
-		return mockingjay.Response{}, matchReport, err
+		return mockingjay.Response{}, matching.Report{}, err
 	}
 
 	defer res.Body.Close()
 	body, err := io.ReadAll(res.Body)
 	if err != nil {
-		return mockingjay.Response{}, matchReport, err
+		return mockingjay.Response{}, matching.Report{}, err
 	}
 
 	if res.Header.Get(HeaderMockingjayMatched) == "false" {
-		reportURL := d.adminServerURL + res.Header.Get("location")
-		res, err := d.client.Get(reportURL)
+		report, err := d.GetReport(res.Header.Get("location"))
 		if err != nil {
-			return mockingjay.Response{}, matchReport, err
+			return mockingjay.Response{}, report, err
 		}
-		defer res.Body.Close()
-		if res.StatusCode != http.StatusOK {
-			return mockingjay.Response{}, matchReport, fmt.Errorf("unexpected %d from %s", res.StatusCode, reportURL)
-		}
-		_ = json.NewDecoder(res.Body).Decode(&matchReport)
-		return mockingjay.Response{}, matchReport, nil
+		return mockingjay.Response{}, report, nil
 	}
-
-	matchReport.HadMatch = true
 
 	return mockingjay.Response{
 		Status:  res.StatusCode,
 		Body:    string(body),
 		Headers: mockingjay.Headers(res.Header),
-	}, matchReport, nil
+	}, matching.Report{HadMatch: true}, nil
+}
+
+func (d Driver) GetReport(location string) (matching.Report, error) {
+	var matchReport matching.Report
+	reportURL := d.adminServerURL + location
+	res, err := d.client.Get(reportURL)
+	if err != nil {
+		return matchReport, err
+	}
+	defer res.Body.Close()
+	if res.StatusCode != http.StatusOK {
+		return matchReport, fmt.Errorf("unexpected %d from %s", res.StatusCode, reportURL)
+	}
+	_ = json.NewDecoder(res.Body).Decode(&matchReport)
+	return matching.Report{}, nil
 }
 
 func (d Driver) Configure(es ...mockingjay.Endpoint) error {

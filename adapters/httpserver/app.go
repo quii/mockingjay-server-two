@@ -96,10 +96,12 @@ func (a *App) putEndpoints(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *App) viewReport(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	reportID := vars["reportID"]
-
-	if report, exists := a.matchReports[uuid.MustParse(reportID)]; exists {
+	reportID, err := uuid.Parse(mux.Vars(r)["reportID"])
+	if err != nil {
+		http.NotFound(w, r)
+		return
+	}
+	if report, exists := a.matchReports[reportID]; exists {
 		w.Header().Add("content-type", "application/json")
 		_ = json.NewEncoder(w).Encode(report)
 	} else {

@@ -35,4 +35,11 @@ func TestApp(t *testing.T) {
 	)
 
 	specifications.MockingjaySpec(t, driver, examples, fixtures)
+
+	t.Run("view report", func(t *testing.T) {
+		t.Run("404 if report doesn't exist", func(t *testing.T) {
+			_, err := driver.GetReport(httpserver.ReportsPath + "/whatever")
+			assert.Error(t, err)
+		})
+	})
 }
