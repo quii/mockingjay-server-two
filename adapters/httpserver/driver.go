@@ -86,14 +86,13 @@ func (d Driver) Send(request mockingjay.Request) (mockingjay.Response, matching.
 
 func (d Driver) GetReport(location string) (matching.Report, error) {
 	var matchReport matching.Report
-	reportURL := d.adminServerURL + location
-	res, err := d.client.Get(reportURL)
+	res, err := d.client.Get(location)
 	if err != nil {
 		return matchReport, err
 	}
 	defer res.Body.Close()
 	if res.StatusCode != http.StatusOK {
-		return matchReport, fmt.Errorf("unexpected %d from %s", res.StatusCode, reportURL)
+		return matchReport, fmt.Errorf("unexpected %d from %s", res.StatusCode, location)
 	}
 	_ = json.NewDecoder(res.Body).Decode(&matchReport)
 	return matching.Report{}, nil

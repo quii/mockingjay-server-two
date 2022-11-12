@@ -19,15 +19,17 @@ const (
 )
 
 type App struct {
-	AdminRouter http.Handler
+	AdminRouter  http.Handler
+	AdminBaseURL string
 
 	endpoints    mockingjay.Endpoints
 	matchReports map[uuid.UUID]matching.Report
 }
 
-func New(endpoints mockingjay.Endpoints) *App {
+func New(endpoints mockingjay.Endpoints, adminBaseURL string) *App {
 	app := &App{
 		endpoints:    endpoints,
+		AdminBaseURL: adminBaseURL,
 		matchReports: make(map[uuid.UUID]matching.Report),
 	}
 
@@ -49,7 +51,7 @@ func (a *App) StubHandler(w http.ResponseWriter, r *http.Request) {
 
 	if !matchReport.HadMatch {
 		w.Header().Add(HeaderMockingjayMatched, "false")
-		w.Header().Add("location", ReportsPath+"/"+reportID.String())
+		w.Header().Add("location", a.AdminBaseURL+ReportsPath+"/"+reportID.String())
 		w.Header().Add("content-type", "application/json")
 		w.WriteHeader(http.StatusNotFound)
 		return

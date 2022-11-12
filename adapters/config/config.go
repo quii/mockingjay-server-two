@@ -1,7 +1,9 @@
 package config
 
 const (
-	DefaultAdminServerPort   = "8081"
+	DefaultAdminServerPort = "8081"
+	DefaultAdminBaseURL    = "http://localhost:" + DefaultAdminServerPort
+
 	DefaultStubServerPort    = "8080"
 	DefaultEndpointsLocation = "/examples/"
 )

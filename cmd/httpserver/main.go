@@ -17,6 +17,7 @@ func main() {
 
 	var (
 		adminPort       = fs.String("admin-port", config.DefaultAdminServerPort, "admin server port")
+		adminBaseURL    = fs.String("admin-base-url", config.DefaultAdminBaseURL, "admin base url")
 		stubPort        = fs.String("stub-port", config.DefaultStubServerPort, "stub server port")
 		endpointsFolder = fs.String("endpoints", config.DefaultEndpointsLocation, "folder for endpoints")
 		_               = fs.String("config", "", "config file (optional)")
@@ -37,9 +38,9 @@ func main() {
 		log.Fatal(err)
 	}
 
-	app := httpserver.New(endpoints)
+	app := httpserver.New(endpoints, *adminBaseURL)
 
-	printStartupMessage(endpointsFolder, adminPort, stubPort)
+	printStartupMessage(endpointsFolder, adminPort, stubPort, adminBaseURL)
 
 	go func() {
 		if err := http.ListenAndServe(":"+*adminPort, app.AdminRouter); err != nil {
@@ -52,7 +53,7 @@ func main() {
 	}
 }
 
-func printStartupMessage(endpointsFolder *string, adminPort *string, stubPort *string) {
+func printStartupMessage(endpointsFolder *string, adminPort *string, stubPort *string, adminURL *string) {
 	executable, err := os.Executable()
 	if err != nil {
 		log.Fatal(err)
@@ -67,5 +68,5 @@ func printStartupMessage(endpointsFolder *string, adminPort *string, stubPort *s
 	} else {
 		log.Printf("📂 endpoints loaded from %s/%s\n", executable, fullPathOfEndpointsFile)
 	}
-	log.Printf("💡 visit $HOST:%s/endpoints to see the current configuration", *adminPort)
+	log.Printf("💡 visit %s/endpoints to see the current configuration", *adminURL)
 }

@@ -22,11 +22,12 @@ func TestApp(t *testing.T) {
 	fixtures, err := mockingjay.NewFixturesFromCue(fixturesDir)
 	assert.NoError(t, err)
 
-	app := httpserver.New(examples)
+	app := httpserver.New(examples, "")
 	stubServer := httptest.NewServer(http.HandlerFunc(app.StubHandler))
 	adminServer := httptest.NewServer(app.AdminRouter)
 	defer adminServer.Close()
 	defer stubServer.Close()
+	app.AdminBaseURL = adminServer.URL
 
 	driver := httpserver.NewDriver(
 		stubServer.URL,
