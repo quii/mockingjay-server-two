@@ -101,7 +101,7 @@ func (a *App) viewReport(w http.ResponseWriter, r *http.Request) {
 
 	if report, exists := a.matchReports[uuid.MustParse(reportID)]; exists {
 		w.Header().Add("content-type", "application/json")
-		json.NewEncoder(w).Encode(report)
+		_ = json.NewEncoder(w).Encode(report)
 	} else {
 		http.NotFound(w, r)
 	}
@@ -109,5 +109,5 @@ func (a *App) viewReport(w http.ResponseWriter, r *http.Request) {
 
 func (a *App) getEndpoints(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("content-type", "application/json")
-	json.NewEncoder(w).Encode(a.endpoints)
+	_ = json.NewEncoder(w).Encode(a.endpoints)
 }

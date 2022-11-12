@@ -81,7 +81,7 @@ func (d Driver) Send(request mockingjay.Request) (mockingjay.Response, matching.
 		if res.StatusCode != http.StatusOK {
 			return mockingjay.Response{}, matchReport, fmt.Errorf("unexpected %d from %s", res.StatusCode, reportURL)
 		}
-		json.NewDecoder(res.Body).Decode(&matchReport)
+		_ = json.NewDecoder(res.Body).Decode(&matchReport)
 		return mockingjay.Response{}, matchReport, nil
 	}
 

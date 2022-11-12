@@ -52,7 +52,6 @@ func MockingjaySpec(t *testing.T, mj Mockingjay, examples mockingjay.Endpoints, 
 	t.Run("mj test fixtures", func(t *testing.T) {
 		for _, f := range testFixtures {
 			t.Run(f.Endpoint.Description, func(t *testing.T) {
-
 				assert.NoError(t, mj.Configure(f.Endpoint))
 				currentEndpoints, err := mj.GetCurrentConfiguration()
 				assert.NoError(t, err)
