@@ -23,9 +23,9 @@ func TestApp(t *testing.T) {
 	fixtures, err := mockingjay.NewFixturesFromCue(fixturesDir, os.DirFS(fixturesDir))
 	assert.NoError(t, err)
 
-	app := new(httpserver.App)
+	app := httpserver.New()
 	stubServer := httptest.NewServer(http.HandlerFunc(app.StubHandler))
-	configServer := httptest.NewServer(http.HandlerFunc(app.ConfigHandler))
+	configServer := httptest.NewServer(app.AdminRouter)
 	defer configServer.Close()
 	defer stubServer.Close()
 

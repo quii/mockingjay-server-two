@@ -16,24 +16,6 @@ type testFixtureCue struct {
 	Fixtures []TestFixture
 }
 
-//func load[DTO any, Data any](basePath string, configDir fs.FS) (Data, error) {
-//	var allData Data
-//
-//	dir, err := fs.ReadDir(configDir, ".")
-//	if err != nil {
-//		return allData, err
-//	}
-//
-//	for _, f := range dir {
-//		var data DTO
-//		path := basePath + f.Name()
-//		if err := cueconfig.Load(path, mj.Schema, nil, nil, &data); err != nil {
-//			return allData, fmt.Errorf("failed to parse %s, %v", path, err)
-//		}
-//		allData.Endpoints = append(allEndpoints.Endpoints, endpoints.Endpoints...)
-//	}
-//}
-
 func NewEndpointsFromCue(basePath string, configDir fs.FS) (Endpoints, error) {
 	var allEndpoints Endpoints
 

@@ -8,14 +8,33 @@ import (
 	"github.com/quii/mockingjay-server-two/domain/mockingjay/matching"
 )
 
+const (
+	HeaderMockingjayMatched = "x-mockingjay-matched"
+	ReportsPath             = "/match-reports"
+	ConfigEndpointsPath     = "/endpoints"
+)
+
 type App struct {
-	endpoints mockingjay.Endpoints
+	AdminRouter *http.ServeMux
+
+	endpoints    mockingjay.Endpoints
+	matchReports []matching.Report
 }
 
-const HeaderMockingjayMatched = "x-mockingjay-matched"
+func New() *App {
+	app := &App{}
+
+	adminRouter := http.NewServeMux()
+	adminRouter.HandleFunc(ReportsPath, app.matchReportsHandler)
+	adminRouter.HandleFunc(ConfigEndpointsPath, app.configEndpointsHandler)
+
+	app.AdminRouter = adminRouter
+	return app
+}
 
 func (a *App) StubHandler(w http.ResponseWriter, r *http.Request) {
 	matchReport := matching.NewReport(r, a.endpoints)
+	a.matchReports = append(a.matchReports, matchReport)
 
 	if !matchReport.HadMatch {
 		w.Header().Add(HeaderMockingjayMatched, "false")
@@ -38,7 +57,11 @@ func (a *App) StubHandler(w http.ResponseWriter, r *http.Request) {
 	_, _ = w.Write([]byte(res.Body))
 }
 
-func (a *App) ConfigHandler(w http.ResponseWriter, r *http.Request) {
+func (a *App) matchReportsHandler(w http.ResponseWriter, r *http.Request) {
+	_ = json.NewEncoder(w).Encode(a.matchReports)
+}
+
+func (a *App) configEndpointsHandler(w http.ResponseWriter, r *http.Request) {
 	var newEndpoints mockingjay.Endpoints
 	if err := json.NewDecoder(r.Body).Decode(&newEndpoints); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)

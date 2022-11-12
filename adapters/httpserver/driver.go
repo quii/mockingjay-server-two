@@ -22,6 +22,30 @@ type Driver struct {
 	Client          *http.Client
 }
 
+func (d Driver) GetReports() ([]matching.Report, error) {
+	var reports []matching.Report
+
+	matchReportURL := d.ConfigServerURL + ReportsPath
+
+	res, err := d.Client.Get(matchReportURL)
+
+	if err != nil {
+		return nil, err
+	}
+	defer res.Body.Close()
+
+	if res.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("unexpected status of %d from %s", res.StatusCode, matchReportURL)
+	}
+
+	err = json.NewDecoder(res.Body).Decode(&reports)
+	if err != nil {
+		return nil, err
+	}
+
+	return reports, nil
+}
+
 func (d Driver) Send(request mockingjay.Request) (mockingjay.Response, matching.Report, error) {
 	var matchReport matching.Report
 
@@ -59,7 +83,7 @@ func (d Driver) Configure(es ...mockingjay.Endpoint) error {
 		return err
 	}
 
-	req, err := http.NewRequest(http.MethodPost, d.ConfigServerURL, bytes.NewReader(endpointJSON))
+	req, err := http.NewRequest(http.MethodPost, d.ConfigServerURL+ConfigEndpointsPath, bytes.NewReader(endpointJSON))
 	if err != nil {
 		return err
 	}

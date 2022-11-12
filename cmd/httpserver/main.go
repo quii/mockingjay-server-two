@@ -8,10 +8,10 @@ import (
 )
 
 func main() {
-	app := new(httpserver.App)
+	app := httpserver.New()
 
 	go func() {
-		if err := http.ListenAndServe(":8081", http.HandlerFunc(app.ConfigHandler)); err != nil {
+		if err := http.ListenAndServe(":8081", app.AdminRouter); err != nil {
 			log.Fatal(err)
 		}
 	}()

@@ -22,6 +22,7 @@ type Configurer interface {
 
 type Client interface {
 	Send(request mockingjay.Request) (mockingjay.Response, matching.Report, error)
+	GetReports() ([]matching.Report, error)
 	//CheckEndpoints() ([]contract.Report, error) - wip
 }
 
@@ -41,6 +42,12 @@ func MockingjaySpec(t *testing.T, mockingjay Mockingjay, examples mockingjay.End
 				assertResponseMatches(t, endpoint.Response, res)
 			})
 		}
+
+		t.Run("a report of all requests made is available", func(t *testing.T) {
+			reports, err := mockingjay.GetReports()
+			assert.NoError(t, err)
+			assert.Equal(t, len(examples), len(reports))
+		})
 	})
 
 	t.Run("mj test fixtures", func(t *testing.T) {
