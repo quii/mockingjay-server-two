@@ -41,8 +41,13 @@ func main() {
 
 	app := httpserver.New(endpoints)
 
+	executable, err := os.Executable()
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	log.Printf("🚀 mockingjay launched! attempting to listen on %s for admin server, and %s for stub server", *adminPort, *stubPort)
-	log.Printf("📂 endpoints loaded from %s", *endpointsFolder)
+	log.Printf("📂 endpoints loaded from %s%s", executable, *endpointsFolder)
 
 	go func() {
 		if err := http.ListenAndServe(":"+*adminPort, app.AdminRouter); err != nil {
