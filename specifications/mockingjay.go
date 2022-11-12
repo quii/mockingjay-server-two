@@ -27,8 +27,7 @@ type Client interface {
 }
 
 func MockingjaySpec(t *testing.T, mockingjay Mockingjay, examples mockingjay.Endpoints, testFixtures []mockingjay.TestFixture) {
-	t.Run("mj can be configured with request/response pairs, which can then be called by a client with a request to get matching response", func(t *testing.T) {
-		assert.NoError(t, mockingjay.Configure(examples...))
+	t.Run("mj can be pre-configured with request/response pairs (examples), which can then be called by a client with a request to get matching response", func(t *testing.T) {
 
 		for _, endpoint := range examples {
 			t.Run(endpoint.Description, func(t *testing.T) {

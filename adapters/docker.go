@@ -36,6 +36,9 @@ func StartDockerServer(
 	container, err := testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
 		ContainerRequest: req,
 		Started:          true,
+		ProviderType:     0,
+		Logger:           nil,
+		Reuse:            false,
 	})
 
 	assert.NoError(t, err)

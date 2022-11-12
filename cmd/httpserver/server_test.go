@@ -24,19 +24,21 @@ func TestGreeterServer(t *testing.T) {
 		t.Skip()
 	}
 
-	examples, err := mockingjay.NewEndpointsFromCue(examplesDir)
-	assert.NoError(t, err)
 	fixtures, err := mockingjay.NewFixturesFromCue(fixturesDir)
 	assert.NoError(t, err)
+	examples, err := mockingjay.NewEndpointsFromCue(examplesDir)
+	assert.NoError(t, err)
 
-	driver := httpserver.NewDriver(
-		fmt.Sprintf("http://localhost:%s", config.DefaultStubServerPort),
-		fmt.Sprintf("http://localhost:%s", config.DefaultAdminServerPort),
-		&http.Client{
-			Timeout: 1 * time.Second,
-		},
-	)
+	t.Run("loading configuration via admin server", func(t *testing.T) {
+		driver := httpserver.NewDriver(
+			fmt.Sprintf("http://localhost:%s", config.DefaultStubServerPort),
+			fmt.Sprintf("http://localhost:%s", config.DefaultAdminServerPort),
+			&http.Client{
+				Timeout: 1 * time.Second,
+			},
+		)
 
-	adapters.StartDockerServer(t, config.DefaultStubServerPort, config.DefaultAdminServerPort)
-	specifications.MockingjaySpec(t, driver, examples, fixtures)
+		adapters.StartDockerServer(t, config.DefaultStubServerPort, config.DefaultAdminServerPort)
+		specifications.MockingjaySpec(t, driver, examples, fixtures)
+	})
 }

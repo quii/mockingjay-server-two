@@ -5,10 +5,16 @@ import (
 	"net/http"
 
 	"github.com/quii/mockingjay-server-two/adapters/httpserver"
+	"github.com/quii/mockingjay-server-two/domain/mockingjay"
 )
 
 func main() {
-	app := httpserver.New()
+	endpoints, err := mockingjay.NewEndpointsFromCue("examples/")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	app := httpserver.New(endpoints)
 
 	go func() {
 		if err := http.ListenAndServe(":8081", app.AdminRouter); err != nil {

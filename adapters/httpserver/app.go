@@ -21,8 +21,8 @@ type App struct {
 	matchReports []matching.Report
 }
 
-func New() *App {
-	app := &App{}
+func New(endpoints mockingjay.Endpoints) *App {
+	app := &App{endpoints: endpoints}
 
 	adminRouter := http.NewServeMux()
 	adminRouter.HandleFunc(ReportsPath, app.matchReportsHandler)
