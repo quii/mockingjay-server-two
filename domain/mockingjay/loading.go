@@ -3,6 +3,7 @@ package mockingjay
 import (
 	"fmt"
 	"io/fs"
+	"os"
 
 	"github.com/cue-exp/cueconfig"
 	"github.com/quii/mockingjay-server-two"
@@ -16,10 +17,10 @@ type testFixtureCue struct {
 	Fixtures []TestFixture
 }
 
-func NewEndpointsFromCue(basePath string, configDir fs.FS) (Endpoints, error) {
+func NewEndpointsFromCue(basePath string) (Endpoints, error) {
 	var allEndpoints Endpoints
 
-	dir, err := fs.ReadDir(configDir, ".")
+	dir, err := fs.ReadDir(os.DirFS(basePath), ".")
 	if err != nil {
 		return Endpoints{}, err
 	}
@@ -36,10 +37,10 @@ func NewEndpointsFromCue(basePath string, configDir fs.FS) (Endpoints, error) {
 	return allEndpoints, nil
 }
 
-func NewFixturesFromCue(basePath string, configDir fs.FS) ([]TestFixture, error) {
+func NewFixturesFromCue(basePath string) ([]TestFixture, error) {
 	var allFixtures []TestFixture
 
-	dir, err := fs.ReadDir(configDir, ".")
+	dir, err := fs.ReadDir(os.DirFS(basePath), ".")
 	if err != nil {
 		return nil, err
 	}

@@ -3,7 +3,6 @@ package httpserver_test
 import (
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"testing"
 
 	"github.com/alecthomas/assert/v2"
@@ -18,9 +17,9 @@ const (
 )
 
 func TestApp(t *testing.T) {
-	examples, err := mockingjay.NewEndpointsFromCue(examplesDir, os.DirFS(examplesDir))
+	examples, err := mockingjay.NewEndpointsFromCue(examplesDir)
 	assert.NoError(t, err)
-	fixtures, err := mockingjay.NewFixturesFromCue(fixturesDir, os.DirFS(fixturesDir))
+	fixtures, err := mockingjay.NewFixturesFromCue(fixturesDir)
 	assert.NoError(t, err)
 
 	app := httpserver.New()
@@ -29,7 +28,11 @@ func TestApp(t *testing.T) {
 	defer adminServer.Close()
 	defer stubServer.Close()
 
-	driver := httpserver.NewDriver(stubServer.URL, adminServer.URL, &http.Client{})
+	driver := httpserver.NewDriver(
+		stubServer.URL,
+		adminServer.URL,
+		&http.Client{},
+	)
 
 	specifications.MockingjaySpec(t, driver, examples, fixtures)
 }
