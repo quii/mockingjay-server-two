@@ -2,6 +2,11 @@ baseRequest: {
 	method: "GET"
 }
 
+baseResponse: {
+	status: 200
+	body:   "hello, world"
+}
+
 fixtures: [
 	{
 		endpoint: {
@@ -9,10 +14,7 @@ fixtures: [
 			request:     baseRequest & {
 				path: "/hello/world"
 			}
-			response: {
-				status: 200
-				body:   "hello, world"
-			}
+			response: baseResponse
 		}
 		matchingRequests: [
 			{
@@ -27,6 +29,32 @@ fixtures: [
 				description: "path is different"
 				request:     baseRequest & {
 					path: "/hello/mars"
+				}
+			},
+		]
+	},
+	{
+		endpoint: {
+			description: "matching of regex"
+			request:     baseRequest & {
+				path:      "/happy-birthday/elodie"
+				regexPath: "\/happy-birthday\/[a-z]+"
+			}
+			response: baseResponse
+		}
+		matchingRequests: [
+			{
+				description: "matches regex"
+				request:     baseRequest & {
+					path: "/happy-birthday/milo"
+				}
+			},
+		]
+		nonMatchingRequests: [
+			{
+				description: "path doesn't match regex"
+				request:     baseRequest & {
+					path: "/bonjour/milo"
 				}
 			},
 		]

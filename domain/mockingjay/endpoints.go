@@ -29,10 +29,11 @@ type (
 	}
 
 	Request struct {
-		Method  string  `json:"method,omitempty"`
-		Path    string  `json:"path,omitempty"`
-		Headers Headers `json:"headers,omitempty"`
-		Body    string  `json:"body,omitempty"`
+		Method    string  `json:"method,omitempty"`
+		RegexPath string  `json:"regexPath,omitempty"`
+		Path      string  `json:"path,omitempty"`
+		Headers   Headers `json:"headers,omitempty"`
+		Body      string  `json:"body,omitempty"`
 	}
 
 	Headers map[string][]string

@@ -10,8 +10,9 @@ endpoints: [...#Endpoint]
 }
 
 #Request: {
-	method: *"GET" | "POST" | "PATCH" | "PUT" | "DELETE" | "OPTIONS" | "HEAD"
-	path:   string
+	method:     *"GET" | "POST" | "PATCH" | "PUT" | "DELETE" | "OPTIONS" | "HEAD"
+	path:       string
+	regexPath?: string | ""
 	headers?: [string]: [...string]
 	body: string | *""
 }
