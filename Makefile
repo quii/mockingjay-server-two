@@ -4,3 +4,6 @@ build:
 
 unit-tests:
 	go test -short ./...
+
+lint:
+	golangci-lint run

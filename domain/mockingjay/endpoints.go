@@ -3,6 +3,7 @@ package mockingjay
 import (
 	"io"
 	"net/http"
+	"regexp"
 	"strings"
 )
 
@@ -34,12 +35,32 @@ type (
 		Path      string  `json:"path,omitempty"`
 		Headers   Headers `json:"headers,omitempty"`
 		Body      string  `json:"body,omitempty"`
+
+		compiledRegex *regexp.Regexp
 	}
 
 	Headers map[string][]string
 )
 
-func (r Request) ToHTTPRequest(basePath string) *http.Request {
+func (r *Request) MatchPath(path string) bool {
+	if r.compiledRegex != nil {
+		return r.compiledRegex.MatchString(path)
+	}
+	return r.Path == path
+}
+
+func (r *Request) Compile() error {
+	if r.RegexPath != "" {
+		rgx, err := regexp.Compile(r.RegexPath)
+		if err != nil {
+			return err
+		}
+		r.compiledRegex = rgx
+	}
+	return nil
+}
+
+func (r *Request) ToHTTPRequest(basePath string) *http.Request {
 	req, _ := http.NewRequest(r.Method, basePath+r.Path, nil)
 
 	if r.Body != "" {

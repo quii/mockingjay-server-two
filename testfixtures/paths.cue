@@ -49,6 +49,12 @@ fixtures: [
 					path: "/happy-birthday/milo"
 				}
 			},
+			{
+				description: "matches another one"
+				request:     baseRequest & {
+					path: "/happy-birthday/sarah"
+				}
+			},
 		]
 		nonMatchingRequests: [
 			{

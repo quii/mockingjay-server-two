@@ -4,7 +4,6 @@ import (
 	"io"
 	"net/http"
 	"net/textproto"
-	"regexp"
 
 	"github.com/quii/mockingjay-server-two/domain/mockingjay"
 )
@@ -36,24 +35,13 @@ func newMatcher(req *http.Request) func(mockingjay.Endpoint) RequestMatch {
 		return RequestMatch{
 			Endpoint: e,
 			Match: Match{
-				Path:    matchPath(e, req),
+				Path:    e.Request.MatchPath(req.URL.Path),
 				Method:  e.Request.Method == req.Method,
 				Headers: matchHeaders(e, req.Header),
 				Body:    string(body) == e.Request.Body,
 			},
 		}
 	}
-}
-
-func matchPath(e mockingjay.Endpoint, req *http.Request) bool {
-	if e.Request.RegexPath != "" {
-		reg, err := regexp.Compile(e.Request.RegexPath)
-		if err != nil {
-			panic(err) //todo: move all this compilation stuff to loading
-		}
-		return reg.MatchString(req.URL.Path)
-	}
-	return e.Request.Path == req.URL.String()
 }
 
 func matchHeaders(e mockingjay.Endpoint, incomingHeaders http.Header) bool {

@@ -45,5 +45,13 @@ func (a *App) ConfigHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	a.endpoints = newEndpoints
+
+	for i := range a.endpoints {
+		if err := a.endpoints[i].Request.Compile(); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+	}
+
 	w.WriteHeader(http.StatusAccepted)
 }
