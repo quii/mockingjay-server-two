@@ -38,6 +38,7 @@ func (a *App) StubHandler(w http.ResponseWriter, r *http.Request) {
 
 	if !matchReport.HadMatch {
 		w.Header().Add(HeaderMockingjayMatched, "false")
+		w.Header().Add("content-type", "application/json")
 		w.WriteHeader(http.StatusNotFound)
 		if err := json.NewEncoder(w).Encode(matchReport); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)

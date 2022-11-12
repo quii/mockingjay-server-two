@@ -7,6 +7,7 @@ require (
 	github.com/alecthomas/assert/v2 v2.2.0
 	github.com/cue-exp/cueconfig v0.0.1
 	github.com/docker/go-connections v0.4.0
+	github.com/peterbourgon/ff/v3 v3.3.0
 	github.com/testcontainers/testcontainers-go v0.15.0
 	golang.org/x/exp v0.0.0-20221031165847-c99f073a8326
 )
