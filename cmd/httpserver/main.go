@@ -1,9 +1,7 @@
 package main
 
 import (
-	"errors"
 	"flag"
-	"io"
 	"log"
 	"net/http"
 	"os"
@@ -20,14 +18,14 @@ func main() {
 	var (
 		adminPort       = fs.String("admin-port", config.DefaultAdminServerPort, "admin server port")
 		stubPort        = fs.String("stub-port", config.DefaultStubServerPort, "stub server port")
-		endpointsFolder = fs.String("endpoints", "examples/", "folder for endpoints")
+		endpointsFolder = fs.String("endpoints", config.DefaultEndpointsLocation, "folder for endpoints")
 		_               = fs.String("config", "", "config file (optional)")
 	)
 
 	err := ff.Parse(fs, os.Args[1:],
 		ff.WithEnvVarPrefix("mockingjay"),
 		ff.WithConfigFileFlag("config"),
-		ff.WithConfigFileParser(CueConfigLoader),
+		ff.WithConfigFileParser(ff.PlainParser),
 	)
 
 	if err != nil {
@@ -41,13 +39,7 @@ func main() {
 
 	app := httpserver.New(endpoints)
 
-	executable, err := os.Executable()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	log.Printf("🚀 mockingjay launched! attempting to listen on %s for admin server, and %s for stub server", *adminPort, *stubPort)
-	log.Printf("📂 endpoints loaded from %s%s", executable, *endpointsFolder)
+	printStartupMessage(endpointsFolder, adminPort, stubPort)
 
 	go func() {
 		if err := http.ListenAndServe(":"+*adminPort, app.AdminRouter); err != nil {
@@ -60,6 +52,19 @@ func main() {
 	}
 }
 
-func CueConfigLoader(r io.Reader, set func(name, value string) error) error {
-	return errors.New("not implemented yet! https://github.com/quii/mockingjay-server-two/issues/10")
+func printStartupMessage(endpointsFolder *string, adminPort *string, stubPort *string) {
+	executable, err := os.Executable()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fullPathOfEndpointsFile := executable + *endpointsFolder
+
+	log.Printf("🚀 mockingjay launched! attempting to listen on %s for admin server, and %s for stub server\n", *adminPort, *stubPort)
+
+	if *endpointsFolder == config.DefaultEndpointsLocation {
+		log.Println("‼️  no endpoints specified, loading default examples")
+	} else {
+		log.Printf("📂 endpoints loaded from %s/%s", executable, fullPathOfEndpointsFile)
+	}
 }
