@@ -12,12 +12,12 @@ type StubServerService interface {
 }
 
 type StubHandler struct {
-	AdminBaseURL string
+	adminBaseURL string
 	service      StubServerService
 }
 
-func NewStubHandler(adminBaseURL string, service StubServerService) *StubHandler {
-	return &StubHandler{AdminBaseURL: adminBaseURL, service: service}
+func NewStubHandler(service StubServerService, adminBaseURL string) *StubHandler {
+	return &StubHandler{adminBaseURL: adminBaseURL, service: service}
 }
 
 func (s *StubHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -25,7 +25,7 @@ func (s *StubHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	if !matchReport.HadMatch {
 		w.Header().Add(HeaderMockingjayMatched, "false")
-		w.Header().Add("location", s.AdminBaseURL+ReportsPath+"/"+matchReport.ID.String())
+		w.Header().Add("location", s.adminBaseURL+ReportsPath+"/"+matchReport.ID.String())
 		w.Header().Add("content-type", "application/json")
 		w.WriteHeader(http.StatusNotFound)
 		return

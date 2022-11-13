@@ -6,5 +6,5 @@ type MockingjayServerService interface {
 }
 
 func NewServer(service MockingjayServerService, adminBaseURL string) (*StubHandler, *AdminHandler) {
-	return NewStubHandler(adminBaseURL, service), NewAdminHandler(service)
+	return NewStubHandler(service, adminBaseURL), NewAdminHandler(service)
 }

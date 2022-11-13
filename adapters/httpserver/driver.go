@@ -11,11 +11,6 @@ import (
 	"github.com/quii/mockingjay-server-two/domain/mockingjay/matching"
 )
 
-/*
-notes
-- we can have mj listen on two ports, one for mj mgmt and the other for the stub server so we can configure without conflict. for now though, just the one
-*/
-
 type Driver struct {
 	stubServerURL      string
 	client             *http.Client
@@ -92,7 +87,10 @@ func (d Driver) GetReport(location string) (matching.Report, error) {
 	}
 	defer res.Body.Close()
 	if res.StatusCode != http.StatusOK {
-		return matchReport, fmt.Errorf("unexpected %d from %s", res.StatusCode, location)
+		return matchReport, ErrReportNotFound{
+			StatusCode: res.StatusCode,
+			Location:   location,
+		}
 	}
 	_ = json.NewDecoder(res.Body).Decode(&matchReport)
 	return matching.Report{}, nil
@@ -136,4 +134,13 @@ func (d Driver) GetCurrentConfiguration() (mockingjay.Endpoints, error) {
 		return nil, err
 	}
 	return endpoints, nil
+}
+
+type ErrReportNotFound struct {
+	StatusCode int
+	Location   string
+}
+
+func (e ErrReportNotFound) Error() string {
+	return fmt.Sprintf("unexpected %d from %s", e.StatusCode, e.Location)
 }
