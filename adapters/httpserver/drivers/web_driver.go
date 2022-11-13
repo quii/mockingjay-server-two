@@ -61,17 +61,36 @@ func (d WebDriver) GetCurrentConfiguration() (mockingjay.Endpoints, error) {
 				Method:    getRequestField("method"),
 				RegexPath: getRequestField("regexPath"),
 				Path:      getRequestField("path"),
-				Headers:   nil,
+				Headers:   extractHeadersFromMarkup(el, `td[data-request-field=headers] dl`),
 				Body:      getRequestField("body"),
 			},
 			Response: mockingjay.Response{
 				Status:  statusCode,
 				Body:    getResponseField("body"),
-				Headers: nil,
+				Headers: extractHeadersFromMarkup(el, `td[data-response-field=headers] dl`),
 			},
 		})
 	}
 	return endpoints, nil
+}
+
+func extractHeadersFromMarkup(el *rod.Element, selector string) mockingjay.Headers {
+	var requestHeaders mockingjay.Headers
+	dl := el.MustElement(selector)
+	listItems := dl.MustElements("*")
+
+	if len(listItems) > 0 {
+		requestHeaders = make(mockingjay.Headers)
+		currentKey := ""
+		for _, item := range listItems {
+			if item.String() == "<dt>" {
+				currentKey = item.MustText()
+				continue
+			}
+			requestHeaders[currentKey] = append(requestHeaders[currentKey], item.MustText())
+		}
+	}
+	return requestHeaders
 }
 
 func (d WebDriver) Configure(es ...mockingjay.Endpoint) error {

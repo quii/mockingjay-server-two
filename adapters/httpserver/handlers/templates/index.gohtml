@@ -27,7 +27,7 @@
             <td data-request-field="method">{{.Request.Method}}</td>
             <td data-request-field="path">{{.Request.Path}}</td>
             <td data-request-field="regexPath">{{.Request.RegexPath}}</td>
-            <td data-request-field="body"><code>{{.Request.Body}}</code></td>
+            <td data-request-field="body">{{.Request.Body}}</td>
             <td data-request-field="headers">
                 <dl>
                 {{range $key, $values := .Request.Headers}}
@@ -40,7 +40,7 @@
             </td>
 
             <td data-response-field="status">{{.Response.Status}}</td>
-            <td data-response-field="body"><code>{{.Response.Body}}</code></td>
+            <td data-response-field="body">{{.Response.Body}}</td>
             <td data-response-field="headers">
                 <dl>
                     {{range $key, $values := .Response.Headers}}
