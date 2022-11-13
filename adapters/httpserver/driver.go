@@ -25,7 +25,7 @@ func NewDriver(stubServerURL string, adminServerURL string, client *http.Client)
 		adminServerURL:     adminServerURL,
 		client:             client,
 		matchReportURL:     adminServerURL + ReportsPath,
-		configEndpointsURL: adminServerURL + ConfigEndpointsPath,
+		configEndpointsURL: adminServerURL + EndpointsPath,
 	}
 }
 

@@ -86,7 +86,7 @@ func TestApp(t *testing.T) {
 			})
 
 			t.Run("invalid structure", func(t *testing.T) {
-				url := adminServer.URL + httpserver.ConfigEndpointsPath
+				url := adminServer.URL + httpserver.EndpointsPath
 				req, _ := http.NewRequest(http.MethodPut, url, strings.NewReader("not valid JSON"))
 				res, err := client.Do(req)
 				assert.NoError(t, err)

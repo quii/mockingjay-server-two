@@ -2,7 +2,6 @@ package httpserver
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 
 	"github.com/google/uuid"
@@ -14,7 +13,7 @@ import (
 const (
 	HeaderMockingjayMatched = "x-mockingjay-matched"
 	ReportsPath             = "/match-reports"
-	ConfigEndpointsPath     = "/endpoints"
+	EndpointsPath           = "/endpoints"
 )
 
 type AdminServiceService interface {
@@ -35,17 +34,39 @@ func NewAdminHandler(service AdminServiceService) *AdminHandler {
 	}
 
 	adminRouter := mux.NewRouter()
-	adminRouter.HandleFunc(ReportsPath, app.allReports)
-	adminRouter.HandleFunc(fmt.Sprintf("%s/{reportID}", ReportsPath), app.viewReport)
-	adminRouter.HandleFunc(ConfigEndpointsPath, app.putEndpoints).Methods(http.MethodPut)
-	adminRouter.HandleFunc(ConfigEndpointsPath, app.getEndpoints).Methods(http.MethodGet)
+	adminRouter.HandleFunc(ReportsPath, app.allReports).Methods(http.MethodGet)
+	adminRouter.HandleFunc(ReportsPath+"/{reportID}", app.viewReport).Methods(http.MethodGet)
+	adminRouter.HandleFunc(EndpointsPath, app.putEndpoints).Methods(http.MethodPut)
+	adminRouter.HandleFunc(EndpointsPath, app.getEndpoints).Methods(http.MethodGet)
 
 	app.Handler = adminRouter
 	return app
 }
 
 func (a *AdminHandler) allReports(w http.ResponseWriter, _ *http.Request) {
+	writeJSONContentType(w)
 	_ = json.NewEncoder(w).Encode(a.service.GetReports())
+}
+
+func (a *AdminHandler) getEndpoints(w http.ResponseWriter, _ *http.Request) {
+	writeJSONContentType(w)
+	_ = json.NewEncoder(w).Encode(a.service.GetEndpoints())
+}
+
+func (a *AdminHandler) viewReport(w http.ResponseWriter, r *http.Request) {
+	reportID, err := uuid.Parse(mux.Vars(r)["reportID"])
+	if err != nil {
+		http.NotFound(w, r)
+		return
+	}
+
+	if report, exists := a.service.GetReport(reportID); exists {
+		writeJSONContentType(w)
+		_ = json.NewEncoder(w).Encode(report)
+		return
+	}
+
+	http.NotFound(w, r)
 }
 
 func (a *AdminHandler) putEndpoints(w http.ResponseWriter, r *http.Request) {
@@ -62,21 +83,6 @@ func (a *AdminHandler) putEndpoints(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusAccepted)
 }
 
-func (a *AdminHandler) viewReport(w http.ResponseWriter, r *http.Request) {
-	reportID, err := uuid.Parse(mux.Vars(r)["reportID"])
-	if err != nil {
-		http.NotFound(w, r)
-		return
-	}
-	if report, exists := a.service.GetReport(reportID); exists {
-		w.Header().Add("content-type", "application/json")
-		_ = json.NewEncoder(w).Encode(report)
-	} else {
-		http.NotFound(w, r)
-	}
-}
-
-func (a *AdminHandler) getEndpoints(w http.ResponseWriter, _ *http.Request) {
+func writeJSONContentType(w http.ResponseWriter) {
 	w.Header().Add("content-type", "application/json")
-	_ = json.NewEncoder(w).Encode(a.service.GetEndpoints())
 }
