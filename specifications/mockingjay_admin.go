@@ -1,6 +1,7 @@
 package specifications
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/alecthomas/assert/v2"
@@ -24,16 +25,27 @@ func MockingjayAdmin(t *testing.T, admin Admin, examples mockingjay.Endpoints) {
 
 		for i := range examples {
 			assert.Equal(t, examples[i].Description, configuration[i].Description)
-			assert.Equal(t, examples[i].Request.Method, configuration[i].Request.Method)
-			assert.Equal(t, examples[i].Request.RegexPath, configuration[i].Request.RegexPath)
-			assert.Equal(t, examples[i].Request.Path, configuration[i].Request.Path)
-			assert.Equal(t, examples[i].Request.Body, configuration[i].Request.Body)
-			assert.Equal(t, examples[i].Request.Headers, configuration[i].Request.Headers)
 
-			assert.Equal(t, examples[i].Response.Status, configuration[i].Response.Status)
-			//assert.Equal(t, examples[i].Response.Body, configuration[i].Response.Body)
-			assert.Equal(t, examples[i].Response.Headers, configuration[i].Response.Headers)
+			originalRequest := examples[i].Request
+			retrievedRequest := configuration[i].Request
+			assert.Equal(t, originalRequest.Method, retrievedRequest.Method)
+			assert.Equal(t, originalRequest.RegexPath, retrievedRequest.RegexPath)
+			assert.Equal(t, originalRequest.Path, retrievedRequest.Path)
+			assert.Equal(t, originalRequest.Body, retrievedRequest.Body)
+			assert.Equal(t, originalRequest.Headers, retrievedRequest.Headers)
+
+			originalResponse := examples[i].Response
+			retrievedResponse := configuration[i].Response
+			assert.Equal(t, originalResponse.Status, retrievedResponse.Status)
+			assert.Equal(t, fudgeTheWhiteSpace(originalResponse.Body), fudgeTheWhiteSpace(retrievedResponse.Body))
+			assert.Equal(t, originalResponse.Headers, retrievedResponse.Headers)
 		}
-
 	})
+}
+
+func fudgeTheWhiteSpace(in string) string {
+	in = strings.Replace(in, "\t", "", -1)
+	in = strings.Replace(in, "\n", "", -1)
+	in = strings.Replace(in, " ", "", -1)
+	return in
 }
