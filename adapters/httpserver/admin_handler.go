@@ -44,13 +44,11 @@ func NewAdminHandler(service AdminServiceService) *AdminHandler {
 }
 
 func (a *AdminHandler) allReports(w http.ResponseWriter, _ *http.Request) {
-	writeJSONContentType(w)
-	_ = json.NewEncoder(w).Encode(a.service.GetReports())
+	writeJSON(w, a.service.GetReports())
 }
 
 func (a *AdminHandler) getEndpoints(w http.ResponseWriter, _ *http.Request) {
-	writeJSONContentType(w)
-	_ = json.NewEncoder(w).Encode(a.service.GetEndpoints())
+	writeJSON(w, a.service.GetEndpoints())
 }
 
 func (a *AdminHandler) viewReport(w http.ResponseWriter, r *http.Request) {
@@ -61,8 +59,7 @@ func (a *AdminHandler) viewReport(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if report, exists := a.service.GetReport(reportID); exists {
-		writeJSONContentType(w)
-		_ = json.NewEncoder(w).Encode(report)
+		writeJSON(w, report)
 		return
 	}
 
@@ -83,6 +80,7 @@ func (a *AdminHandler) putEndpoints(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusAccepted)
 }
 
-func writeJSONContentType(w http.ResponseWriter) {
+func writeJSON(w http.ResponseWriter, content any) {
 	w.Header().Add("content-type", "application/json")
+	_ = json.NewEncoder(w).Encode(content)
 }
