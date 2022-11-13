@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/go-rod/rod"
 	"github.com/quii/mockingjay-server-two/adapters/httpserver/handlers"
@@ -42,7 +43,33 @@ func (d WebDriver) GetCurrentConfiguration() (mockingjay.Endpoints, error) {
 	}
 	var endpoints mockingjay.Endpoints
 	for _, el := range elements {
-		endpoints = append(endpoints, mockingjay.Endpoint{Description: el.MustText()})
+		getRequestField := func(field string) string {
+			return el.MustElement(fmt.Sprintf(`td[data-request-field=%s]`, field)).MustText()
+		}
+		getResponseField := func(field string) string {
+			return el.MustElement(fmt.Sprintf(`td[data-response-field=%s]`, field)).MustText()
+		}
+		statusText := getResponseField("status")
+		statusCode, err := strconv.Atoi(statusText)
+		if err != nil {
+			return nil, err
+		}
+
+		endpoints = append(endpoints, mockingjay.Endpoint{
+			Description: el.MustElement(`td[data-field=description`).MustText(),
+			Request: mockingjay.Request{
+				Method:    getRequestField("method"),
+				RegexPath: getRequestField("regexPath"),
+				Path:      getRequestField("path"),
+				Headers:   nil,
+				Body:      getRequestField("body"),
+			},
+			Response: mockingjay.Response{
+				Status:  statusCode,
+				Body:    getResponseField("body"),
+				Headers: nil,
+			},
+		})
 	}
 	return endpoints, nil
 }

@@ -22,17 +22,17 @@
     <tbody>
     {{range .}}
         <tr>
-            <td>{{.Description}}</td>
+            <td data-field="description">{{.Description}}</td>
 
-            <td>{{.Request.Method}}</td>
-            <td>{{.Request.Path}}</td>
-            <td>{{.Request.RegexPath}}</td>
-            <td>{{.Request.Body}}</td>
-            <td>{{.Request.Headers}}</td>
+            <td data-request-field="method">{{.Request.Method}}</td>
+            <td data-request-field="path">{{.Request.Path}}</td>
+            <td data-request-field="regexPath">{{.Request.RegexPath}}</td>
+            <td data-request-field="body">{{.Request.Body}}</td>
+            <td data-request-field="headers">{{.Request.Headers}}</td>
 
-            <td>{{.Response.Status}}</td>
-            <td>{{.Response.Body}}</td>
-            <td>{{.Response.Headers}}</td>
+            <td data-response-field="status">{{.Response.Status}}</td>
+            <td data-response-field="body">{{.Response.Body}}</td>
+            <td data-response-field="headers">{{.Response.Headers}}</td>
         </tr>
     {{end}}
     </tbody>
