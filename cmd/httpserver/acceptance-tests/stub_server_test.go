@@ -9,7 +9,7 @@ import (
 	"github.com/alecthomas/assert/v2"
 	"github.com/quii/mockingjay-server-two/adapters"
 	"github.com/quii/mockingjay-server-two/adapters/config"
-	"github.com/quii/mockingjay-server-two/adapters/httpserver"
+	"github.com/quii/mockingjay-server-two/adapters/httpserver/drivers"
 	"github.com/quii/mockingjay-server-two/domain/mockingjay"
 	"github.com/quii/mockingjay-server-two/specifications"
 )
@@ -28,17 +28,26 @@ func TestGreeterServer(t *testing.T) {
 	assert.NoError(t, err)
 	examples, err := mockingjay.NewEndpointsFromCue(examplesDir)
 	assert.NoError(t, err)
+	adapters.StartDockerServer(t, config.DefaultStubServerPort, config.DefaultAdminServerPort)
 
 	t.Run("loading configuration via admin server", func(t *testing.T) {
-		driver := httpserver.NewDriver(
+		driver := drivers.NewHTTPDriver(
 			fmt.Sprintf("http://localhost:%s", config.DefaultStubServerPort),
 			fmt.Sprintf("http://localhost:%s", config.DefaultAdminServerPort),
 			&http.Client{
 				Timeout: 1 * time.Second,
 			},
 		)
+		specifications.MockingjayStubServerSpec(t, driver, examples, fixtures)
+	})
 
-		adapters.StartDockerServer(t, config.DefaultStubServerPort, config.DefaultAdminServerPort)
-		specifications.MockingjaySpec(t, driver, examples, fixtures)
+	t.Run("web interface", func(t *testing.T) {
+		driver := drivers.NewWebDriver(
+			fmt.Sprintf("http://localhost:%s", config.DefaultAdminServerPort),
+			&http.Client{
+				Timeout: 1 * time.Second,
+			},
+		)
+		specifications.MockingjayAdmin(t, driver, examples)
 	})
 }

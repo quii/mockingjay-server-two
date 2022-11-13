@@ -1,0 +1,28 @@
+{{define "top"}}<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>mockingjay server</title>
+    <meta charset="UTF-8"/>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://unpkg.com/terminal.css@0.7.2/dist/terminal.min.css" />
+</head>
+<body>
+<div class="container">
+    <div class="terminal-nav">
+        <header class="terminal-logo">
+            <div class="logo terminal-prompt"><a href="https://terminalcss.xyz" class="no-style">mockingjay server</a></div>
+        </header>
+        <nav class="terminal-menu">
+            <ul vocab="https://schema.org/" typeof="BreadcrumbList">
+                <li><a href="/" class="menu-item active"><span>Endpoints</span></a><meta property="position"></li>
+                <li property="itemListElement" typeof="ListItem"><a href="/matches" property="item" typeof="WebPage" class="menu-item"><span property="name">Matches</span></a><meta property="position" content="1"></li>
+                <li property="itemListElement" typeof="ListItem"><a href="https://twitter.com/quii" property="item" typeof="WebPage" class="menu-item"><span property="name">@quii</span></a><meta property="position" content="2"></li>
+                <li property="itemListElement" typeof="ListItem"><a href="https://github.com/quii" property="item" typeof="WebPage" class="menu-item"><span property="name">Github</span></a><meta property="position" content="3"></li>
+                <li style="height: 28px;"><span></span></li>
+            </ul>
+        </nav>
+    </div>
+</div>
+<div class="container">
+{{end}}

@@ -16,18 +16,12 @@ type Mockingjay interface {
 	Client
 }
 
-type Admin interface {
-	Configure(endpoints ...mockingjay.Endpoint) error
-	GetReports() ([]matching.Report, error)
-	GetCurrentConfiguration() (mockingjay.Endpoints, error)
-}
-
 type Client interface {
 	Send(request mockingjay.Request) (mockingjay.Response, matching.Report, error)
 	//CheckEndpoints() ([]contract.Report, error) - wip
 }
 
-func MockingjaySpec(t *testing.T, mj Mockingjay, examples mockingjay.Endpoints, testFixtures []mockingjay.TestFixture) {
+func MockingjayStubServerSpec(t *testing.T, mj Mockingjay, examples mockingjay.Endpoints, testFixtures []mockingjay.TestFixture) {
 	t.Run("mj can be pre-configured with request/response pairs (examples), which can then be called by a client with a request to get matching response", func(t *testing.T) {
 		for _, endpoint := range examples {
 			t.Run(endpoint.Description, func(t *testing.T) {

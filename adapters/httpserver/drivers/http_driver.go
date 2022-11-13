@@ -1,4 +1,4 @@
-package httpserver
+package drivers
 
 import (
 	"bytes"
@@ -7,31 +7,30 @@ import (
 	"io"
 	"net/http"
 
+	"github.com/quii/mockingjay-server-two/adapters/httpserver/handlers"
 	"github.com/quii/mockingjay-server-two/domain/mockingjay"
 	"github.com/quii/mockingjay-server-two/domain/mockingjay/matching"
 )
 
 type Driver struct {
-	stubServerURL      string
-	client             *http.Client
-	matchReportURL     string
-	configEndpointsURL string
-	adminServerURL     string
+	stubServerURL     string
+	adminReportsURL   string
+	adminEndpointsURL string
+	client            *http.Client
 }
 
-func NewDriver(stubServerURL string, adminServerURL string, client *http.Client) *Driver {
+func NewHTTPDriver(stubServerURL string, adminServerURL string, client *http.Client) *Driver {
 	return &Driver{
-		stubServerURL:      stubServerURL,
-		adminServerURL:     adminServerURL,
-		client:             client,
-		matchReportURL:     adminServerURL + ReportsPath,
-		configEndpointsURL: adminServerURL + EndpointsPath,
+		stubServerURL:     stubServerURL,
+		client:            client,
+		adminReportsURL:   adminServerURL + handlers.ReportsPath,
+		adminEndpointsURL: adminServerURL + handlers.EndpointsPath,
 	}
 }
 
 func (d Driver) GetReports() ([]matching.Report, error) {
 	var reports []matching.Report
-	res, err := d.client.Get(d.matchReportURL)
+	res, err := d.client.Get(d.adminReportsURL)
 
 	if err != nil {
 		return nil, err
@@ -39,7 +38,7 @@ func (d Driver) GetReports() ([]matching.Report, error) {
 	defer res.Body.Close()
 
 	if res.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("unexpected status of %d from %s", res.StatusCode, d.matchReportURL)
+		return nil, fmt.Errorf("unexpected status of %d from %s", res.StatusCode, d.adminReportsURL)
 	}
 
 	err = json.NewDecoder(res.Body).Decode(&reports)
@@ -64,7 +63,7 @@ func (d Driver) Send(request mockingjay.Request) (mockingjay.Response, matching.
 		return mockingjay.Response{}, matching.Report{}, err
 	}
 
-	if res.Header.Get(HeaderMockingjayMatched) == "false" {
+	if res.Header.Get(handlers.HeaderMockingjayMatched) == "false" {
 		report, err := d.GetReport(res.Header.Get("location"))
 		if err != nil {
 			return mockingjay.Response{}, report, err
@@ -102,7 +101,7 @@ func (d Driver) Configure(es ...mockingjay.Endpoint) error {
 		return err
 	}
 
-	req, err := http.NewRequest(http.MethodPut, d.configEndpointsURL, bytes.NewReader(endpointJSON))
+	req, err := http.NewRequest(http.MethodPut, d.adminEndpointsURL, bytes.NewReader(endpointJSON))
 	if err != nil {
 		return err
 	}
@@ -113,20 +112,23 @@ func (d Driver) Configure(es ...mockingjay.Endpoint) error {
 	}
 	defer res.Body.Close()
 	if res.StatusCode != http.StatusAccepted {
-		return fmt.Errorf("got unexpected %d when trying to configure mj at %s", res.StatusCode, d.configEndpointsURL)
+		return fmt.Errorf("got unexpected %d when trying to configure mj at %s", res.StatusCode, d.adminEndpointsURL)
 	}
 
 	return nil
 }
 
 func (d Driver) GetCurrentConfiguration() (mockingjay.Endpoints, error) {
-	res, err := d.client.Get(d.configEndpointsURL)
+	req, _ := http.NewRequest(http.MethodGet, d.adminEndpointsURL, nil)
+	req.Header.Set("Accept", "application/json")
+
+	res, err := d.client.Do(req)
 	if err != nil {
 		return nil, err
 	}
 	defer res.Body.Close()
 	if res.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("unexpected status %d from %s", res.StatusCode, d.configEndpointsURL)
+		return nil, fmt.Errorf("unexpected status %d from %s", res.StatusCode, d.adminEndpointsURL)
 	}
 	var endpoints mockingjay.Endpoints
 

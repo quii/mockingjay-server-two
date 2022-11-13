@@ -1,13 +1,20 @@
-package httpserver
+package handlers
 
 import (
+	"embed"
 	"encoding/json"
+	"html/template"
 	"net/http"
 
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	"github.com/quii/mockingjay-server-two/domain/mockingjay"
 	"github.com/quii/mockingjay-server-two/domain/mockingjay/matching"
+)
+
+var (
+	//go:embed "templates/*"
+	templates embed.FS
 )
 
 const (
@@ -26,11 +33,18 @@ type AdminServiceService interface {
 type AdminHandler struct {
 	http.Handler
 	service AdminServiceService
+	templ   *template.Template
 }
 
 func NewAdminHandler(service AdminServiceService) *AdminHandler {
+	templ, err := template.ParseFS(templates, "templates/*.gohtml")
+	if err != nil {
+		panic(err) //todo: fixme
+	}
+
 	app := &AdminHandler{
 		service: service,
+		templ:   templ,
 	}
 
 	adminRouter := mux.NewRouter()
@@ -47,8 +61,13 @@ func (a *AdminHandler) allReports(w http.ResponseWriter, _ *http.Request) {
 	writeJSON(w, a.service.GetReports())
 }
 
-func (a *AdminHandler) getEndpoints(w http.ResponseWriter, _ *http.Request) {
-	writeJSON(w, a.service.GetEndpoints())
+func (a *AdminHandler) getEndpoints(w http.ResponseWriter, r *http.Request) {
+	endpoints := a.service.GetEndpoints()
+	if r.Header.Get("Accept") == "application/json" {
+		writeJSON(w, endpoints)
+	} else {
+		_ = a.templ.ExecuteTemplate(w, "index.gohtml", endpoints)
+	}
 }
 
 func (a *AdminHandler) viewReport(w http.ResponseWriter, r *http.Request) {

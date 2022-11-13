@@ -40,7 +40,7 @@ func main() {
 	}
 
 	service := matching.NewMockingjayStubServerService(endpoints)
-	stubHandler, adminHandler := httpserver.NewServer(service, *adminBaseURL)
+	stubHandler, adminHandler := httpserver.New(service, *adminBaseURL)
 
 	printStartupMessage(endpointsFolder, adminPort, stubPort, adminBaseURL)
 
@@ -70,5 +70,5 @@ func printStartupMessage(endpointsFolder *string, adminPort *string, stubPort *s
 	} else {
 		log.Printf("📂 endpoints loaded from %s/%s\n", executable, fullPathOfEndpointsFile)
 	}
-	log.Printf("💡 visit %s/endpoints to see the current configuration", *adminURL)
+	log.Printf("💡 visit %s to see the current configuration", *adminURL)
 }

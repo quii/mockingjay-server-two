@@ -7,6 +7,7 @@ require (
 	github.com/alecthomas/assert/v2 v2.2.0
 	github.com/cue-exp/cueconfig v0.0.1
 	github.com/docker/go-connections v0.4.0
+	github.com/go-rod/rod v0.112.0
 	github.com/google/uuid v1.3.0
 	github.com/gorilla/mux v1.7.3
 	github.com/peterbourgon/ff/v3 v3.3.0
@@ -45,6 +46,9 @@ require (
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/protocolbuffers/txtpbfmt v0.0.0-20201118171849-f6a6b3f636fc // indirect
 	github.com/sirupsen/logrus v1.8.1 // indirect
+	github.com/ysmood/goob v0.4.0 // indirect
+	github.com/ysmood/gson v0.7.1 // indirect
+	github.com/ysmood/leakless v0.8.0 // indirect
 	go.opencensus.io v0.23.0 // indirect
 	golang.org/x/net v0.0.0-20220617184016-355a448f1bc9 // indirect
 	golang.org/x/sys v0.1.0 // indirect

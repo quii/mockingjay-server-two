@@ -1,10 +1,12 @@
 package httpserver
 
+import "github.com/quii/mockingjay-server-two/adapters/httpserver/handlers"
+
 type MockingjayServerService interface {
-	StubServerService
-	AdminServiceService
+	handlers.StubServerService
+	handlers.AdminServiceService
 }
 
-func NewServer(service MockingjayServerService, adminBaseURL string) (*StubHandler, *AdminHandler) {
-	return NewStubHandler(service, adminBaseURL), NewAdminHandler(service)
+func New(service MockingjayServerService, adminBaseURL string) (*handlers.StubHandler, *handlers.AdminHandler) {
+	return handlers.NewStubHandler(service, adminBaseURL), handlers.NewAdminHandler(service)
 }

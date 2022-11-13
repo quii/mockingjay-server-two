@@ -1,0 +1,38 @@
+{{template "top" .}}
+<table>
+    <caption>Current configuration</caption>
+    <thead>
+        <tr>
+            <th rowspan="2">Description</th>
+            <th colspan="5">Request</th>
+            <th colspan="3">Response</th>
+        </tr>
+        <tr>
+            <td>Method</td>
+            <td>Path</td>
+            <td>Regex Path</td>
+            <td>Body</td>
+            <td>Headers</td>
+
+            <td>Status</td>
+            <td>Body</td>
+            <td>Headers</td>
+        </tr>
+    </thead>
+    {{range .}}
+        <tr>
+            <td>{{.Description}}</td>
+
+            <td>{{.Request.Method}}</td>
+            <td>{{.Request.Path}}</td>
+            <td>{{.Request.RegexPath}}</td>
+            <td>{{.Request.Body}}</td>
+            <td>{{.Request.Headers}}</td>
+
+            <td>{{.Response.Status}}</td>
+            <td>{{.Response.Body}}</td>
+            <td>{{.Response.Headers}}</td>
+        </tr>
+    {{end}}
+</table>
+{{template "bottom" .}}
