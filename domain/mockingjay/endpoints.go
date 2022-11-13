@@ -74,3 +74,12 @@ func (r *Request) ToHTTPRequest(basePath string) *http.Request {
 	}
 	return req
 }
+
+func (e Endpoints) Compile() error {
+	for i := range e {
+		if err := e[i].Request.Compile(); err != nil {
+			return err
+		}
+	}
+	return nil
+}

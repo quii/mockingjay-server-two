@@ -8,6 +8,7 @@ import (
 	"github.com/alecthomas/assert/v2"
 	"github.com/quii/mockingjay-server-two/adapters/httpserver"
 	"github.com/quii/mockingjay-server-two/domain/mockingjay"
+	"github.com/quii/mockingjay-server-two/domain/mockingjay/matching"
 	"github.com/quii/mockingjay-server-two/specifications"
 )
 
@@ -22,12 +23,14 @@ func TestApp(t *testing.T) {
 	fixtures, err := mockingjay.NewFixturesFromCue(fixturesDir)
 	assert.NoError(t, err)
 
-	app := httpserver.New(examples, "")
-	stubServer := httptest.NewServer(http.HandlerFunc(app.StubHandler))
-	adminServer := httptest.NewServer(app.AdminRouter)
+	service := matching.NewMockingjayStubServerService(examples)
+	stubServerHandler, adminHandler := httpserver.NewServer(service, "")
+
+	stubServer := httptest.NewServer(stubServerHandler)
+	adminServer := httptest.NewServer(adminHandler)
 	defer adminServer.Close()
 	defer stubServer.Close()
-	app.AdminBaseURL = adminServer.URL
+	stubServerHandler.AdminBaseURL = adminServer.URL
 
 	driver := httpserver.NewDriver(
 		stubServer.URL,

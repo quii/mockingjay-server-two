@@ -4,10 +4,21 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/quii/mockingjay-server-two/domain/mockingjay"
+	"golang.org/x/exp/slices"
 )
 
+type Reports []Report
+
+func (r Reports) Sort() {
+	slices.SortFunc(r, func(a, b Report) bool {
+		return a.CreatedAt.Before(b.CreatedAt)
+	})
+}
+
 type Report struct {
+	ID              uuid.UUID           `json:"ID"`
 	HadMatch        bool                `json:"hadMatch"`
 	IncomingRequest mockingjay.Request  `json:"incomingRequest"`
 	FailedMatches   []RequestMatch      `json:"failed_matches"`
@@ -17,6 +28,7 @@ type Report struct {
 
 func NewReport(req *http.Request, endpoints mockingjay.Endpoints) Report {
 	overallReport := Report{
+		ID: uuid.New(),
 		IncomingRequest: mockingjay.Request{
 			Method:  req.Method,
 			Path:    req.URL.String(),

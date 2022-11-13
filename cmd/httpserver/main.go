@@ -10,6 +10,7 @@ import (
 	"github.com/quii/mockingjay-server-two/adapters/config"
 	"github.com/quii/mockingjay-server-two/adapters/httpserver"
 	"github.com/quii/mockingjay-server-two/domain/mockingjay"
+	"github.com/quii/mockingjay-server-two/domain/mockingjay/matching"
 )
 
 func main() {
@@ -38,17 +39,18 @@ func main() {
 		log.Fatal(err)
 	}
 
-	app := httpserver.New(endpoints, *adminBaseURL)
+	service := matching.NewMockingjayStubServerService(endpoints)
+	stubHandler, adminHandler := httpserver.NewServer(service, *adminBaseURL)
 
 	printStartupMessage(endpointsFolder, adminPort, stubPort, adminBaseURL)
 
 	go func() {
-		if err := http.ListenAndServe(":"+*adminPort, app.AdminRouter); err != nil {
+		if err := http.ListenAndServe(":"+*adminPort, adminHandler); err != nil {
 			log.Fatal(err)
 		}
 	}()
 
-	if err := http.ListenAndServe(":"+*stubPort, http.HandlerFunc(app.StubHandler)); err != nil {
+	if err := http.ListenAndServe(":"+*stubPort, stubHandler); err != nil {
 		log.Fatal(err)
 	}
 }
