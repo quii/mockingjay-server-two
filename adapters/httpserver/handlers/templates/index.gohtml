@@ -8,17 +8,18 @@
             <th colspan="3">Response</th>
         </tr>
         <tr>
-            <td>Method</td>
-            <td>Path</td>
-            <td>Regex Path</td>
-            <td>Body</td>
-            <td>Headers</td>
+            <th>Method</th>
+            <th>Path</th>
+            <th>Regex Path</th>
+            <th>Body</th>
+            <th>Headers</th>
 
-            <td>Status</td>
-            <td>Body</td>
-            <td>Headers</td>
+            <th>Status</th>
+            <th>Body</th>
+            <th>Headers</th>
         </tr>
     </thead>
+    <tbody>
     {{range .}}
         <tr>
             <td>{{.Description}}</td>
@@ -34,5 +35,6 @@
             <td>{{.Response.Headers}}</td>
         </tr>
     {{end}}
+    </tbody>
 </table>
 {{template "bottom" .}}
