@@ -13,7 +13,7 @@ import (
 const (
 	HeaderMockingjayMatched = "x-mockingjay-matched"
 	ReportsPath             = "/match-reports"
-	EndpointsPath           = "/endpoints"
+	EndpointsPath           = "/"
 )
 
 type AdminServiceService interface {

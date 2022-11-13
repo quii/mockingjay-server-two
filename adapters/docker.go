@@ -49,7 +49,7 @@ func StartDockerServer(
 
 func newTCDockerfile() testcontainers.FromDockerfile {
 	return testcontainers.FromDockerfile{
-		Context:       "../../.",
+		Context:       "../../../.",
 		Dockerfile:    dockerfileName,
 		PrintBuildLog: true,
 	}

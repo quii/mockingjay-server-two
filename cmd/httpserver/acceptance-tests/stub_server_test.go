@@ -1,4 +1,4 @@
-package main_test
+package acceptance_tests_test
 
 import (
 	"fmt"
@@ -15,8 +15,8 @@ import (
 )
 
 const (
-	examplesDir = "../../examples/"
-	fixturesDir = "../../testfixtures/"
+	examplesDir = "../../../examples/"
+	fixturesDir = "../../../testfixtures/"
 )
 
 func TestGreeterServer(t *testing.T) {
