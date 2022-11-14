@@ -66,7 +66,7 @@ func (a *AdminHandler) getEndpoints(w http.ResponseWriter, r *http.Request) {
 	if r.Header.Get("Accept") == "application/json" {
 		writeJSON(w, endpoints)
 	} else {
-		_ = a.templ.ExecuteTemplate(w, "index.gohtml", endpoints)
+		_ = a.templ.ExecuteTemplate(w, "endpoints.gohtml", endpoints)
 	}
 }
 
