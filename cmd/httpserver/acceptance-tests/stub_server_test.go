@@ -19,7 +19,7 @@ const (
 	fixturesDir = "../../../testfixtures/"
 )
 
-func TestGreeterServer(t *testing.T) {
+func TestMockingjay(t *testing.T) {
 	if testing.Short() {
 		t.Skip()
 	}
@@ -30,7 +30,7 @@ func TestGreeterServer(t *testing.T) {
 	assert.NoError(t, err)
 	adapters.StartDockerServer(t, config.DefaultStubServerPort, config.DefaultAdminServerPort)
 
-	t.Run("loading configuration via admin server", func(t *testing.T) {
+	t.Run("stub server", func(t *testing.T) {
 		driver := drivers.NewHTTPDriver(
 			fmt.Sprintf("http://localhost:%s", config.DefaultStubServerPort),
 			fmt.Sprintf("http://localhost:%s", config.DefaultAdminServerPort),

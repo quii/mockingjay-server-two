@@ -54,6 +54,7 @@ func (d WebDriver) GetCurrentConfiguration() (mockingjay.Endpoints, error) {
 }
 
 func (d WebDriver) Configure(es ...mockingjay.Endpoint) error {
+	//todo: rather than using hte http api, use the UI, once it's built
 	endpointJSON, err := json.Marshal(es)
 	if err != nil {
 		return err
