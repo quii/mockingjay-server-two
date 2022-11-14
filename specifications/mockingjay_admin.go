@@ -15,32 +15,24 @@ type Admin interface {
 	GetCurrentConfiguration() (mockingjay.Endpoints, error)
 }
 
-func MockingjayAdmin(t *testing.T, admin Admin, examples mockingjay.Endpoints) {
+func MockingjayAdmin(t *testing.T, admin Admin, configuration mockingjay.Endpoints) {
 	t.Run("can check all endpoints are configured", func(t *testing.T) {
-		assert.NoError(t, admin.Configure(examples...))
+		assert.NoError(t, admin.Configure(configuration...))
 
-		configuration, err := admin.GetCurrentConfiguration()
+		retrievedConfiguration, err := admin.GetCurrentConfiguration()
 		assert.NoError(t, err)
-		assert.Equal(t, len(examples), len(configuration))
+		assert.Equal(t, len(configuration), len(retrievedConfiguration))
 
-		for i := range examples {
-			assert.Equal(t, examples[i].Description, configuration[i].Description)
-
-			originalRequest := examples[i].Request
-			retrievedRequest := configuration[i].Request
-			assert.Equal(t, originalRequest.Method, retrievedRequest.Method)
-			assert.Equal(t, originalRequest.RegexPath, retrievedRequest.RegexPath)
-			assert.Equal(t, originalRequest.Path, retrievedRequest.Path)
-			assert.Equal(t, originalRequest.Body, retrievedRequest.Body)
-			assert.Equal(t, originalRequest.Headers, retrievedRequest.Headers)
-
-			originalResponse := examples[i].Response
-			retrievedResponse := configuration[i].Response
-			assert.Equal(t, originalResponse.Status, retrievedResponse.Status)
-			assert.Equal(t, fudgeTheWhiteSpace(originalResponse.Body), fudgeTheWhiteSpace(retrievedResponse.Body))
-			assert.Equal(t, originalResponse.Headers, retrievedResponse.Headers)
-		}
+		removeWhitespaceFromBodies(configuration)
+		removeWhitespaceFromBodies(retrievedConfiguration)
+		assert.Equal(t, configuration, retrievedConfiguration)
 	})
+}
+
+func removeWhitespaceFromBodies(endpoints mockingjay.Endpoints) {
+	for i := range endpoints {
+		endpoints[i].Response.Body = fudgeTheWhiteSpace(endpoints[i].Response.Body)
+	}
 }
 
 func fudgeTheWhiteSpace(in string) string {

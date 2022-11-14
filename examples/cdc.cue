@@ -17,8 +17,8 @@ endpoints: [
 																												  "completed": false
 																												}"""
 		}
-		cdcs: [{
-			baseURL: "https://jsonplaceholder.typicode.com"
-		}]
+//		cdcs: [{
+//			baseURL: "https://jsonplaceholder.typicode.com"
+//		}]
 	},
 ]
