@@ -15,17 +15,17 @@ type Admin interface {
 	GetCurrentConfiguration() (mockingjay.Endpoints, error)
 }
 
-func MockingjayAdmin(t *testing.T, admin Admin, configuration mockingjay.Endpoints) {
+func MockingjayAdmin(t *testing.T, admin Admin, endpoints mockingjay.Endpoints) {
 	t.Run("can check all endpoints are configured", func(t *testing.T) {
-		assert.NoError(t, admin.Configure(configuration...))
+		assert.NoError(t, admin.Configure(endpoints...))
 
 		retrievedConfiguration, err := admin.GetCurrentConfiguration()
 		assert.NoError(t, err)
-		assert.Equal(t, len(configuration), len(retrievedConfiguration))
+		assert.Equal(t, len(endpoints), len(retrievedConfiguration))
 
-		removeWhitespaceFromBodies(configuration)
+		removeWhitespaceFromBodies(endpoints)
 		removeWhitespaceFromBodies(retrievedConfiguration)
-		assert.Equal(t, configuration, retrievedConfiguration)
+		assert.Equal(t, endpoints, retrievedConfiguration)
 	})
 }
 

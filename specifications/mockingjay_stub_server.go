@@ -26,11 +26,7 @@ func MockingjayStubServerSpec(t *testing.T, mj Mockingjay, examples mockingjay.E
 		for _, endpoint := range examples {
 			t.Run(endpoint.Description, func(t *testing.T) {
 				res, report, err := mj.Send(endpoint.Request)
-
-				if !report.HadMatch {
-					t.Logf("Match report %#v", report)
-				}
-
+				assert.True(t, report.HadMatch, report)
 				assert.NoError(t, err)
 				assertResponseMatches(t, endpoint.Response, res)
 			})
@@ -46,10 +42,12 @@ func MockingjayStubServerSpec(t *testing.T, mj Mockingjay, examples mockingjay.E
 	t.Run("mj test fixtures", func(t *testing.T) {
 		for _, f := range testFixtures {
 			t.Run(f.Endpoint.Description, func(t *testing.T) {
-				assert.NoError(t, mj.Configure(f.Endpoint))
-				currentEndpoints, err := mj.GetCurrentConfiguration()
-				assert.NoError(t, err)
-				assert.Equal(t, mockingjay.Endpoints{f.Endpoint}, currentEndpoints)
+				t.Run("can configure mj on the fly with an endpoint", func(t *testing.T) {
+					assert.NoError(t, mj.Configure(f.Endpoint))
+					currentEndpoints, err := mj.GetCurrentConfiguration()
+					assert.NoError(t, err)
+					assert.Equal(t, mockingjay.Endpoints{f.Endpoint}, currentEndpoints)
+				})
 
 				for _, request := range f.MatchingRequests {
 					t.Run(request.Description, func(t *testing.T) {
