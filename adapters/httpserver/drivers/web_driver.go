@@ -5,8 +5,10 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/go-rod/rod"
+	"github.com/go-rod/rod/lib/launcher"
 	"github.com/go-rod/rod/lib/proto"
 	"github.com/quii/mockingjay-server-two/adapters/httpserver/drivers/internal/pageobjects"
 	"github.com/quii/mockingjay-server-two/adapters/httpserver/handlers"
@@ -25,13 +27,35 @@ var (
 	ErrNotImplemented = errors.New("not implemented")
 )
 
-func NewWebDriver(adminServerURL string, client *http.Client) *WebDriver {
+func NewWebDriver(adminServerURL string, client *http.Client, debug bool) (*WebDriver, func()) {
+	var browser *rod.Browser
+	var cleanup func()
+
+	if debug {
+		l := launcher.New().
+			Headless(false).
+			Devtools(true)
+
+		cleanup = l.Cleanup
+
+		url := l.MustLaunch()
+
+		browser = rod.New().
+			ControlURL(url).
+			Trace(true).
+			SlowMotion(500 * time.Millisecond).
+			MustConnect()
+	} else {
+		browser = rod.New().MustConnect()
+		cleanup = func() {}
+	}
+
 	return &WebDriver{
 		client:            client,
-		browser:           rod.New().MustConnect(),
+		browser:           browser,
 		adminReportsURL:   adminServerURL + handlers.ReportsPath,
 		adminEndpointsURL: adminServerURL + handlers.EndpointsPath,
-	}
+	}, cleanup
 }
 
 func (d WebDriver) GetCurrentConfiguration() (mockingjay.Endpoints, error) {
@@ -53,23 +77,6 @@ func (d WebDriver) GetCurrentConfiguration() (mockingjay.Endpoints, error) {
 }
 
 func (d WebDriver) Configure(es ...mockingjay.Endpoint) error {
-	//l := launcher.New().
-	//	Headless(false).
-	//	Devtools(true)
-	//
-	//defer l.Cleanup() // remove launcher.FlagUserDataDir
-	//
-	//url := l.MustLaunch()
-	//
-	//// Trace shows verbose debug information for each action executed
-	//// SlowMotion is a debug related function that waits 2 seconds between
-	//// each action, making it easier to inspect what your code is doing.
-	//browser := rod.New().
-	//	ControlURL(url).
-	//	Trace(true).
-	//	SlowMotion(500 * time.Millisecond).
-	//	MustConnect()
-
 	page := d.browser.MustPage(d.adminEndpointsURL)
 	for _, endpoint := range es {
 		page.MustElement(`*[name="description"]`).MustInput(endpoint.Description)

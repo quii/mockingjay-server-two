@@ -47,7 +47,8 @@ func TestApp(t *testing.T) {
 		adminServer.URL,
 		client,
 	)
-	webDriver := drivers.NewWebDriver(adminServer.URL, client)
+	webDriver, cleanup := drivers.NewWebDriver(adminServer.URL, client, false)
+	t.Cleanup(cleanup)
 
 	specifications.MockingjayStubServerSpec(t, driver, examples, fixtures)
 	specifications.MockingjayAdmin(t, webDriver, examples)

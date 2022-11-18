@@ -42,12 +42,14 @@ func TestMockingjay(t *testing.T) {
 	})
 
 	t.Run("web interface", func(t *testing.T) {
-		driver := drivers.NewWebDriver(
+		driver, cleanup := drivers.NewWebDriver(
 			fmt.Sprintf("http://localhost:%s", config.DefaultAdminServerPort),
 			&http.Client{
 				Timeout: 1 * time.Second,
 			},
+			false,
 		)
+		t.Cleanup(cleanup)
 		specifications.MockingjayAdmin(t, driver, examples)
 	})
 }
