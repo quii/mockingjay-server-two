@@ -1,13 +1,13 @@
 package drivers
 
 import (
-	"bytes"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/go-rod/rod"
+	"github.com/go-rod/rod/lib/proto"
 	"github.com/quii/mockingjay-server-two/adapters/httpserver/drivers/internal/pageobjects"
 	"github.com/quii/mockingjay-server-two/adapters/httpserver/handlers"
 	"github.com/quii/mockingjay-server-two/domain/mockingjay"
@@ -53,23 +53,70 @@ func (d WebDriver) GetCurrentConfiguration() (mockingjay.Endpoints, error) {
 }
 
 func (d WebDriver) Configure(es ...mockingjay.Endpoint) error {
-	endpointJSON, err := json.Marshal(es)
+	//l := launcher.New().
+	//	Headless(false).
+	//	Devtools(true)
+	//
+	//defer l.Cleanup() // remove launcher.FlagUserDataDir
+	//
+	//url := l.MustLaunch()
+	//
+	//// Trace shows verbose debug information for each action executed
+	//// SlowMotion is a debug related function that waits 2 seconds between
+	//// each action, making it easier to inspect what your code is doing.
+	//browser := rod.New().
+	//	ControlURL(url).
+	//	Trace(true).
+	//	SlowMotion(500 * time.Millisecond).
+	//	MustConnect()
+
+	page := d.browser.MustPage(d.adminEndpointsURL)
+	for _, endpoint := range es {
+		page.MustElement(`*[name="description"]`).MustInput(endpoint.Description)
+
+		page.MustElement(`*[name="path"]`).MustInput(endpoint.Request.Path)
+		page.MustElement(`*[name="regexpath"]`).MustInput(endpoint.Request.RegexPath)
+		page.MustElement(`*[name="method"]`).MustSelect(endpoint.Request.Method)
+		page.MustElement(`*[name="request.body"]`).MustInput(endpoint.Request.Body)
+
+		for k, v := range endpoint.Request.Headers {
+			page.MustElement(`*[name="request.header.name"]`).MustInput(k)
+			page.MustElement(`*[name="request.header.values"]`).MustInput(strings.Join(v, "; "))
+		}
+
+		page.MustElement(`*[name="status"]`).MustInput(fmt.Sprintf("%d", endpoint.Response.Status))
+		page.MustElement(`*[name="response.body"]`).MustInput(endpoint.Response.Body)
+
+		for k, v := range endpoint.Request.Headers {
+			page.MustElement(`*[name="response.header.name"]`).MustInput(k)
+			page.MustElement(`*[name="response.header.values"]`).MustInput(strings.Join(v, "; "))
+		}
+
+		submitButton, err := page.Element(`#submit`)
+		if err != nil {
+			return err
+		}
+		if err := submitButton.Click(proto.InputMouseButtonLeft, 1); err != nil {
+			return err
+		}
+		page.MustWaitNavigation()
+	}
+
+	return nil
+}
+
+func (d WebDriver) Reset() error {
+	req, err := http.NewRequest(http.MethodDelete, d.adminEndpointsURL, nil)
 	if err != nil {
 		return err
 	}
-
-	req, err := http.NewRequest(http.MethodPut, d.adminEndpointsURL, bytes.NewReader(endpointJSON))
-	if err != nil {
-		return err
-	}
-
 	res, err := d.client.Do(req)
 	if err != nil {
 		return err
 	}
 	defer res.Body.Close()
-	if res.StatusCode != http.StatusAccepted {
-		return fmt.Errorf("got unexpected %d when trying to configure mj at %s", res.StatusCode, d.adminEndpointsURL)
+	if res.StatusCode != http.StatusNoContent {
+		return fmt.Errorf("got unexpected %d when trying to reset mj at %s", res.StatusCode, d.adminEndpointsURL)
 	}
 
 	return nil

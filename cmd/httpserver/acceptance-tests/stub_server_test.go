@@ -15,8 +15,8 @@ import (
 )
 
 const (
-	examplesDir = "../../../examples/"
-	fixturesDir = "../../../testfixtures/"
+	examplesDir = "../../../specifications/examples/"
+	fixturesDir = "../../../specifications/testfixtures/"
 )
 
 func TestMockingjay(t *testing.T) {

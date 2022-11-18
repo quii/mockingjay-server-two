@@ -118,6 +118,23 @@ func (d Driver) Configure(es ...mockingjay.Endpoint) error {
 	return nil
 }
 
+func (d Driver) Reset() error {
+	req, err := http.NewRequest(http.MethodDelete, d.adminEndpointsURL, nil)
+	if err != nil {
+		return err
+	}
+	res, err := d.client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer res.Body.Close()
+	if res.StatusCode != http.StatusNoContent {
+		return fmt.Errorf("got unexpected %d when trying to reset mj at %s", res.StatusCode, d.adminEndpointsURL)
+	}
+
+	return nil
+}
+
 func (d Driver) GetCurrentConfiguration() (mockingjay.Endpoints, error) {
 	req, _ := http.NewRequest(http.MethodGet, d.adminEndpointsURL, nil)
 	req.Header.Set("Accept", "application/json")

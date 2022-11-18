@@ -18,8 +18,8 @@ import (
 )
 
 const (
-	examplesDir = "../../examples/"
-	fixturesDir = "../../testfixtures/"
+	examplesDir = "../../specifications/examples/"
+	fixturesDir = "../../specifications/testfixtures/"
 )
 
 func TestApp(t *testing.T) {

@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"html/template"
 	"net/http"
+	"strconv"
+	"strings"
 
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
@@ -52,6 +54,8 @@ func NewAdminHandler(service AdminServiceService) *AdminHandler {
 	adminRouter.HandleFunc(ReportsPath+"/{reportID}", app.viewReport).Methods(http.MethodGet)
 	adminRouter.HandleFunc(EndpointsPath, app.putEndpoints).Methods(http.MethodPut)
 	adminRouter.HandleFunc(EndpointsPath, app.getEndpoints).Methods(http.MethodGet)
+	adminRouter.HandleFunc(EndpointsPath, app.deleteEndpoints).Methods(http.MethodDelete)
+	adminRouter.HandleFunc(EndpointsPath, app.addEndpoint).Methods(http.MethodPost)
 
 	app.Handler = adminRouter
 	return app
@@ -97,6 +101,61 @@ func (a *AdminHandler) putEndpoints(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusAccepted)
+}
+
+func (a *AdminHandler) addEndpoint(w http.ResponseWriter, r *http.Request) {
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	requestHeaders := make(mockingjay.Headers)
+	if r.FormValue("request.header.name") != "" {
+		requestHeaders[r.FormValue("request.header.name")] = strings.Split(r.FormValue("request.header.values"), "; ")
+	}
+
+	responseHeaders := make(mockingjay.Headers)
+	if r.FormValue("response.header.name") != "" {
+		requestHeaders[r.FormValue("response.header.name")] = strings.Split(r.FormValue("response.header.values"), "; ")
+	}
+
+	status, err := strconv.Atoi(r.FormValue("status"))
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	newEndpoint := mockingjay.Endpoint{
+		Description: r.FormValue("description"),
+		Request: mockingjay.Request{
+			Method:    r.FormValue("method"),
+			RegexPath: r.FormValue("regexpath"),
+			Path:      r.FormValue("path"),
+			Headers:   requestHeaders,
+			Body:      r.FormValue("request.body"),
+		},
+		Response: mockingjay.Response{
+			Status:  status,
+			Body:    r.FormValue("response.body"),
+			Headers: responseHeaders,
+		},
+		CDCs: nil,
+	}
+
+	if err := a.service.PutEndpoints(append(a.service.GetEndpoints(), newEndpoint)); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	http.Redirect(w, r, "/", http.StatusMovedPermanently)
+}
+
+func (a *AdminHandler) deleteEndpoints(w http.ResponseWriter, _ *http.Request) {
+	if err := a.service.PutEndpoints(nil); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
 }
 
 func writeJSON(w http.ResponseWriter, content any) {

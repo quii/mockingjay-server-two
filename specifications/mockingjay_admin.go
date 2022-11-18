@@ -12,11 +12,13 @@ import (
 type Admin interface {
 	Configure(endpoints ...mockingjay.Endpoint) error
 	GetReports() ([]matching.Report, error)
+	Reset() error
 	GetCurrentConfiguration() (mockingjay.Endpoints, error)
 }
 
 func MockingjayAdmin(t *testing.T, admin Admin, endpoints mockingjay.Endpoints) {
 	t.Run("can check all endpoints are configured", func(t *testing.T) {
+		assert.NoError(t, admin.Reset())
 		assert.NoError(t, admin.Configure(endpoints...))
 
 		retrievedConfiguration, err := admin.GetCurrentConfiguration()
@@ -25,7 +27,8 @@ func MockingjayAdmin(t *testing.T, admin Admin, endpoints mockingjay.Endpoints) 
 
 		removeWhitespaceFromBodies(endpoints)
 		removeWhitespaceFromBodies(retrievedConfiguration)
-		assert.Equal(t, endpoints, retrievedConfiguration)
+
+		assert.Equal(t, endpoints[0], retrievedConfiguration[0])
 	})
 }
 
