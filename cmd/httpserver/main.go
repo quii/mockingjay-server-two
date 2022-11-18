@@ -39,7 +39,10 @@ func main() {
 		log.Fatal(err)
 	}
 
-	service := matching.NewMockingjayStubServerService(endpoints)
+	service, err := matching.NewMockingjayStubServerService(endpoints)
+	if err != nil {
+		log.Fatal(err)
+	}
 	stubHandler, adminHandler := httpserver.New(service, *adminBaseURL)
 
 	printStartupMessage(endpointsFolder, adminPort, stubPort, adminBaseURL)

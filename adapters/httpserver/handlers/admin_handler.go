@@ -4,6 +4,7 @@ import (
 	"embed"
 	"encoding/json"
 	"html/template"
+	"io/fs"
 	"net/http"
 	"strconv"
 	"strings"
@@ -12,11 +13,15 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/quii/mockingjay-server-two/domain/mockingjay"
 	"github.com/quii/mockingjay-server-two/domain/mockingjay/matching"
+	"golang.org/x/exp/slices"
 )
 
 var (
 	//go:embed "templates/*"
 	templates embed.FS
+
+	//go:embed static
+	static embed.FS
 )
 
 const (
@@ -52,10 +57,15 @@ func NewAdminHandler(service AdminServiceService) *AdminHandler {
 	adminRouter := mux.NewRouter()
 	adminRouter.HandleFunc(ReportsPath, app.allReports).Methods(http.MethodGet)
 	adminRouter.HandleFunc(ReportsPath+"/{reportID}", app.viewReport).Methods(http.MethodGet)
+
 	adminRouter.HandleFunc(EndpointsPath, app.putEndpoints).Methods(http.MethodPut)
 	adminRouter.HandleFunc(EndpointsPath, app.getEndpoints).Methods(http.MethodGet)
 	adminRouter.HandleFunc(EndpointsPath, app.deleteEndpoints).Methods(http.MethodDelete)
+	adminRouter.HandleFunc(EndpointsPath+"{endpointIndex}", app.DeleteEndpoint).Methods(http.MethodDelete)
 	adminRouter.HandleFunc(EndpointsPath, app.addEndpoint).Methods(http.MethodPost)
+
+	lol, _ := fs.Sub(static, "static")
+	adminRouter.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.FS(lol))))
 
 	app.Handler = adminRouter
 	return app
@@ -96,6 +106,11 @@ func (a *AdminHandler) putEndpoints(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if err := newEndpoints.Compile(); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
 	if err := a.service.PutEndpoints(newEndpoints); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -116,7 +131,7 @@ func (a *AdminHandler) addEndpoint(w http.ResponseWriter, r *http.Request) {
 
 	responseHeaders := make(mockingjay.Headers)
 	if r.FormValue("response.header.name") != "" {
-		requestHeaders[r.FormValue("response.header.name")] = strings.Split(r.FormValue("response.header.values"), "; ")
+		responseHeaders[r.FormValue("response.header.name")] = strings.Split(r.FormValue("response.header.values"), "; ")
 	}
 
 	status, err := strconv.Atoi(r.FormValue("status"))
@@ -126,6 +141,7 @@ func (a *AdminHandler) addEndpoint(w http.ResponseWriter, r *http.Request) {
 	}
 
 	newEndpoint := mockingjay.Endpoint{
+		ID:          uuid.New(),
 		Description: r.FormValue("description"),
 		Request: mockingjay.Request{
 			Method:    r.FormValue("method"),
@@ -156,6 +172,29 @@ func (a *AdminHandler) deleteEndpoints(w http.ResponseWriter, _ *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusNoContent)
+}
+
+func (a *AdminHandler) DeleteEndpoint(w http.ResponseWriter, r *http.Request) {
+	id, err := uuid.Parse(mux.Vars(r)["endpointIndex"])
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	endpoints := a.service.GetEndpoints()
+	i := slices.IndexFunc(endpoints, func(endpoint mockingjay.Endpoint) bool {
+		return endpoint.ID == id
+	})
+
+	if i == -1 {
+		http.NotFound(w, r)
+		return
+	}
+
+	if err := a.service.PutEndpoints(slices.Delete(endpoints, i, i+1)); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
 }
 
 func writeJSON(w http.ResponseWriter, content any) {

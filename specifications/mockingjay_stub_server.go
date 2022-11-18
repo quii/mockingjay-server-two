@@ -6,6 +6,7 @@ import (
 
 	"github.com/adamluzsi/testcase/pp"
 	"github.com/alecthomas/assert/v2"
+	"github.com/google/uuid"
 	"github.com/quii/mockingjay-server-two/domain/mockingjay"
 	"github.com/quii/mockingjay-server-two/domain/mockingjay/matching"
 	"golang.org/x/exp/slices"
@@ -44,8 +45,9 @@ func MockingjayStubServerSpec(t *testing.T, mj Mockingjay, examples mockingjay.E
 			t.Run(f.Endpoint.Description, func(t *testing.T) {
 				t.Run("can configure mj on the fly with an endpoint", func(t *testing.T) {
 					assert.NoError(t, mj.Configure(f.Endpoint))
-					currentEndpoints, err := mj.GetCurrentConfiguration()
+					currentEndpoints, err := mj.GetEndpoints()
 					assert.NoError(t, err)
+					currentEndpoints[0].ID = uuid.UUID{} // yuck, need an endpoint equals test helper
 					assert.Equal(t, mockingjay.Endpoints{f.Endpoint}, currentEndpoints)
 				})
 

@@ -135,7 +135,7 @@ func (d Driver) Reset() error {
 	return nil
 }
 
-func (d Driver) GetCurrentConfiguration() (mockingjay.Endpoints, error) {
+func (d Driver) GetEndpoints() (mockingjay.Endpoints, error) {
 	req, _ := http.NewRequest(http.MethodGet, d.adminEndpointsURL, nil)
 	req.Header.Set("Accept", "application/json")
 

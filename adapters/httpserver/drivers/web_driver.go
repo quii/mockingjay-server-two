@@ -8,6 +8,7 @@ import (
 
 	"github.com/go-rod/rod"
 	"github.com/go-rod/rod/lib/launcher"
+	"github.com/go-rod/rod/lib/proto"
 	"github.com/quii/mockingjay-server-two/adapters/httpserver/drivers/internal/pageobjects"
 	"github.com/quii/mockingjay-server-two/adapters/httpserver/handlers"
 	"github.com/quii/mockingjay-server-two/domain/mockingjay"
@@ -41,7 +42,7 @@ func NewWebDriver(adminServerURL string, client *http.Client, debug bool) (*WebD
 		browser = rod.New().
 			ControlURL(url).
 			Trace(true).
-			SlowMotion(500 * time.Millisecond).
+			SlowMotion(100 * time.Millisecond).
 			MustConnect()
 	} else {
 		browser = rod.New().MustConnect()
@@ -56,10 +57,17 @@ func NewWebDriver(adminServerURL string, client *http.Client, debug bool) (*WebD
 	}, cleanup
 }
 
-func (d WebDriver) GetCurrentConfiguration() (mockingjay.Endpoints, error) {
+func (d WebDriver) GetEndpoints() (mockingjay.Endpoints, error) {
 	var endpoints mockingjay.Endpoints
 
-	elements, err := d.browser.MustPage(d.adminEndpointsURL).Elements(".endpoint")
+	endpointsPage, err := d.browser.Page(proto.TargetCreateTarget{URL: d.adminEndpointsURL})
+	endpointsPage.MustWaitNavigation()
+	endpointsPage.MustElement("table") // force the thing to check for a table
+
+	if err != nil {
+		return nil, fmt.Errorf("unable to reach %s, %w", d.adminEndpointsURL, err)
+	}
+	elements, err := endpointsPage.Elements(".endpoint")
 	if err != nil {
 		return nil, err
 	}

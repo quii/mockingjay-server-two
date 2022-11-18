@@ -12,8 +12,11 @@ type MockingjayStubServerService struct {
 	matchReports map[uuid.UUID]Report
 }
 
-func NewMockingjayStubServerService(endpoints mockingjay.Endpoints) *MockingjayStubServerService {
-	return &MockingjayStubServerService{endpoints: endpoints, matchReports: make(map[uuid.UUID]Report)}
+func NewMockingjayStubServerService(endpoints mockingjay.Endpoints) (*MockingjayStubServerService, error) {
+	if err := endpoints.Compile(); err != nil {
+		return nil, err
+	}
+	return &MockingjayStubServerService{endpoints: endpoints, matchReports: make(map[uuid.UUID]Report)}, nil
 }
 
 func (m *MockingjayStubServerService) GetMatchReport(r *http.Request) Report {
@@ -37,9 +40,6 @@ func (m *MockingjayStubServerService) GetReport(id uuid.UUID) (Report, bool) {
 }
 
 func (m *MockingjayStubServerService) PutEndpoints(e mockingjay.Endpoints) error {
-	if err := e.Compile(); err != nil {
-		return err
-	}
 	m.endpoints = e
 	return nil
 }

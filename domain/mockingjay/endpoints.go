@@ -5,15 +5,18 @@ import (
 	"net/http"
 	"regexp"
 	"strings"
+
+	"github.com/google/uuid"
 )
 
 type (
 	Endpoints []Endpoint
 
 	Endpoint struct {
-		Description string   `json:"description,omitempty"`
-		Request     Request  `json:"request"`
-		Response    Response `json:"response"`
+		ID          uuid.UUID `json:"ID"`
+		Description string    `json:"description,omitempty"`
+		Request     Request   `json:"request"`
+		Response    Response  `json:"response"`
 		CDCs        []CDC
 	}
 
@@ -80,6 +83,7 @@ func (e Endpoints) Compile() error {
 		if err := e[i].Request.Compile(); err != nil {
 			return err
 		}
+		e[i].ID = uuid.New()
 	}
 	return nil
 }

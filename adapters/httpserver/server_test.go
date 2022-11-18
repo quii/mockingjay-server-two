@@ -33,8 +33,11 @@ func TestApp(t *testing.T) {
 	defer adminServer.Close()
 	defer stubServer.Close()
 
+	service, err := matching.NewMockingjayStubServerService(examples)
+	assert.NoError(t, err)
+
 	stubServerHandler, adminHandler := httpserver.New(
-		matching.NewMockingjayStubServerService(examples),
+		service,
 		adminServer.URL,
 	)
 
@@ -53,6 +56,38 @@ func TestApp(t *testing.T) {
 	specifications.MockingjayStubServerSpec(t, driver, examples, fixtures)
 	specifications.MockingjayAdmin(t, webDriver, examples)
 
+	t.Run("add an endpoint and get it back again", func(t *testing.T) {
+		endpoint := mockingjay.Endpoint{
+			ID:          uuid.UUID{},
+			Description: "Hello",
+			Request: mockingjay.Request{
+				Method:    http.MethodPost,
+				RegexPath: "",
+				Path:      "/todos/123",
+				Headers: mockingjay.Headers{
+					"accept": []string{"application/json"},
+				},
+				Body: "",
+			},
+			Response: mockingjay.Response{
+				Status: http.StatusNoContent,
+				Body:   "lol",
+				Headers: mockingjay.Headers{
+					"content-type": []string{"application/json"},
+				},
+			},
+			CDCs: nil,
+		}
+
+		assert.NoError(t, webDriver.Reset())
+		assert.NoError(t, webDriver.Configure(endpoint))
+
+		savedEndpoints, err := webDriver.GetEndpoints()
+		assert.NoError(t, err)
+		assert.Equal(t, endpoint.Request.Headers, savedEndpoints[0].Request.Headers)
+		assert.Equal(t, endpoint.Response.Headers, savedEndpoints[0].Response.Headers)
+	})
+
 	t.Run("view report", func(t *testing.T) {
 		t.Run("404 if report doesn't exist", func(t *testing.T) {
 			location := adminServer.URL + handlers.ReportsPath + "/" + uuid.New().String()
@@ -65,7 +100,7 @@ func TestApp(t *testing.T) {
 			}, err.(drivers.ErrReportNotFound))
 		})
 
-		t.Run("404 if uuid wasnt valid", func(t *testing.T) {
+		t.Run("404 if uuid wasn't valid", func(t *testing.T) {
 			location := adminServer.URL + handlers.ReportsPath + "/" + "whatever"
 			_, err := driver.GetReport(location)
 

@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/alecthomas/assert/v2"
+	"github.com/google/uuid"
 	"github.com/quii/mockingjay-server-two/domain/mockingjay"
 	"github.com/quii/mockingjay-server-two/domain/mockingjay/matching"
 )
@@ -13,7 +14,7 @@ type Admin interface {
 	Configure(endpoints ...mockingjay.Endpoint) error
 	GetReports() ([]matching.Report, error)
 	Reset() error
-	GetCurrentConfiguration() (mockingjay.Endpoints, error)
+	GetEndpoints() (mockingjay.Endpoints, error)
 }
 
 func MockingjayAdmin(t *testing.T, admin Admin, endpoints mockingjay.Endpoints) {
@@ -21,15 +22,27 @@ func MockingjayAdmin(t *testing.T, admin Admin, endpoints mockingjay.Endpoints) 
 		assert.NoError(t, admin.Reset())
 		assert.NoError(t, admin.Configure(endpoints...))
 
-		retrievedConfiguration, err := admin.GetCurrentConfiguration()
+		retrievedConfiguration, err := admin.GetEndpoints()
 		assert.NoError(t, err)
 		assert.Equal(t, len(endpoints), len(retrievedConfiguration))
 
+		//todo: make an AssertEqual method on endpoints or something to tidy this up
 		removeWhitespaceFromBodies(endpoints)
 		removeWhitespaceFromBodies(retrievedConfiguration)
+		zeroUUIDs(endpoints)
+		zeroUUIDs(retrievedConfiguration)
 
-		assert.Equal(t, endpoints[0], retrievedConfiguration[0])
+		//todo: to test all endpoints will require support for multiple headers
+		for i, endpoint := range endpoints {
+			assert.Equal(t, endpoint, retrievedConfiguration[i])
+		}
 	})
+}
+
+func zeroUUIDs(endpoints mockingjay.Endpoints) {
+	for i := range endpoints {
+		endpoints[i].ID = uuid.UUID{}
+	}
 }
 
 func removeWhitespaceFromBodies(endpoints mockingjay.Endpoints) {

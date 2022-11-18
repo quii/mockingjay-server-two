@@ -21,7 +21,7 @@
                 <th>Headers</th>
             </tr>
             </thead>
-            <tbody>
+            <tbody hx-target="closest tr" hx-swap="outerHTML">
             {{range .}}
                 {{template "endpoint_row" .}}
             {{end}}
