@@ -3,8 +3,10 @@ package pageobjects
 import (
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/go-rod/rod"
+	"github.com/go-rod/rod/lib/proto"
 	"github.com/quii/mockingjay-server-two/domain/mockingjay"
 )
 
@@ -37,6 +39,37 @@ func EndpointFromMarkup(el *rod.Element) (mockingjay.Endpoint, error) {
 		},
 	}
 	return endpoint, nil
+}
+
+func InsertEndpoint(form *rod.Element, endpoint mockingjay.Endpoint) error {
+	fillTextWith := func(name string, value string) {
+		form.MustElement(fmt.Sprintf(`*[name="%s"]`, name)).MustInput(value)
+	}
+	addHeaders := func(prefix string, headers mockingjay.Headers) {
+		for k, v := range headers {
+			form.MustElement(fmt.Sprintf(`*[name="%s.header.name"]`, prefix)).MustInput(k)
+			form.MustElement(fmt.Sprintf(`*[name="%s.header.values"]`, prefix)).MustInput(strings.Join(v, "; "))
+		}
+	}
+
+	fillTextWith("description", endpoint.Description)
+	fillTextWith("path", endpoint.Request.Path)
+	fillTextWith("regexpath", endpoint.Request.RegexPath)
+	fillTextWith("request.body", endpoint.Request.Body)
+	form.MustElement(`*[name="method"]`).MustSelect(endpoint.Request.Method)
+	addHeaders("request", endpoint.Request.Headers)
+	fillTextWith("status", fmt.Sprintf("%d", endpoint.Response.Status))
+	fillTextWith("response.body", endpoint.Response.Body)
+	addHeaders("response", endpoint.Response.Headers)
+
+	submitButton, err := form.Element(`#submit`)
+	if err != nil {
+		return err
+	}
+	if err := submitButton.Click(proto.InputMouseButtonLeft, 1); err != nil {
+		return err
+	}
+	return nil
 }
 
 func extractHeadersFromMarkup(el *rod.Element, selector string) mockingjay.Headers {

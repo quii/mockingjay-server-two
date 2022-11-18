@@ -4,12 +4,10 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"strings"
 	"time"
 
 	"github.com/go-rod/rod"
 	"github.com/go-rod/rod/lib/launcher"
-	"github.com/go-rod/rod/lib/proto"
 	"github.com/quii/mockingjay-server-two/adapters/httpserver/drivers/internal/pageobjects"
 	"github.com/quii/mockingjay-server-two/adapters/httpserver/handlers"
 	"github.com/quii/mockingjay-server-two/domain/mockingjay"
@@ -79,31 +77,12 @@ func (d WebDriver) GetCurrentConfiguration() (mockingjay.Endpoints, error) {
 func (d WebDriver) Configure(es ...mockingjay.Endpoint) error {
 	page := d.browser.MustPage(d.adminEndpointsURL)
 	for _, endpoint := range es {
-		page.MustElement(`*[name="description"]`).MustInput(endpoint.Description)
-
-		page.MustElement(`*[name="path"]`).MustInput(endpoint.Request.Path)
-		page.MustElement(`*[name="regexpath"]`).MustInput(endpoint.Request.RegexPath)
-		page.MustElement(`*[name="method"]`).MustSelect(endpoint.Request.Method)
-		page.MustElement(`*[name="request.body"]`).MustInput(endpoint.Request.Body)
-
-		for k, v := range endpoint.Request.Headers {
-			page.MustElement(`*[name="request.header.name"]`).MustInput(k)
-			page.MustElement(`*[name="request.header.values"]`).MustInput(strings.Join(v, "; "))
-		}
-
-		page.MustElement(`*[name="status"]`).MustInput(fmt.Sprintf("%d", endpoint.Response.Status))
-		page.MustElement(`*[name="response.body"]`).MustInput(endpoint.Response.Body)
-
-		for k, v := range endpoint.Request.Headers {
-			page.MustElement(`*[name="response.header.name"]`).MustInput(k)
-			page.MustElement(`*[name="response.header.values"]`).MustInput(strings.Join(v, "; "))
-		}
-
-		submitButton, err := page.Element(`#submit`)
+		form, err := page.Element("form")
 		if err != nil {
-			return err
+			return fmt.Errorf("couldn't find form in page to enter endpoint %w", err)
 		}
-		if err := submitButton.Click(proto.InputMouseButtonLeft, 1); err != nil {
+
+		if err := pageobjects.InsertEndpoint(form, endpoint); err != nil {
 			return err
 		}
 		page.MustWaitNavigation()
