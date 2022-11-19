@@ -2,6 +2,19 @@
 
 The sequel (re-write) of [Mockingjay-server](https://github.com/quii/mockingjay-server)
 
+## Prerequisites
+
+- Go version 1.17+
+- Docker
+
+## Check it works
+
+`make`
+
+## Run it locally in dev mode
+
+`go run cmd/httpserver/main.go -endpoints=specifications/examples/ -dev-mode=true`
+
 ## Hopes and dreams
 
 - I am a much better engineer compared to when I wrote M1J, back in **2015**. It was my first Go project. I think I should be able to get more features but have a much simpler codebase than what MJ ended up being. 
