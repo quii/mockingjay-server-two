@@ -55,7 +55,7 @@ func TestApp(t *testing.T) {
 	t.Cleanup(cleanup)
 
 	t.Run("configuring with website", func(t *testing.T) {
-		//t.Skip()
+		t.Skip()
 		specifications.MockingjayStubServerSpec(t, webDriver, httpDriver, examples, fixtures)
 	})
 

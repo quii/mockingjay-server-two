@@ -13,15 +13,16 @@ import (
 	"github.com/quii/mockingjay-server-two/domain/mockingjay/matching"
 )
 
-type Driver struct {
+type HTTPDriver struct {
 	stubServerURL     string
 	adminReportsURL   string
 	adminEndpointsURL string
 	client            *http.Client
 }
 
-func NewHTTPDriver(stubServerURL string, adminServerURL string, client *http.Client) *Driver {
-	return &Driver{
+func NewHTTPDriver(stubServerURL string, adminServerURL string, client *http.Client) *HTTPDriver {
+	client.Transport = acceptJSONDecorator{transport: http.DefaultTransport}
+	return &HTTPDriver{
 		stubServerURL:     stubServerURL,
 		client:            client,
 		adminReportsURL:   adminServerURL + handlers.ReportsPath,
@@ -29,7 +30,7 @@ func NewHTTPDriver(stubServerURL string, adminServerURL string, client *http.Cli
 	}
 }
 
-func (d Driver) GetReports() ([]matching.Report, error) {
+func (d HTTPDriver) GetReports() ([]matching.Report, error) {
 	var reports []matching.Report
 	res, err := d.client.Get(d.adminReportsURL)
 
@@ -50,7 +51,7 @@ func (d Driver) GetReports() ([]matching.Report, error) {
 	return reports, nil
 }
 
-func (d Driver) Send(request mockingjay.Request) (mockingjay.Response, matching.Report, error) {
+func (d HTTPDriver) Send(request mockingjay.Request) (mockingjay.Response, matching.Report, error) {
 	req := request.ToHTTPRequest(d.stubServerURL)
 
 	res, err := d.client.Do(req)
@@ -79,15 +80,10 @@ func (d Driver) Send(request mockingjay.Request) (mockingjay.Response, matching.
 	}, matching.Report{HadMatch: true}, nil
 }
 
-func (d Driver) GetReport(location string) (matching.Report, error) {
+func (d HTTPDriver) GetReport(location string) (matching.Report, error) {
 	var matchReport matching.Report
-	req, err := http.NewRequest(http.MethodGet, location, nil)
-	if err != nil {
-		return matching.Report{}, err
-	}
-	req.Header.Set("Accept", "application/json")
 
-	res, err := d.client.Do(req)
+	res, err := d.client.Get(location)
 	if err != nil {
 		return matchReport, err
 	}
@@ -104,7 +100,7 @@ func (d Driver) GetReport(location string) (matching.Report, error) {
 	return matchReport, nil
 }
 
-func (d Driver) AddEndpoints(es ...mockingjay.Endpoint) error {
+func (d HTTPDriver) AddEndpoints(es ...mockingjay.Endpoint) error {
 	for _, e := range es {
 		endpointJSON, err := json.Marshal(e)
 		if err != nil {
@@ -130,11 +126,8 @@ func (d Driver) AddEndpoints(es ...mockingjay.Endpoint) error {
 	return nil
 }
 
-func (d Driver) GetEndpoints() (mockingjay.Endpoints, error) {
-	req, _ := http.NewRequest(http.MethodGet, d.adminEndpointsURL, nil)
-	req.Header.Set("Accept", "application/json")
-
-	res, err := d.client.Do(req)
+func (d HTTPDriver) GetEndpoints() (mockingjay.Endpoints, error) {
+	res, err := d.client.Get(d.adminEndpointsURL)
 	if err != nil {
 		return nil, err
 	}
@@ -150,7 +143,7 @@ func (d Driver) GetEndpoints() (mockingjay.Endpoints, error) {
 	return endpoints, nil
 }
 
-func (d Driver) DeleteEndpoint(uuid uuid.UUID) error {
+func (d HTTPDriver) DeleteEndpoint(uuid uuid.UUID) error {
 	url := d.adminEndpointsURL + uuid.String()
 	req, _ := http.NewRequest(http.MethodDelete, url, nil)
 	res, err := d.client.Do(req)
@@ -163,7 +156,7 @@ func (d Driver) DeleteEndpoint(uuid uuid.UUID) error {
 	return nil
 }
 
-func (d Driver) DeleteAllEndpoints() error {
+func (d HTTPDriver) DeleteAllEndpoints() error {
 	endpoints, err := d.GetEndpoints()
 	if err != nil {
 		return err
@@ -183,4 +176,13 @@ type ErrReportNotFound struct {
 
 func (e ErrReportNotFound) Error() string {
 	return fmt.Sprintf("unexpected %d from %s", e.StatusCode, e.Location)
+}
+
+type acceptJSONDecorator struct {
+	transport http.RoundTripper
+}
+
+func (a acceptJSONDecorator) RoundTrip(req *http.Request) (*http.Response, error) {
+	req.Header.Add("Accept", "application/json")
+	return a.transport.RoundTrip(req)
 }

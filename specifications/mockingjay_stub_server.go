@@ -47,7 +47,6 @@ func MockingjayStubServerSpec(t *testing.T, admin Admin, client Client, examples
 		}
 
 		t.Run("a report of all requests made is available", func(t *testing.T) {
-			t.Skip("need to update web driver to parse page")
 			reports, err := admin.GetReports()
 			assert.NoError(t, err)
 			t.Log(reports)
