@@ -11,6 +11,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
+	"github.com/quii/mockingjay-server-two/domain/crud"
 	"github.com/quii/mockingjay-server-two/domain/mockingjay"
 	"github.com/quii/mockingjay-server-two/domain/mockingjay/matching"
 )
@@ -30,13 +31,9 @@ const (
 )
 
 type AdminServiceService interface {
-	GetReports() matching.Reports
-	GetReport(id uuid.UUID) (matching.Report, bool)
-
-	AddEndpoint(e mockingjay.Endpoint) error
-	DeleteEndpoint(uuid2 uuid.UUID) error
-	GetEndpoints() mockingjay.Endpoints
 	Reset()
+	Reports() crud.CRUD[uuid.UUID, matching.Report]
+	Endpoints() crud.CRUD[uuid.UUID, mockingjay.Endpoint]
 }
 
 type AdminHandler struct {
@@ -73,11 +70,20 @@ func NewAdminHandler(service AdminServiceService) *AdminHandler {
 }
 
 func (a *AdminHandler) allReports(w http.ResponseWriter, _ *http.Request) {
-	writeJSON(w, a.service.GetReports())
+	endpoints, err := a.service.Endpoints().GetAll()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	writeJSON(w, endpoints)
 }
 
 func (a *AdminHandler) getEndpoints(w http.ResponseWriter, r *http.Request) {
-	endpoints := a.service.GetEndpoints()
+	endpoints, err := a.service.Endpoints().GetAll()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 	if r.Header.Get("Accept") == "application/json" {
 		writeJSON(w, endpoints)
 	} else {
@@ -92,12 +98,16 @@ func (a *AdminHandler) viewReport(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if report, exists := a.service.GetReport(reportID); exists {
-		writeJSON(w, report)
+	report, exists, err := a.service.Reports().GetByID(reportID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-
-	http.NotFound(w, r)
+	if !exists {
+		http.NotFound(w, r)
+		return
+	}
+	writeJSON(w, report)
 }
 
 func (a *AdminHandler) addEndpoint(w http.ResponseWriter, r *http.Request) {
@@ -113,7 +123,7 @@ func (a *AdminHandler) addEndpoint(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		if err := a.service.AddEndpoint(newEndpoint); err != nil {
+		if err := a.service.Endpoints().Create(newEndpoint); err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
@@ -158,7 +168,7 @@ func (a *AdminHandler) addEndpoint(w http.ResponseWriter, r *http.Request) {
 			CDCs: nil,
 		}
 
-		if err := a.service.AddEndpoint(newEndpoint); err != nil {
+		if err := a.service.Endpoints().Create(newEndpoint); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -179,7 +189,7 @@ func (a *AdminHandler) DeleteEndpoint(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := a.service.DeleteEndpoint(id); err != nil {
+	if err := a.service.Endpoints().Delete(id); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
