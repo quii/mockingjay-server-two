@@ -14,25 +14,40 @@ import (
 )
 
 type HTTPDriver struct {
-	stubServerURL     string
-	adminReportsURL   string
-	adminEndpointsURL string
-	client            *http.Client
+	stubServerURL string
+	reportsURL    string
+	endpointsURL  string
+	client        *http.Client
+}
+
+func (d HTTPDriver) DeleteReports() error {
+	req, err := http.NewRequest(http.MethodDelete, d.reportsURL, nil)
+	if err != nil {
+		return err
+	}
+	res, err := d.client.Do(req)
+	if err != nil {
+		return err
+	}
+	if res.StatusCode != http.StatusOK {
+		return fmt.Errorf("unepxected %d from %s", res.StatusCode, d.reportsURL)
+	}
+	return nil
 }
 
 func NewHTTPDriver(stubServerURL string, adminServerURL string, client *http.Client) *HTTPDriver {
 	client.Transport = acceptJSONDecorator{transport: http.DefaultTransport}
 	return &HTTPDriver{
-		stubServerURL:     stubServerURL,
-		client:            client,
-		adminReportsURL:   adminServerURL + handlers.ReportsPath,
-		adminEndpointsURL: adminServerURL + handlers.EndpointsPath,
+		stubServerURL: stubServerURL,
+		client:        client,
+		reportsURL:    adminServerURL + handlers.ReportsPath,
+		endpointsURL:  adminServerURL + handlers.EndpointsPath,
 	}
 }
 
 func (d HTTPDriver) GetReports() ([]matching.Report, error) {
 	var reports []matching.Report
-	res, err := d.client.Get(d.adminReportsURL)
+	res, err := d.client.Get(d.reportsURL)
 
 	if err != nil {
 		return nil, err
@@ -40,7 +55,7 @@ func (d HTTPDriver) GetReports() ([]matching.Report, error) {
 	defer res.Body.Close()
 
 	if res.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("unexpected status of %d from %s", res.StatusCode, d.adminReportsURL)
+		return nil, fmt.Errorf("unexpected status of %d from %s", res.StatusCode, d.reportsURL)
 	}
 
 	err = json.NewDecoder(res.Body).Decode(&reports)
@@ -107,7 +122,7 @@ func (d HTTPDriver) AddEndpoints(es ...mockingjay.Endpoint) error {
 			return err
 		}
 
-		req, err := http.NewRequest(http.MethodPost, d.adminEndpointsURL, bytes.NewReader(endpointJSON))
+		req, err := http.NewRequest(http.MethodPost, d.endpointsURL, bytes.NewReader(endpointJSON))
 		req.Header.Set("Content-Type", "application/json")
 		if err != nil {
 			return err
@@ -119,7 +134,7 @@ func (d HTTPDriver) AddEndpoints(es ...mockingjay.Endpoint) error {
 		}
 		defer res.Body.Close()
 		if res.StatusCode != http.StatusAccepted {
-			return fmt.Errorf("got unexpected %d when trying to configure mj at %s", res.StatusCode, d.adminEndpointsURL)
+			return fmt.Errorf("got unexpected %d when trying to configure mj at %s", res.StatusCode, d.endpointsURL)
 		}
 	}
 
@@ -127,13 +142,13 @@ func (d HTTPDriver) AddEndpoints(es ...mockingjay.Endpoint) error {
 }
 
 func (d HTTPDriver) GetEndpoints() (mockingjay.Endpoints, error) {
-	res, err := d.client.Get(d.adminEndpointsURL)
+	res, err := d.client.Get(d.endpointsURL)
 	if err != nil {
 		return nil, err
 	}
 	defer res.Body.Close()
 	if res.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("unexpected status %d from %s", res.StatusCode, d.adminEndpointsURL)
+		return nil, fmt.Errorf("unexpected status %d from %s", res.StatusCode, d.endpointsURL)
 	}
 	var endpoints mockingjay.Endpoints
 
@@ -144,7 +159,7 @@ func (d HTTPDriver) GetEndpoints() (mockingjay.Endpoints, error) {
 }
 
 func (d HTTPDriver) DeleteEndpoint(uuid uuid.UUID) error {
-	url := d.adminEndpointsURL + uuid.String()
+	url := d.endpointsURL + uuid.String()
 	req, _ := http.NewRequest(http.MethodDelete, url, nil)
 	res, err := d.client.Do(req)
 	if err != nil {
@@ -156,7 +171,7 @@ func (d HTTPDriver) DeleteEndpoint(uuid uuid.UUID) error {
 	return nil
 }
 
-func (d HTTPDriver) DeleteAllEndpoints() error {
+func (d HTTPDriver) DeleteEndpoints() error {
 	endpoints, err := d.GetEndpoints()
 	if err != nil {
 		return err

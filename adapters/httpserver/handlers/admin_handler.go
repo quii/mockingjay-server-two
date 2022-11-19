@@ -58,6 +58,7 @@ func NewAdminHandler(service AdminServiceService) *AdminHandler {
 
 	adminRouter := mux.NewRouter()
 	adminRouter.HandleFunc(ReportsPath, app.allReports).Methods(http.MethodGet)
+	adminRouter.HandleFunc(ReportsPath, app.deleteReports).Methods(http.MethodDelete)
 	adminRouter.HandleFunc(ReportsPath+"/{reportID}", app.getReport).Methods(http.MethodGet)
 
 	adminRouter.HandleFunc(EndpointsPath, app.getEndpoints).Methods(http.MethodGet)
@@ -208,6 +209,21 @@ func (a *AdminHandler) DeleteEndpoint(w http.ResponseWriter, r *http.Request) {
 	if err := a.service.Endpoints().Delete(id); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
+	}
+	w.WriteHeader(http.StatusOK)
+}
+
+func (a *AdminHandler) deleteReports(w http.ResponseWriter, _ *http.Request) {
+	reports, err := a.service.Reports().GetAll()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	for _, report := range reports {
+		if err := a.service.Reports().Delete(report.ID); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 	}
 	w.WriteHeader(http.StatusOK)
 }

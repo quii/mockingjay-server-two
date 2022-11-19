@@ -14,10 +14,12 @@ import (
 
 type Admin interface {
 	GetReports() ([]matching.Report, error)
+	DeleteReports() error
+
 	AddEndpoints(endpoints ...mockingjay.Endpoint) error
 	GetEndpoints() (mockingjay.Endpoints, error)
 	DeleteEndpoint(uuid uuid.UUID) error
-	DeleteAllEndpoints() error
+	DeleteEndpoints() error
 }
 
 type Client interface {
@@ -26,7 +28,8 @@ type Client interface {
 }
 
 func MockingjayStubServerSpec(t *testing.T, admin Admin, client Client, examples mockingjay.Endpoints, testFixtures []mockingjay.TestFixture) {
-	assert.NoError(t, admin.DeleteAllEndpoints())
+	assert.NoError(t, admin.DeleteEndpoints())
+	assert.NoError(t, admin.DeleteReports())
 
 	t.Run("mj can be configured with request/response pairs (examples), which can then be called by a client with a request to get matching response", func(t *testing.T) {
 		for _, endpoint := range examples {
@@ -58,7 +61,7 @@ func MockingjayStubServerSpec(t *testing.T, admin Admin, client Client, examples
 		for _, f := range testFixtures {
 			t.Run(f.Endpoint.Description, func(t *testing.T) {
 				t.Run("can configure mj on the fly with an endpoint", func(t *testing.T) {
-					assert.NoError(t, admin.DeleteAllEndpoints())
+					assert.NoError(t, admin.DeleteEndpoints())
 					assert.NoError(t, admin.AddEndpoints(f.Endpoint))
 					currentEndpoints, err := admin.GetEndpoints()
 					assert.NoError(t, err)

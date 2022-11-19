@@ -1,56 +1,63 @@
 {{template "top" .}}
-{{range .}}
-    <h1>{{template "cross_tick" .HadMatch}} <time>{{.CreatedAt.Format "01/02/2006 15:04:05 UTC"}}</time></h1>
-    <div class="match">
-        <section>
-            <h2>Incoming request</h2>
-            <dl>
-                <dt>Method</dt>
-                <dd>{{.IncomingRequest.Method}}</dd>
-                <dt>Path</dt>
-                <dd>{{.IncomingRequest.Path}}</dd>
-                <dt>Body</dt>
-                <dd>{{.IncomingRequest.Body}}</dd>
-                <dt>Headers</dt>
-                {{template "header_list" .IncomingRequest.Headers}}
-            </dl>
-        </section>
-        <section>
-            {{if .HadMatch}}
-                <h2>Responded with</h2>
-                <dl>
-                    <dt>Status</dt>
-                    <dd>{{.SuccessfulMatch.Status}}</dd>
-                    <dt>Body</dt>
-                    <dd>{{.SuccessfulMatch.Body}}</dd>
-                    {{template "header_list" .SuccessfulMatch.Headers}}
-                </dl>
-            {{else}}
-                <h2>Failed matches</h2>
-                <table>
-                    <thead>
-                    <tr>
-                        <th>Endpoint name</th>
-                        <th>Path</th>
-                        <th>Method</th>
-                        <th>Headers</th>
-                        <th>Body</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {{range .FailedMatches}}
-                        <tr>
-                            <td>{{.Description}}</td>
-                            <td>{{template "cross_tick" .Match.Path}}</td>
-                            <td>{{template "cross_tick" .Match.Method}}</td>
-                            <td>{{template "cross_tick" .Match.Headers}}</td>
-                            <td>{{template "cross_tick" .Match.Body}}</td>
-                        </tr>
+<ul id="reports">
+    {{range .}}
+        <li>
+            <h1>{{template "cross_tick" .HadMatch}}
+                <time>{{.CreatedAt.Format "01/02/2006 15:04:05 UTC"}}</time>
+            </h1>
+            <div class="match">
+                <section>
+                    <h2>Incoming request</h2>
+                    <dl>
+                        <dt>Method</dt>
+                        <dd>{{.IncomingRequest.Method}}</dd>
+                        <dt>Path</dt>
+                        <dd>{{.IncomingRequest.Path}}</dd>
+                        <dt>Body</dt>
+                        <dd>{{.IncomingRequest.Body}}</dd>
+                        <dt>Headers</dt>
+                        {{template "header_list" .IncomingRequest.Headers}}
+                    </dl>
+                </section>
+                <section>
+                    {{if .HadMatch}}
+                        <h2>Responded with</h2>
+                        <dl>
+                            <dt>Status</dt>
+                            <dd>{{.SuccessfulMatch.Status}}</dd>
+                            <dt>Body</dt>
+                            <dd>{{.SuccessfulMatch.Body}}</dd>
+                            {{template "header_list" .SuccessfulMatch.Headers}}
+                        </dl>
+                    {{else}}
+                        <h2>Failed matches</h2>
+                        <table>
+                            <thead>
+                            <tr>
+                                <th>Endpoint name</th>
+                                <th>Path</th>
+                                <th>Method</th>
+                                <th>Headers</th>
+                                <th>Body</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {{range .FailedMatches}}
+                                <tr>
+                                    <td>{{.Description}}</td>
+                                    <td>{{template "cross_tick" .Match.Path}}</td>
+                                    <td>{{template "cross_tick" .Match.Method}}</td>
+                                    <td>{{template "cross_tick" .Match.Headers}}</td>
+                                    <td>{{template "cross_tick" .Match.Body}}</td>
+                                </tr>
+                            {{end}}
+                            </tbody>
+                        </table>
                     {{end}}
-                    </tbody>
-                </table>
-            {{end}}
-        </section>
-    </div>
-{{end}}
+                </section>
+            </div>
+        </li>
+    {{end}}
+</ul>
+
 {{template "bottom" .}}

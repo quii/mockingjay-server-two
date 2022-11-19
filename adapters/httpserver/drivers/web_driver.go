@@ -17,10 +17,10 @@ import (
 )
 
 type WebDriver struct {
-	adminReportsURL   string
-	adminEndpointsURL string
-	client            *http.Client
-	browser           *rod.Browser
+	reportsURL   string
+	endpointsURL string
+	client       *http.Client
+	browser      *rod.Browser
 }
 
 var (
@@ -51,22 +51,22 @@ func NewWebDriver(adminServerURL string, client *http.Client, debug bool) (*WebD
 	}
 
 	return &WebDriver{
-		client:            client,
-		browser:           browser,
-		adminReportsURL:   adminServerURL + handlers.ReportsPath,
-		adminEndpointsURL: adminServerURL + handlers.EndpointsPath,
+		client:       client,
+		browser:      browser,
+		reportsURL:   adminServerURL + handlers.ReportsPath,
+		endpointsURL: adminServerURL + handlers.EndpointsPath,
 	}, cleanup
 }
 
 func (d WebDriver) GetEndpoints() (mockingjay.Endpoints, error) {
 	var endpoints mockingjay.Endpoints
 
-	endpointsPage, err := d.browser.Page(proto.TargetCreateTarget{URL: d.adminEndpointsURL})
+	endpointsPage, err := d.browser.Page(proto.TargetCreateTarget{URL: d.endpointsURL})
 	endpointsPage.MustWaitNavigation()
 	endpointsPage.MustElement("table") // force the thing to check for a table
 
 	if err != nil {
-		return nil, fmt.Errorf("unable to reach %s, %w", d.adminEndpointsURL, err)
+		return nil, fmt.Errorf("unable to reach %s, %w", d.endpointsURL, err)
 	}
 	elements, err := endpointsPage.Elements(".endpoint")
 	if err != nil {
@@ -84,7 +84,7 @@ func (d WebDriver) GetEndpoints() (mockingjay.Endpoints, error) {
 }
 
 func (d WebDriver) AddEndpoints(es ...mockingjay.Endpoint) error {
-	page := d.browser.MustPage(d.adminEndpointsURL)
+	page := d.browser.MustPage(d.endpointsURL)
 	for _, endpoint := range es {
 		form, err := page.Element("form")
 		if err != nil {
@@ -101,7 +101,7 @@ func (d WebDriver) AddEndpoints(es ...mockingjay.Endpoint) error {
 }
 
 func (d WebDriver) DeleteEndpoint(uuid uuid.UUID) error {
-	page := d.browser.MustPage(d.adminEndpointsURL)
+	page := d.browser.MustPage(d.endpointsURL)
 	rowToDelete, err := page.Element(fmt.Sprintf(`*[data-id="%s"]`, uuid.String()))
 	if err != nil {
 		return err
@@ -110,7 +110,7 @@ func (d WebDriver) DeleteEndpoint(uuid uuid.UUID) error {
 	return nil
 }
 
-func (d WebDriver) DeleteAllEndpoints() error {
+func (d WebDriver) DeleteEndpoints() error {
 	endpoints, err := d.GetEndpoints()
 	if err != nil {
 		return err
@@ -124,9 +124,40 @@ func (d WebDriver) DeleteAllEndpoints() error {
 }
 
 func (d WebDriver) GetReports() ([]matching.Report, error) {
-	return nil, ErrNotImplemented
+	var reports []matching.Report
+
+	page := d.browser.MustPage(d.reportsURL)
+	page.MustWaitNavigation()
+	page.MustElement("#reports")
+	elements := page.MustElements("#reports li")
+	for range elements {
+		reports = append(reports, matching.Report{
+			ID:              uuid.UUID{},
+			HadMatch:        false,
+			IncomingRequest: mockingjay.Request{},
+			FailedMatches:   nil,
+			SuccessfulMatch: mockingjay.Response{},
+			CreatedAt:       time.Time{},
+		})
+	}
+	return reports, nil
 }
 
 func (d WebDriver) GetReport(_ string) (matching.Report, error) {
 	return matching.Report{}, ErrNotImplemented
+}
+
+func (d WebDriver) DeleteReports() error {
+	req, err := http.NewRequest(http.MethodDelete, d.reportsURL, nil)
+	if err != nil {
+		return err
+	}
+	res, err := d.client.Do(req)
+	if err != nil {
+		return err
+	}
+	if res.StatusCode != http.StatusOK {
+		return fmt.Errorf("unepxected %d from %s", res.StatusCode, d.reportsURL)
+	}
+	return nil
 }

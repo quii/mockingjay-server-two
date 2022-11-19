@@ -55,7 +55,6 @@ func TestApp(t *testing.T) {
 	t.Cleanup(cleanup)
 
 	t.Run("configuring with website", func(t *testing.T) {
-		t.Skip()
 		specifications.MockingjayStubServerSpec(t, webDriver, httpDriver, examples, fixtures)
 	})
 
@@ -85,7 +84,7 @@ func TestApp(t *testing.T) {
 			},
 			CDCs: nil,
 		}
-		assert.NoError(t, webDriver.DeleteAllEndpoints())
+		assert.NoError(t, webDriver.DeleteEndpoints())
 		assert.NoError(t, webDriver.AddEndpoints(endpoint))
 		endpoints, err := webDriver.GetEndpoints()
 		assert.NoError(t, err)
