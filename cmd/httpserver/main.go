@@ -20,6 +20,7 @@ func main() {
 		adminPort       = fs.String("admin-port", config.DefaultAdminServerPort, "admin server port")
 		adminBaseURL    = fs.String("admin-base-url", config.DefaultAdminBaseURL, "admin base url")
 		stubPort        = fs.String("stub-port", config.DefaultStubServerPort, "stub server port")
+		devMode         = fs.Bool("dev-mode", config.DevModeOff, "dev mode allows templates to be refreshed, logs, etc")
 		endpointsFolder = fs.String("endpoints", "", "folder for endpoints")
 		_               = fs.String("config", "", "config file (optional)")
 	)
@@ -46,7 +47,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	stubHandler, adminHandler := httpserver.New(service, *adminBaseURL)
+	stubHandler, adminHandler := httpserver.New(service, *adminBaseURL, *devMode)
 
 	printStartupMessage(endpointsFolder, adminPort, stubPort, adminBaseURL)
 

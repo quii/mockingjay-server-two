@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"html/template"
 	"io/fs"
-	"log"
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -42,18 +42,24 @@ type AdminServiceService interface {
 type AdminHandler struct {
 	http.Handler
 	service AdminServiceService
+	templFS fs.FS
 	templ   *template.Template
 }
 
-func NewAdminHandler(service AdminServiceService) *AdminHandler {
-	templ, err := template.ParseFS(templates, "templates/*.gohtml")
-	if err != nil {
-		panic(err) //todo: fixme
-	}
-
+func NewAdminHandler(service AdminServiceService, devMode bool) *AdminHandler {
 	app := &AdminHandler{
 		service: service,
-		templ:   templ,
+	}
+
+	if devMode {
+		app.templFS = os.DirFS("./adapters/httpserver/handlers")
+	} else {
+		app.templFS = templates
+		templ, err := template.ParseFS(app.templFS, "templates/*.gohtml")
+		if err != nil {
+			panic(err) //todo: fixme
+		}
+		app.templ = templ
 	}
 
 	adminRouter := mux.NewRouter()
@@ -81,7 +87,12 @@ func (a *AdminHandler) allReports(w http.ResponseWriter, r *http.Request) {
 	if r.Header.Get("Accept") == contentTypeApplicationJSON {
 		writeJSON(w, reports)
 	} else {
-		if err := a.templ.ExecuteTemplate(w, "reports.gohtml", reports); err != nil {
+		t, err := a.getTemplates()
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		if err := t.ExecuteTemplate(w, "reports.gohtml", reports); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
 	}
@@ -100,7 +111,12 @@ func (a *AdminHandler) getEndpoints(w http.ResponseWriter, r *http.Request) {
 	if r.Header.Get("Accept") == contentTypeApplicationJSON {
 		writeJSON(w, endpoints)
 	} else {
-		_ = a.templ.ExecuteTemplate(w, "endpoints.gohtml", endpoints)
+		t, err := a.getTemplates()
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		_ = t.ExecuteTemplate(w, "endpoints.gohtml", endpoints)
 	}
 }
 
@@ -120,7 +136,6 @@ func (a *AdminHandler) getReport(w http.ResponseWriter, r *http.Request) {
 		http.NotFound(w, r)
 		return
 	}
-	log.Println("i will send you", report)
 	writeJSON(w, report)
 }
 
@@ -231,4 +246,11 @@ func (a *AdminHandler) deleteReports(w http.ResponseWriter, _ *http.Request) {
 func writeJSON(w http.ResponseWriter, content any) {
 	w.Header().Add("content-type", contentTypeApplicationJSON)
 	_ = json.NewEncoder(w).Encode(content)
+}
+
+func (a *AdminHandler) getTemplates() (*template.Template, error) {
+	if a.templ != nil {
+		return a.templ, nil
+	}
+	return template.ParseFS(a.templFS, "templates/*.gohtml")
 }

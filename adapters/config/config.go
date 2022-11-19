@@ -6,4 +6,7 @@ const (
 
 	DefaultStubServerPort    = "8080"
 	DefaultEndpointsLocation = "/examples/"
+
+	DevModeOff = true
+	DevModeOn  = false
 )

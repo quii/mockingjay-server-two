@@ -9,6 +9,7 @@ import (
 
 	"github.com/alecthomas/assert/v2"
 	"github.com/google/uuid"
+	"github.com/quii/mockingjay-server-two/adapters/config"
 	"github.com/quii/mockingjay-server-two/adapters/httpserver"
 	"github.com/quii/mockingjay-server-two/adapters/httpserver/drivers"
 	"github.com/quii/mockingjay-server-two/adapters/httpserver/handlers"
@@ -40,6 +41,7 @@ func TestApp(t *testing.T) {
 	stubServerHandler, adminHandler := httpserver.New(
 		service,
 		adminServer.URL,
+		config.DevModeOn,
 	)
 
 	stubServer.Config.Handler = stubServerHandler
