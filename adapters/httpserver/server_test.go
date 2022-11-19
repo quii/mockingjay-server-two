@@ -55,7 +55,7 @@ func TestApp(t *testing.T) {
 	t.Cleanup(cleanup)
 
 	t.Run("configuring with website", func(t *testing.T) {
-		t.Skip()
+		//t.Skip()
 		specifications.MockingjayStubServerSpec(t, webDriver, httpDriver, examples, fixtures)
 	})
 
@@ -68,17 +68,17 @@ func TestApp(t *testing.T) {
 			ID:          uuid.New(),
 			Description: "Hello",
 			Request: mockingjay.Request{
-				Method:    http.MethodPost,
-				RegexPath: "",
-				Path:      "/todos/123",
+				Method:    http.MethodGet,
+				RegexPath: "/happy-birthday/[a-z]+",
+				Path:      "/happy-birthday/elodie",
 				Headers: mockingjay.Headers{
 					"accept": []string{"application/json"},
 				},
 				Body: "walk the dog",
 			},
 			Response: mockingjay.Response{
-				Status: http.StatusNoContent,
-				Body:   `{"task": "walk the dog"}`,
+				Status: http.StatusOK,
+				Body:   `{"msg": "happy birthday"}`,
 				Headers: mockingjay.Headers{
 					"content-type": []string{"application/json"},
 				},
@@ -91,6 +91,17 @@ func TestApp(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, 1, len(endpoints))
 		specifications.AssertEndpointEqual(t, endpoints[0], endpoint)
+
+		_, report, err := httpDriver.Send(mockingjay.Request{
+			Method: http.MethodGet,
+			Path:   "/happy-birthday/milo",
+			Headers: mockingjay.Headers{
+				"accept": []string{"application/json"},
+			},
+			Body: "walk the dog",
+		})
+		assert.NoError(t, err)
+		assert.True(t, report.HadMatch)
 	})
 
 	t.Run("view report", func(t *testing.T) {

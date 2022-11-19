@@ -9,12 +9,14 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	"github.com/quii/mockingjay-server-two/domain/crud"
 	"github.com/quii/mockingjay-server-two/domain/mockingjay"
 	"github.com/quii/mockingjay-server-two/domain/mockingjay/matching"
+	"golang.org/x/exp/slices"
 )
 
 var (
@@ -33,8 +35,8 @@ const (
 )
 
 type AdminServiceService interface {
-	Reports() crud.CRUD[uuid.UUID, matching.Report]
-	Endpoints() crud.CRUD[uuid.UUID, mockingjay.Endpoint]
+	Reports() crud.CRUDesque[uuid.UUID, matching.Report]
+	Endpoints() crud.CRUDesque[uuid.UUID, mockingjay.Endpoint]
 }
 
 type AdminHandler struct {
@@ -90,6 +92,10 @@ func (a *AdminHandler) getEndpoints(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+	slices.SortFunc(endpoints, func(a, b mockingjay.Endpoint) bool {
+		return a.LoadedAt.Before(b.LoadedAt)
+	})
+
 	if r.Header.Get("Accept") == contentTypeApplicationJSON {
 		writeJSON(w, endpoints)
 	} else {
@@ -130,7 +136,9 @@ func (a *AdminHandler) addEndpoint(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		if err := a.service.Endpoints().Create(newEndpoint); err != nil {
+		newEndpoint.LoadedAt = time.Now().UTC()
+
+		if err := a.service.Endpoints().Create(newEndpoint.ID, newEndpoint); err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
@@ -172,10 +180,16 @@ func (a *AdminHandler) addEndpoint(w http.ResponseWriter, r *http.Request) {
 				Body:    r.FormValue("response.body"),
 				Headers: responseHeaders,
 			},
-			CDCs: nil,
+			LoadedAt: time.Now().UTC(),
+			CDCs:     nil,
 		}
 
-		if err := a.service.Endpoints().Create(newEndpoint); err != nil {
+		if err := newEndpoint.Request.Compile(); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		if err := a.service.Endpoints().Create(newEndpoint.ID, newEndpoint); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}

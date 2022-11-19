@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"regexp"
 	"strings"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -18,6 +19,7 @@ type (
 		Request     Request   `json:"request"`
 		Response    Response  `json:"response"`
 		CDCs        []CDC
+		LoadedAt    time.Time
 	}
 
 	CDC struct {
@@ -47,7 +49,8 @@ type (
 
 func (r *Request) MatchPath(path string) bool {
 	if r.compiledRegex != nil {
-		return r.compiledRegex.MatchString(path)
+		matchString := r.compiledRegex.MatchString(path)
+		return matchString
 	}
 	return r.Path == path
 }

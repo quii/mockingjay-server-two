@@ -26,6 +26,8 @@ type Client interface {
 }
 
 func MockingjayStubServerSpec(t *testing.T, admin Admin, client Client, examples mockingjay.Endpoints, testFixtures []mockingjay.TestFixture) {
+	assert.NoError(t, admin.DeleteAllEndpoints())
+
 	t.Run("mj can be configured with request/response pairs (examples), which can then be called by a client with a request to get matching response", func(t *testing.T) {
 		for _, endpoint := range examples {
 			t.Run(endpoint.Description, func(t *testing.T) {
@@ -87,8 +89,8 @@ func MockingjayStubServerSpec(t *testing.T, admin Admin, client Client, examples
 
 func assertResponseMatches(t *testing.T, want, got mockingjay.Response) {
 	t.Helper()
-	assert.Equal(t, want.Body, got.Body)
-	assert.Equal(t, want.Status, want.Status)
+	assert.Equal(t, fudgeTheWhiteSpace(want.Body), fudgeTheWhiteSpace(got.Body), "body not equal")
+	assert.Equal(t, want.Status, want.Status, "status not equal")
 
 	for key, v := range want.Headers {
 		for _, value := range v {

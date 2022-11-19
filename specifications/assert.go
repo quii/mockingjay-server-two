@@ -3,8 +3,8 @@ package specifications
 import (
 	"strings"
 	"testing"
+	"time"
 
-	"github.com/adamluzsi/testcase/pp"
 	"github.com/alecthomas/assert/v2"
 	"github.com/google/uuid"
 	"github.com/quii/mockingjay-server-two/domain/mockingjay"
@@ -24,14 +24,15 @@ func AssertEndpointEqual(t *testing.T, got, want mockingjay.Endpoint) {
 	want.ID = uuid.UUID{}
 	got.Response.Body = fudgeTheWhiteSpace(got.Response.Body)
 	want.Response.Body = fudgeTheWhiteSpace(want.Response.Body)
-	t.Log("got", pp.Format(got))
-	t.Log("want", pp.Format(want))
+	got.LoadedAt = time.Time{}
+	want.LoadedAt = time.Time{}
 	assert.Equal(t, got, want)
 }
 
 func fudgeTheWhiteSpace(in string) string {
 	in = strings.Replace(in, "\t", "", -1)
 	in = strings.Replace(in, "\n", "", -1)
+	in = strings.Replace(in, "\r", "", -1)
 	in = strings.Replace(in, " ", "", -1)
 	return in
 }

@@ -9,19 +9,25 @@ import (
 )
 
 type MockingjayStubServerService struct {
-	endpoints    crud.CRUD[uuid.UUID, mockingjay.Endpoint]
-	matchReports crud.CRUD[uuid.UUID, Report]
+	endpoints    crud.CRUDesque[uuid.UUID, mockingjay.Endpoint]
+	matchReports crud.CRUDesque[uuid.UUID, Report]
 }
 
 func NewMockingjayStubServerService(endpoints mockingjay.Endpoints) (*MockingjayStubServerService, error) {
-	return &MockingjayStubServerService{endpoints: mockingjay.NewEndpointCRUD(endpoints), matchReports: NewReportCRUD()}, nil
+	endpointCRUD := crud.NewCRUD[uuid.UUID, mockingjay.Endpoint]()
+	for _, endpoint := range endpoints {
+		if err := endpointCRUD.Create(endpoint.ID, endpoint); err != nil {
+			return nil, err
+		}
+	}
+	return &MockingjayStubServerService{endpoints: endpointCRUD, matchReports: crud.NewCRUD[uuid.UUID, Report]()}, nil
 }
 
-func (m *MockingjayStubServerService) Reports() crud.CRUD[uuid.UUID, Report] {
+func (m *MockingjayStubServerService) Reports() crud.CRUDesque[uuid.UUID, Report] {
 	return m.matchReports
 }
 
-func (m *MockingjayStubServerService) Endpoints() crud.CRUD[uuid.UUID, mockingjay.Endpoint] {
+func (m *MockingjayStubServerService) Endpoints() crud.CRUDesque[uuid.UUID, mockingjay.Endpoint] {
 	return m.endpoints
 }
 
@@ -31,7 +37,7 @@ func (m *MockingjayStubServerService) CreateMatchReport(r *http.Request) (Report
 		return Report{}, err
 	}
 	matchReport := NewReport(r, endpoints)
-	if err := m.matchReports.Create(matchReport); err != nil {
+	if err := m.matchReports.Create(matchReport.ID, matchReport); err != nil {
 		return Report{}, err
 	}
 	return matchReport, nil

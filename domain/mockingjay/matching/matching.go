@@ -32,7 +32,7 @@ func newMatcher(req *http.Request) func(mockingjay.Endpoint) RequestMatch {
 	}
 
 	return func(e mockingjay.Endpoint) RequestMatch {
-		return RequestMatch{
+		match := RequestMatch{
 			Endpoint: e,
 			Match: Match{
 				Path:    e.Request.MatchPath(req.URL.Path),
@@ -41,6 +41,7 @@ func newMatcher(req *http.Request) func(mockingjay.Endpoint) RequestMatch {
 				Body:    string(body) == e.Request.Body,
 			},
 		}
+		return match
 	}
 }
 
