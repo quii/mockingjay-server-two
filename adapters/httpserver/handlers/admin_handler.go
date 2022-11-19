@@ -33,7 +33,7 @@ const (
 type AdminServiceService interface {
 	GetReports() matching.Reports
 	GetReport(id uuid.UUID) (matching.Report, bool)
-	PutEndpoints(e mockingjay.Endpoints) error
+	AddEndpoints(e mockingjay.Endpoints) error
 	GetEndpoints() mockingjay.Endpoints
 }
 
@@ -111,7 +111,7 @@ func (a *AdminHandler) putEndpoints(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := a.service.PutEndpoints(newEndpoints); err != nil {
+	if err := a.service.AddEndpoints(newEndpoints); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
@@ -158,7 +158,7 @@ func (a *AdminHandler) addEndpoint(w http.ResponseWriter, r *http.Request) {
 		CDCs: nil,
 	}
 
-	if err := a.service.PutEndpoints(append(a.service.GetEndpoints(), newEndpoint)); err != nil {
+	if err := a.service.AddEndpoints(append(a.service.GetEndpoints(), newEndpoint)); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -167,7 +167,7 @@ func (a *AdminHandler) addEndpoint(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *AdminHandler) deleteEndpoints(w http.ResponseWriter, _ *http.Request) {
-	if err := a.service.PutEndpoints(nil); err != nil {
+	if err := a.service.AddEndpoints(nil); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -190,7 +190,7 @@ func (a *AdminHandler) DeleteEndpoint(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := a.service.PutEndpoints(slices.Delete(endpoints, i, i+1)); err != nil {
+	if err := a.service.AddEndpoints(slices.Delete(endpoints, i, i+1)); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}

@@ -1,12 +1,14 @@
 package pageobjects
 
 import (
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
 
 	"github.com/go-rod/rod"
 	"github.com/go-rod/rod/lib/proto"
+	"github.com/google/uuid"
 	"github.com/quii/mockingjay-server-two/domain/mockingjay"
 )
 
@@ -23,7 +25,18 @@ func EndpointFromMarkup(el *rod.Element) (mockingjay.Endpoint, error) {
 		return mockingjay.Endpoint{}, err
 	}
 
+	rawUUID := el.MustAttribute(`data-id`)
+	if rawUUID == nil {
+		return mockingjay.Endpoint{}, errors.New("markup must be broken, no data-id attribute found")
+	}
+
+	id, err := uuid.Parse(*rawUUID)
+	if err != nil {
+		return mockingjay.Endpoint{}, err
+	}
+
 	endpoint := mockingjay.Endpoint{
+		ID:          id,
 		Description: el.MustElement(`[data-field=description`).MustText(),
 		Request: mockingjay.Request{
 			Method:    getRequestField("method"),

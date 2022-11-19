@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 
+	"github.com/google/uuid"
 	"github.com/quii/mockingjay-server-two/adapters/httpserver/handlers"
 	"github.com/quii/mockingjay-server-two/domain/mockingjay"
 	"github.com/quii/mockingjay-server-two/domain/mockingjay/matching"
@@ -17,6 +18,11 @@ type Driver struct {
 	adminReportsURL   string
 	adminEndpointsURL string
 	client            *http.Client
+}
+
+func (d Driver) DeleteEndpoint(uuid uuid.UUID) error {
+	//TODO implement me
+	panic("implement me")
 }
 
 func NewHTTPDriver(stubServerURL string, adminServerURL string, client *http.Client) *Driver {
@@ -95,7 +101,7 @@ func (d Driver) GetReport(location string) (matching.Report, error) {
 	return matching.Report{}, nil
 }
 
-func (d Driver) Configure(es ...mockingjay.Endpoint) error {
+func (d Driver) AddEndpoints(es ...mockingjay.Endpoint) error {
 	endpointJSON, err := json.Marshal(es)
 	if err != nil {
 		return err

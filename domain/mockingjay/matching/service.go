@@ -39,7 +39,7 @@ func (m *MockingjayStubServerService) GetReport(id uuid.UUID) (Report, bool) {
 	return report, exists
 }
 
-func (m *MockingjayStubServerService) PutEndpoints(e mockingjay.Endpoints) error {
+func (m *MockingjayStubServerService) AddEndpoints(e mockingjay.Endpoints) error {
 	m.endpoints = e
 	return nil
 }

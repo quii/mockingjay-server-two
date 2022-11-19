@@ -1,7 +1,6 @@
 package specifications
 
 import (
-	"strings"
 	"testing"
 
 	"github.com/alecthomas/assert/v2"
@@ -11,49 +10,30 @@ import (
 )
 
 type Admin interface {
-	Configure(endpoints ...mockingjay.Endpoint) error
+	AddEndpoints(endpoints ...mockingjay.Endpoint) error
 	GetReports() ([]matching.Report, error)
 	Reset() error
 	GetEndpoints() (mockingjay.Endpoints, error)
+	DeleteEndpoint(uuid uuid.UUID) error
 }
 
 func MockingjayAdmin(t *testing.T, admin Admin, endpoints mockingjay.Endpoints) {
-	t.Run("can check all endpoints are configured", func(t *testing.T) {
+	t.Run("can configure new endpoints and retrieve them", func(t *testing.T) {
 		assert.NoError(t, admin.Reset())
-		assert.NoError(t, admin.Configure(endpoints...))
+		assert.NoError(t, admin.AddEndpoints(endpoints...))
 
-		retrievedConfiguration, err := admin.GetEndpoints()
+		retrievedEndpoints, err := admin.GetEndpoints()
 		assert.NoError(t, err)
-		assert.Equal(t, len(endpoints), len(retrievedConfiguration))
+		AssertEndpointsEqual(t, retrievedEndpoints, endpoints)
 
-		//todo: make an AssertEqual method on endpoints or something to tidy this up
-		removeWhitespaceFromBodies(endpoints)
-		removeWhitespaceFromBodies(retrievedConfiguration)
-		zeroUUIDs(endpoints)
-		zeroUUIDs(retrievedConfiguration)
+		t.Run("and can then delete them", func(t *testing.T) {
+			for _, endpoint := range retrievedEndpoints {
+				assert.NoError(t, admin.DeleteEndpoint(endpoint.ID))
+			}
+			gotEndpoints, err := admin.GetEndpoints()
 
-		//todo: to test all endpoints will require support for multiple headers
-		for i, endpoint := range endpoints {
-			assert.Equal(t, endpoint, retrievedConfiguration[i])
-		}
+			assert.NoError(t, err)
+			assert.Equal(t, 0, len(gotEndpoints))
+		})
 	})
-}
-
-func zeroUUIDs(endpoints mockingjay.Endpoints) {
-	for i := range endpoints {
-		endpoints[i].ID = uuid.UUID{}
-	}
-}
-
-func removeWhitespaceFromBodies(endpoints mockingjay.Endpoints) {
-	for i := range endpoints {
-		endpoints[i].Response.Body = fudgeTheWhiteSpace(endpoints[i].Response.Body)
-	}
-}
-
-func fudgeTheWhiteSpace(in string) string {
-	in = strings.Replace(in, "\t", "", -1)
-	in = strings.Replace(in, "\n", "", -1)
-	in = strings.Replace(in, " ", "", -1)
-	return in
 }

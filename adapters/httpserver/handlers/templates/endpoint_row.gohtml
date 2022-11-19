@@ -1,5 +1,5 @@
 {{define "endpoint_row"}}
-    <tr class="endpoint">
+    <tr class="endpoint" data-id="{{.ID}}">
         <td data-field="description">{{.Description}}</td>
 
         <td data-request-field="method">{{.Request.Method}}</td>

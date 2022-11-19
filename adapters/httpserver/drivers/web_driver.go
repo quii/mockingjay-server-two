@@ -9,6 +9,7 @@ import (
 	"github.com/go-rod/rod"
 	"github.com/go-rod/rod/lib/launcher"
 	"github.com/go-rod/rod/lib/proto"
+	"github.com/google/uuid"
 	"github.com/quii/mockingjay-server-two/adapters/httpserver/drivers/internal/pageobjects"
 	"github.com/quii/mockingjay-server-two/adapters/httpserver/handlers"
 	"github.com/quii/mockingjay-server-two/domain/mockingjay"
@@ -82,7 +83,7 @@ func (d WebDriver) GetEndpoints() (mockingjay.Endpoints, error) {
 	return endpoints, nil
 }
 
-func (d WebDriver) Configure(es ...mockingjay.Endpoint) error {
+func (d WebDriver) AddEndpoints(es ...mockingjay.Endpoint) error {
 	page := d.browser.MustPage(d.adminEndpointsURL)
 	for _, endpoint := range es {
 		form, err := page.Element("form")
@@ -96,6 +97,16 @@ func (d WebDriver) Configure(es ...mockingjay.Endpoint) error {
 		page.MustWaitNavigation()
 	}
 
+	return nil
+}
+
+func (d WebDriver) DeleteEndpoint(uuid uuid.UUID) error {
+	page := d.browser.MustPage(d.adminEndpointsURL)
+	rowToDelete, err := page.Element(fmt.Sprintf(`*[data-id="%s"]`, uuid.String()))
+	if err != nil {
+		return err
+	}
+	rowToDelete.MustElement("button").MustClick()
 	return nil
 }
 

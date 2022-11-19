@@ -56,7 +56,7 @@ func TestApp(t *testing.T) {
 	specifications.MockingjayStubServerSpec(t, driver, examples, fixtures)
 	specifications.MockingjayAdmin(t, webDriver, examples)
 
-	t.Run("add an endpoint and get it back again", func(t *testing.T) {
+	t.Run("smaller ad-hoc example", func(t *testing.T) {
 		endpoint := mockingjay.Endpoint{
 			ID:          uuid.UUID{},
 			Description: "Hello",
@@ -67,25 +67,18 @@ func TestApp(t *testing.T) {
 				Headers: mockingjay.Headers{
 					"accept": []string{"application/json"},
 				},
-				Body: "",
+				Body: "walk the dog",
 			},
 			Response: mockingjay.Response{
 				Status: http.StatusNoContent,
-				Body:   "lol",
+				Body:   `{"task": "walk the dog"}`,
 				Headers: mockingjay.Headers{
 					"content-type": []string{"application/json"},
 				},
 			},
 			CDCs: nil,
 		}
-
-		assert.NoError(t, webDriver.Reset())
-		assert.NoError(t, webDriver.Configure(endpoint))
-
-		savedEndpoints, err := webDriver.GetEndpoints()
-		assert.NoError(t, err)
-		assert.Equal(t, endpoint.Request.Headers, savedEndpoints[0].Request.Headers)
-		assert.Equal(t, endpoint.Response.Headers, savedEndpoints[0].Response.Headers)
+		specifications.MockingjayAdmin(t, webDriver, mockingjay.Endpoints{endpoint})
 	})
 
 	t.Run("view report", func(t *testing.T) {
@@ -115,7 +108,7 @@ func TestApp(t *testing.T) {
 	t.Run("put new configuration", func(t *testing.T) {
 		t.Run("400 if you put a bad configuration", func(t *testing.T) {
 			t.Run("invalid regex", func(t *testing.T) {
-				assert.Error(t, driver.Configure(mockingjay.Endpoint{
+				assert.Error(t, driver.AddEndpoints(mockingjay.Endpoint{
 					Description: "lala",
 					Request: mockingjay.Request{
 						Method:    http.MethodGet,
