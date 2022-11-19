@@ -31,7 +31,6 @@ const (
 )
 
 type AdminServiceService interface {
-	Reset()
 	Reports() crud.CRUD[uuid.UUID, matching.Report]
 	Endpoints() crud.CRUD[uuid.UUID, mockingjay.Endpoint]
 }
@@ -58,7 +57,6 @@ func NewAdminHandler(service AdminServiceService) *AdminHandler {
 	adminRouter.HandleFunc(ReportsPath+"/{reportID}", app.viewReport).Methods(http.MethodGet)
 
 	adminRouter.HandleFunc(EndpointsPath, app.getEndpoints).Methods(http.MethodGet)
-	adminRouter.HandleFunc(EndpointsPath, app.deleteEndpoints).Methods(http.MethodDelete)
 	adminRouter.HandleFunc(EndpointsPath+"{endpointIndex}", app.DeleteEndpoint).Methods(http.MethodDelete)
 	adminRouter.HandleFunc(EndpointsPath, app.addEndpoint).Methods(http.MethodPost)
 
@@ -70,12 +68,12 @@ func NewAdminHandler(service AdminServiceService) *AdminHandler {
 }
 
 func (a *AdminHandler) allReports(w http.ResponseWriter, _ *http.Request) {
-	endpoints, err := a.service.Endpoints().GetAll()
+	reports, err := a.service.Reports().GetAll()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	writeJSON(w, endpoints)
+	writeJSON(w, reports)
 }
 
 func (a *AdminHandler) getEndpoints(w http.ResponseWriter, r *http.Request) {
@@ -175,11 +173,6 @@ func (a *AdminHandler) addEndpoint(w http.ResponseWriter, r *http.Request) {
 
 		http.Redirect(w, r, "/", http.StatusMovedPermanently)
 	}
-}
-
-func (a *AdminHandler) deleteEndpoints(w http.ResponseWriter, _ *http.Request) {
-	a.service.Reset()
-	w.WriteHeader(http.StatusNoContent)
 }
 
 func (a *AdminHandler) DeleteEndpoint(w http.ResponseWriter, r *http.Request) {

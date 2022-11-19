@@ -30,26 +30,12 @@ func TestMockingjay(t *testing.T) {
 	assert.NoError(t, err)
 	adapters.StartDockerServer(t, config.DefaultStubServerPort, config.DefaultAdminServerPort)
 
-	t.Run("stub server", func(t *testing.T) {
-		driver := drivers.NewHTTPDriver(
-			fmt.Sprintf("http://localhost:%s", config.DefaultStubServerPort),
-			fmt.Sprintf("http://localhost:%s", config.DefaultAdminServerPort),
-			&http.Client{
-				Timeout: 1 * time.Second,
-			},
-		)
-		specifications.MockingjayStubServerSpec(t, driver, examples, fixtures)
-	})
-
-	t.Run("web interface", func(t *testing.T) {
-		driver, cleanup := drivers.NewWebDriver(
-			fmt.Sprintf("http://localhost:%s", config.DefaultAdminServerPort),
-			&http.Client{
-				Timeout: 1 * time.Second,
-			},
-			false,
-		)
-		t.Cleanup(cleanup)
-		specifications.MockingjayAdmin(t, driver, examples)
-	})
+	driver := drivers.NewHTTPDriver(
+		fmt.Sprintf("http://localhost:%s", config.DefaultStubServerPort),
+		fmt.Sprintf("http://localhost:%s", config.DefaultAdminServerPort),
+		&http.Client{
+			Timeout: 1 * time.Second,
+		},
+	)
+	specifications.MockingjayStubServerSpec(t, driver, examples, fixtures)
 }

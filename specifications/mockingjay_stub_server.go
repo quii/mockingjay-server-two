@@ -6,14 +6,18 @@ import (
 
 	"github.com/adamluzsi/testcase/pp"
 	"github.com/alecthomas/assert/v2"
+	"github.com/google/uuid"
 	"github.com/quii/mockingjay-server-two/domain/mockingjay"
 	"github.com/quii/mockingjay-server-two/domain/mockingjay/matching"
 	"golang.org/x/exp/slices"
 )
 
-type Mockingjay interface {
-	Admin
-	Client
+type Admin interface {
+	GetReports() ([]matching.Report, error)
+	AddEndpoints(endpoints ...mockingjay.Endpoint) error
+	GetEndpoints() (mockingjay.Endpoints, error)
+	DeleteEndpoint(uuid uuid.UUID) error
+	DeleteAllEndpoints() error
 }
 
 type Client interface {
@@ -21,10 +25,19 @@ type Client interface {
 	//CheckEndpoints() ([]contract.Report, error) - wip
 }
 
+type Mockingjay interface {
+	Admin
+	Client
+}
+
 func MockingjayStubServerSpec(t *testing.T, mj Mockingjay, examples mockingjay.Endpoints, testFixtures []mockingjay.TestFixture) {
-	t.Run("mj can be pre-configured with request/response pairs (examples), which can then be called by a client with a request to get matching response", func(t *testing.T) {
+	t.Run("mj can be configured with request/response pairs (examples), which can then be called by a client with a request to get matching response", func(t *testing.T) {
 		for _, endpoint := range examples {
 			t.Run(endpoint.Description, func(t *testing.T) {
+				assert.NoError(t, mj.AddEndpoints(endpoint))
+				t.Cleanup(func() {
+					assert.NoError(t, mj.DeleteEndpoint(endpoint.ID))
+				})
 				res, report, err := mj.Send(endpoint.Request)
 				assert.True(t, report.HadMatch, report)
 				assert.NoError(t, err)
@@ -35,6 +48,7 @@ func MockingjayStubServerSpec(t *testing.T, mj Mockingjay, examples mockingjay.E
 		t.Run("a report of all requests made is available", func(t *testing.T) {
 			reports, err := mj.GetReports()
 			assert.NoError(t, err)
+			t.Log(reports)
 			assert.Equal(t, len(examples), len(reports))
 		})
 	})
@@ -43,11 +57,11 @@ func MockingjayStubServerSpec(t *testing.T, mj Mockingjay, examples mockingjay.E
 		for _, f := range testFixtures {
 			t.Run(f.Endpoint.Description, func(t *testing.T) {
 				t.Run("can configure mj on the fly with an endpoint", func(t *testing.T) {
-					assert.NoError(t, mj.Reset())
+					assert.NoError(t, mj.DeleteAllEndpoints())
 					assert.NoError(t, mj.AddEndpoints(f.Endpoint))
 					currentEndpoints, err := mj.GetEndpoints()
 					assert.NoError(t, err)
-					AssertEndpointsEqual(t, currentEndpoints, mockingjay.Endpoints{f.Endpoint})
+					AssertEndpointsEqual(t, mockingjay.Endpoints{f.Endpoint}, currentEndpoints)
 				})
 
 				for _, request := range f.MatchingRequests {

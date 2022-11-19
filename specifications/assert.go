@@ -4,6 +4,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/adamluzsi/testcase/pp"
 	"github.com/alecthomas/assert/v2"
 	"github.com/google/uuid"
 	"github.com/quii/mockingjay-server-two/domain/mockingjay"
@@ -23,6 +24,8 @@ func AssertEndpointEqual(t *testing.T, got, want mockingjay.Endpoint) {
 	want.ID = uuid.UUID{}
 	got.Response.Body = fudgeTheWhiteSpace(got.Response.Body)
 	want.Response.Body = fudgeTheWhiteSpace(want.Response.Body)
+	t.Log("got", pp.Format(got))
+	t.Log("want", pp.Format(want))
 	assert.Equal(t, got, want)
 }
 

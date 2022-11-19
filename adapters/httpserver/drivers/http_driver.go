@@ -20,11 +20,6 @@ type Driver struct {
 	client            *http.Client
 }
 
-func (d Driver) DeleteEndpoint(uuid uuid.UUID) error {
-	//TODO implement me
-	panic("implement me")
-}
-
 func NewHTTPDriver(stubServerURL string, adminServerURL string, client *http.Client) *Driver {
 	return &Driver{
 		stubServerURL:     stubServerURL,
@@ -97,7 +92,9 @@ func (d Driver) GetReport(location string) (matching.Report, error) {
 			Location:   location,
 		}
 	}
-	_ = json.NewDecoder(res.Body).Decode(&matchReport)
+	if err := json.NewDecoder(res.Body).Decode(&matchReport); err != nil {
+		return matching.Report{}, fmt.Errorf("could not decode response into reports %w", err)
+	}
 	return matching.Report{}, nil
 }
 
@@ -127,23 +124,6 @@ func (d Driver) AddEndpoints(es ...mockingjay.Endpoint) error {
 	return nil
 }
 
-func (d Driver) Reset() error {
-	req, err := http.NewRequest(http.MethodDelete, d.adminEndpointsURL, nil)
-	if err != nil {
-		return err
-	}
-	res, err := d.client.Do(req)
-	if err != nil {
-		return err
-	}
-	defer res.Body.Close()
-	if res.StatusCode != http.StatusNoContent {
-		return fmt.Errorf("got unexpected %d when trying to reset mj at %s", res.StatusCode, d.adminEndpointsURL)
-	}
-
-	return nil
-}
-
 func (d Driver) GetEndpoints() (mockingjay.Endpoints, error) {
 	req, _ := http.NewRequest(http.MethodGet, d.adminEndpointsURL, nil)
 	req.Header.Set("Accept", "application/json")
@@ -162,6 +142,32 @@ func (d Driver) GetEndpoints() (mockingjay.Endpoints, error) {
 		return nil, err
 	}
 	return endpoints, nil
+}
+
+func (d Driver) DeleteEndpoint(uuid uuid.UUID) error {
+	url := d.adminEndpointsURL + uuid.String()
+	req, _ := http.NewRequest(http.MethodDelete, url, nil)
+	res, err := d.client.Do(req)
+	if err != nil {
+		return err
+	}
+	if res.StatusCode != http.StatusOK {
+		return fmt.Errorf("unpexected %d from %s", res.StatusCode, url)
+	}
+	return nil
+}
+
+func (d Driver) DeleteAllEndpoints() error {
+	endpoints, err := d.GetEndpoints()
+	if err != nil {
+		return err
+	}
+	for _, endpoint := range endpoints {
+		if err := d.DeleteEndpoint(endpoint.ID); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 type ErrReportNotFound struct {

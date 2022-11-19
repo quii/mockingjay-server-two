@@ -35,6 +35,10 @@ func EndpointFromMarkup(el *rod.Element) (mockingjay.Endpoint, error) {
 		return mockingjay.Endpoint{}, err
 	}
 
+	if id.String() == "" {
+		return mockingjay.Endpoint{}, errors.New("couldnt get an id for endpoint")
+	}
+
 	endpoint := mockingjay.Endpoint{
 		ID:          id,
 		Description: el.MustElement(`[data-field=description`).MustText(),

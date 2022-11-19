@@ -3,6 +3,7 @@ package drivers
 import (
 	"errors"
 	"fmt"
+	"log"
 	"net/http"
 	"time"
 
@@ -107,6 +108,21 @@ func (d WebDriver) DeleteEndpoint(uuid uuid.UUID) error {
 		return err
 	}
 	rowToDelete.MustElement("button").MustClick()
+	return nil
+}
+
+func (d WebDriver) DeleteAllEndpoints() error {
+	endpoints, err := d.GetEndpoints()
+	if err != nil {
+		return err
+	}
+	log.Println("going to delete", len(endpoints))
+	for _, endpoint := range endpoints {
+		log.Println("deleting", endpoint.ID.String())
+		if err := d.DeleteEndpoint(endpoint.ID); err != nil {
+			return err
+		}
+	}
 	return nil
 }
 

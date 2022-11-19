@@ -83,7 +83,9 @@ func (e Endpoints) Compile() error {
 		if err := e[i].Request.Compile(); err != nil {
 			return err
 		}
-		e[i].ID = uuid.New()
+		if e[i].ID == uuid.Nil {
+			e[i].ID = uuid.New()
+		}
 	}
 	return nil
 }

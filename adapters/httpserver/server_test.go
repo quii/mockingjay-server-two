@@ -1,6 +1,7 @@
 package httpserver_test
 
 import (
+	"log"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -33,7 +34,11 @@ func TestApp(t *testing.T) {
 	defer adminServer.Close()
 	defer stubServer.Close()
 
-	service, err := matching.NewMockingjayStubServerService(examples)
+	assert.NoError(t, examples.Compile())
+
+	log.Println(examples[0].ID.String())
+
+	service, err := matching.NewMockingjayStubServerService(nil)
 	assert.NoError(t, err)
 
 	stubServerHandler, adminHandler := httpserver.New(
@@ -54,11 +59,10 @@ func TestApp(t *testing.T) {
 	t.Cleanup(cleanup)
 
 	specifications.MockingjayStubServerSpec(t, driver, examples, fixtures)
-	specifications.MockingjayAdmin(t, webDriver, examples)
 
 	t.Run("smaller ad-hoc example", func(t *testing.T) {
 		endpoint := mockingjay.Endpoint{
-			ID:          uuid.UUID{},
+			ID:          uuid.New(),
 			Description: "Hello",
 			Request: mockingjay.Request{
 				Method:    http.MethodPost,
@@ -78,7 +82,12 @@ func TestApp(t *testing.T) {
 			},
 			CDCs: nil,
 		}
-		specifications.MockingjayAdmin(t, webDriver, mockingjay.Endpoints{endpoint})
+		assert.NoError(t, webDriver.DeleteAllEndpoints())
+		assert.NoError(t, webDriver.AddEndpoints(endpoint))
+		endpoints, err := webDriver.GetEndpoints()
+		assert.NoError(t, err)
+		assert.Equal(t, 1, len(endpoints))
+		specifications.AssertEndpointEqual(t, endpoints[0], endpoint)
 	})
 
 	t.Run("view report", func(t *testing.T) {
