@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"html/template"
 	"io/fs"
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -25,9 +26,10 @@ var (
 )
 
 const (
-	HeaderMockingjayMatched = "x-mockingjay-matched"
-	ReportsPath             = "/match-reports"
-	EndpointsPath           = "/"
+	HeaderMockingjayMatched    = "x-mockingjay-matched"
+	ReportsPath                = "/match-reports"
+	EndpointsPath              = "/"
+	contentTypeApplicationJSON = "application/json"
 )
 
 type AdminServiceService interface {
@@ -54,7 +56,7 @@ func NewAdminHandler(service AdminServiceService) *AdminHandler {
 
 	adminRouter := mux.NewRouter()
 	adminRouter.HandleFunc(ReportsPath, app.allReports).Methods(http.MethodGet)
-	adminRouter.HandleFunc(ReportsPath+"/{reportID}", app.viewReport).Methods(http.MethodGet)
+	adminRouter.HandleFunc(ReportsPath+"/{reportID}", app.getReport).Methods(http.MethodGet)
 
 	adminRouter.HandleFunc(EndpointsPath, app.getEndpoints).Methods(http.MethodGet)
 	adminRouter.HandleFunc(EndpointsPath+"{endpointIndex}", app.DeleteEndpoint).Methods(http.MethodDelete)
@@ -67,13 +69,19 @@ func NewAdminHandler(service AdminServiceService) *AdminHandler {
 	return app
 }
 
-func (a *AdminHandler) allReports(w http.ResponseWriter, _ *http.Request) {
+func (a *AdminHandler) allReports(w http.ResponseWriter, r *http.Request) {
 	reports, err := a.service.Reports().GetAll()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	writeJSON(w, reports)
+	if r.Header.Get("Accept") == contentTypeApplicationJSON {
+		writeJSON(w, reports)
+	} else {
+		if err := a.templ.ExecuteTemplate(w, "reports.gohtml", reports); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+	}
 }
 
 func (a *AdminHandler) getEndpoints(w http.ResponseWriter, r *http.Request) {
@@ -82,14 +90,14 @@ func (a *AdminHandler) getEndpoints(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	if r.Header.Get("Accept") == "application/json" {
+	if r.Header.Get("Accept") == contentTypeApplicationJSON {
 		writeJSON(w, endpoints)
 	} else {
 		_ = a.templ.ExecuteTemplate(w, "endpoints.gohtml", endpoints)
 	}
 }
 
-func (a *AdminHandler) viewReport(w http.ResponseWriter, r *http.Request) {
+func (a *AdminHandler) getReport(w http.ResponseWriter, r *http.Request) {
 	reportID, err := uuid.Parse(mux.Vars(r)["reportID"])
 	if err != nil {
 		http.NotFound(w, r)
@@ -105,11 +113,12 @@ func (a *AdminHandler) viewReport(w http.ResponseWriter, r *http.Request) {
 		http.NotFound(w, r)
 		return
 	}
+	log.Println("i will send you", report)
 	writeJSON(w, report)
 }
 
 func (a *AdminHandler) addEndpoint(w http.ResponseWriter, r *http.Request) {
-	if r.Header.Get("Content-type") == "application/json" {
+	if r.Header.Get("Content-type") == contentTypeApplicationJSON {
 		var newEndpoint mockingjay.Endpoint
 		if err := json.NewDecoder(r.Body).Decode(&newEndpoint); err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
@@ -190,6 +199,6 @@ func (a *AdminHandler) DeleteEndpoint(w http.ResponseWriter, r *http.Request) {
 }
 
 func writeJSON(w http.ResponseWriter, content any) {
-	w.Header().Add("content-type", "application/json")
+	w.Header().Add("content-type", contentTypeApplicationJSON)
 	_ = json.NewEncoder(w).Encode(content)
 }

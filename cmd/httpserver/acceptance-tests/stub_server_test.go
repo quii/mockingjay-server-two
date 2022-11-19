@@ -37,5 +37,5 @@ func TestMockingjay(t *testing.T) {
 			Timeout: 1 * time.Second,
 		},
 	)
-	specifications.MockingjayStubServerSpec(t, driver, examples, fixtures)
+	specifications.MockingjayStubServerSpec(t, driver, driver, examples, fixtures)
 }

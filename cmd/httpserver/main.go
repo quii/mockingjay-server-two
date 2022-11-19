@@ -20,7 +20,7 @@ func main() {
 		adminPort       = fs.String("admin-port", config.DefaultAdminServerPort, "admin server port")
 		adminBaseURL    = fs.String("admin-base-url", config.DefaultAdminBaseURL, "admin base url")
 		stubPort        = fs.String("stub-port", config.DefaultStubServerPort, "stub server port")
-		endpointsFolder = fs.String("endpoints", config.DefaultEndpointsLocation, "folder for endpoints")
+		endpointsFolder = fs.String("endpoints", "", "folder for endpoints")
 		_               = fs.String("config", "", "config file (optional)")
 	)
 
@@ -34,9 +34,12 @@ func main() {
 		log.Fatal(err)
 	}
 
-	endpoints, err := mockingjay.NewEndpointsFromCue(*endpointsFolder)
-	if err != nil {
-		log.Fatal(err)
+	var endpoints mockingjay.Endpoints
+	if endpointsFolder != nil && *endpointsFolder != "" {
+		endpoints, err = mockingjay.NewEndpointsFromCue(*endpointsFolder)
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 
 	service, err := matching.NewMockingjayStubServerService(endpoints)
@@ -64,14 +67,10 @@ func printStartupMessage(endpointsFolder *string, adminPort *string, stubPort *s
 		log.Fatal(err)
 	}
 
-	fullPathOfEndpointsFile := executable + *endpointsFolder
-
 	log.Printf("🚀 mockingjay launched! attempting to listen on %s for admin server, and %s for stub server\n", *adminPort, *stubPort)
 
-	if *endpointsFolder == config.DefaultEndpointsLocation {
-		log.Println("‼️  no endpoints specified, loading default examples")
-	} else {
-		log.Printf("📂 endpoints loaded from %s/%s\n", executable, fullPathOfEndpointsFile)
+	if endpointsFolder != nil && *endpointsFolder != "" {
+		log.Printf("📂 endpoints loaded from %s/%s\n", executable, executable+*endpointsFolder)
 	}
 	log.Printf("💡 visit %s to see the current configuration", *adminURL)
 }

@@ -3,7 +3,6 @@ package drivers
 import (
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
 	"time"
 
@@ -116,35 +115,12 @@ func (d WebDriver) DeleteAllEndpoints() error {
 	if err != nil {
 		return err
 	}
-	log.Println("going to delete", len(endpoints))
 	for _, endpoint := range endpoints {
-		log.Println("deleting", endpoint.ID.String())
 		if err := d.DeleteEndpoint(endpoint.ID); err != nil {
 			return err
 		}
 	}
 	return nil
-}
-
-func (d WebDriver) Reset() error {
-	req, err := http.NewRequest(http.MethodDelete, d.adminEndpointsURL, nil)
-	if err != nil {
-		return err
-	}
-	res, err := d.client.Do(req)
-	if err != nil {
-		return err
-	}
-	defer res.Body.Close()
-	if res.StatusCode != http.StatusNoContent {
-		return fmt.Errorf("got unexpected %d when trying to reset mj at %s", res.StatusCode, d.adminEndpointsURL)
-	}
-
-	return nil
-}
-
-func (d WebDriver) Send(_ mockingjay.Request) (mockingjay.Response, matching.Report, error) {
-	return mockingjay.Response{}, matching.Report{}, ErrNotImplemented
 }
 
 func (d WebDriver) GetReports() ([]matching.Report, error) {

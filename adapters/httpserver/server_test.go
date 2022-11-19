@@ -1,7 +1,6 @@
 package httpserver_test
 
 import (
-	"log"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -35,9 +34,6 @@ func TestApp(t *testing.T) {
 	defer stubServer.Close()
 
 	assert.NoError(t, examples.Compile())
-
-	log.Println(examples[0].ID.String())
-
 	service, err := matching.NewMockingjayStubServerService(nil)
 	assert.NoError(t, err)
 
@@ -50,7 +46,7 @@ func TestApp(t *testing.T) {
 	adminServer.Config.Handler = adminHandler
 
 	client := &http.Client{Timeout: 2 * time.Second}
-	driver := drivers.NewHTTPDriver(
+	httpDriver := drivers.NewHTTPDriver(
 		stubServer.URL,
 		adminServer.URL,
 		client,
@@ -58,7 +54,14 @@ func TestApp(t *testing.T) {
 	webDriver, cleanup := drivers.NewWebDriver(adminServer.URL, client, false)
 	t.Cleanup(cleanup)
 
-	specifications.MockingjayStubServerSpec(t, driver, examples, fixtures)
+	t.Run("configuring with website", func(t *testing.T) {
+		t.Skip()
+		specifications.MockingjayStubServerSpec(t, webDriver, httpDriver, examples, fixtures)
+	})
+
+	t.Run("configuring with http api", func(t *testing.T) {
+		specifications.MockingjayStubServerSpec(t, httpDriver, httpDriver, examples, fixtures)
+	})
 
 	t.Run("smaller ad-hoc example", func(t *testing.T) {
 		endpoint := mockingjay.Endpoint{
@@ -93,7 +96,7 @@ func TestApp(t *testing.T) {
 	t.Run("view report", func(t *testing.T) {
 		t.Run("404 if report doesn't exist", func(t *testing.T) {
 			location := adminServer.URL + handlers.ReportsPath + "/" + uuid.New().String()
-			_, err := driver.GetReport(location)
+			_, err := httpDriver.GetReport(location)
 
 			assert.Error(t, err)
 			assert.Equal(t, drivers.ErrReportNotFound{
@@ -104,7 +107,7 @@ func TestApp(t *testing.T) {
 
 		t.Run("404 if uuid wasn't valid", func(t *testing.T) {
 			location := adminServer.URL + handlers.ReportsPath + "/" + "whatever"
-			_, err := driver.GetReport(location)
+			_, err := httpDriver.GetReport(location)
 
 			assert.Error(t, err)
 			assert.Equal(t, drivers.ErrReportNotFound{
@@ -117,7 +120,7 @@ func TestApp(t *testing.T) {
 	t.Run("put new configuration", func(t *testing.T) {
 		t.Run("400 if you put a bad configuration", func(t *testing.T) {
 			t.Run("invalid regex", func(t *testing.T) {
-				assert.Error(t, driver.AddEndpoints(mockingjay.Endpoint{
+				assert.Error(t, httpDriver.AddEndpoints(mockingjay.Endpoint{
 					Description: "lala",
 					Request: mockingjay.Request{
 						Method:    http.MethodGet,

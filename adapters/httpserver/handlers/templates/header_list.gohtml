@@ -1,0 +1,10 @@
+{{define "header_list"}}
+    <dl>
+        {{range $key, $values := .}}
+            <dt>{{$key}}</dt>
+            {{range $values}}
+                <dd>{{.}}</dd>
+            {{end}}
+        {{end}}
+    </dl>
+{{end}}

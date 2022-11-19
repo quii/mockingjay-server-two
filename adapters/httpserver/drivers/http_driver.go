@@ -81,7 +81,13 @@ func (d Driver) Send(request mockingjay.Request) (mockingjay.Response, matching.
 
 func (d Driver) GetReport(location string) (matching.Report, error) {
 	var matchReport matching.Report
-	res, err := d.client.Get(location)
+	req, err := http.NewRequest(http.MethodGet, location, nil)
+	if err != nil {
+		return matching.Report{}, err
+	}
+	req.Header.Set("Accept", "application/json")
+
+	res, err := d.client.Do(req)
 	if err != nil {
 		return matchReport, err
 	}
@@ -95,7 +101,7 @@ func (d Driver) GetReport(location string) (matching.Report, error) {
 	if err := json.NewDecoder(res.Body).Decode(&matchReport); err != nil {
 		return matching.Report{}, fmt.Errorf("could not decode response into reports %w", err)
 	}
-	return matching.Report{}, nil
+	return matchReport, nil
 }
 
 func (d Driver) AddEndpoints(es ...mockingjay.Endpoint) error {
