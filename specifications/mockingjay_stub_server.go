@@ -43,6 +43,7 @@ func MockingjayStubServerSpec(t *testing.T, mj Mockingjay, examples mockingjay.E
 		for _, f := range testFixtures {
 			t.Run(f.Endpoint.Description, func(t *testing.T) {
 				t.Run("can configure mj on the fly with an endpoint", func(t *testing.T) {
+					assert.NoError(t, mj.Reset())
 					assert.NoError(t, mj.AddEndpoints(f.Endpoint))
 					currentEndpoints, err := mj.GetEndpoints()
 					assert.NoError(t, err)

@@ -102,23 +102,26 @@ func (d Driver) GetReport(location string) (matching.Report, error) {
 }
 
 func (d Driver) AddEndpoints(es ...mockingjay.Endpoint) error {
-	endpointJSON, err := json.Marshal(es)
-	if err != nil {
-		return err
-	}
+	for _, e := range es {
+		endpointJSON, err := json.Marshal(e)
+		if err != nil {
+			return err
+		}
 
-	req, err := http.NewRequest(http.MethodPut, d.adminEndpointsURL, bytes.NewReader(endpointJSON))
-	if err != nil {
-		return err
-	}
+		req, err := http.NewRequest(http.MethodPost, d.adminEndpointsURL, bytes.NewReader(endpointJSON))
+		req.Header.Set("Content-Type", "application/json")
+		if err != nil {
+			return err
+		}
 
-	res, err := d.client.Do(req)
-	if err != nil {
-		return err
-	}
-	defer res.Body.Close()
-	if res.StatusCode != http.StatusAccepted {
-		return fmt.Errorf("got unexpected %d when trying to configure mj at %s", res.StatusCode, d.adminEndpointsURL)
+		res, err := d.client.Do(req)
+		if err != nil {
+			return err
+		}
+		defer res.Body.Close()
+		if res.StatusCode != http.StatusAccepted {
+			return fmt.Errorf("got unexpected %d when trying to configure mj at %s", res.StatusCode, d.adminEndpointsURL)
+		}
 	}
 
 	return nil

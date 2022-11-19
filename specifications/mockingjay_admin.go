@@ -10,9 +10,9 @@ import (
 )
 
 type Admin interface {
-	AddEndpoints(endpoints ...mockingjay.Endpoint) error
 	GetReports() ([]matching.Report, error)
 	Reset() error
+	AddEndpoints(endpoints ...mockingjay.Endpoint) error
 	GetEndpoints() (mockingjay.Endpoints, error)
 	DeleteEndpoint(uuid uuid.UUID) error
 }

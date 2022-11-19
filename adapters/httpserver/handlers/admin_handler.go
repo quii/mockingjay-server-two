@@ -13,7 +13,6 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/quii/mockingjay-server-two/domain/mockingjay"
 	"github.com/quii/mockingjay-server-two/domain/mockingjay/matching"
-	"golang.org/x/exp/slices"
 )
 
 var (
@@ -33,8 +32,11 @@ const (
 type AdminServiceService interface {
 	GetReports() matching.Reports
 	GetReport(id uuid.UUID) (matching.Report, bool)
-	AddEndpoints(e mockingjay.Endpoints) error
+
+	AddEndpoint(e mockingjay.Endpoint) error
+	DeleteEndpoint(uuid2 uuid.UUID) error
 	GetEndpoints() mockingjay.Endpoints
+	Reset()
 }
 
 type AdminHandler struct {
@@ -58,7 +60,6 @@ func NewAdminHandler(service AdminServiceService) *AdminHandler {
 	adminRouter.HandleFunc(ReportsPath, app.allReports).Methods(http.MethodGet)
 	adminRouter.HandleFunc(ReportsPath+"/{reportID}", app.viewReport).Methods(http.MethodGet)
 
-	adminRouter.HandleFunc(EndpointsPath, app.putEndpoints).Methods(http.MethodPut)
 	adminRouter.HandleFunc(EndpointsPath, app.getEndpoints).Methods(http.MethodGet)
 	adminRouter.HandleFunc(EndpointsPath, app.deleteEndpoints).Methods(http.MethodDelete)
 	adminRouter.HandleFunc(EndpointsPath+"{endpointIndex}", app.DeleteEndpoint).Methods(http.MethodDelete)
@@ -99,78 +100,75 @@ func (a *AdminHandler) viewReport(w http.ResponseWriter, r *http.Request) {
 	http.NotFound(w, r)
 }
 
-func (a *AdminHandler) putEndpoints(w http.ResponseWriter, r *http.Request) {
-	var newEndpoints mockingjay.Endpoints
-	if err := json.NewDecoder(r.Body).Decode(&newEndpoints); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	if err := newEndpoints.Compile(); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	if err := a.service.AddEndpoints(newEndpoints); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-	w.WriteHeader(http.StatusAccepted)
-}
-
 func (a *AdminHandler) addEndpoint(w http.ResponseWriter, r *http.Request) {
-	if err := r.ParseForm(); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
+	if r.Header.Get("Content-type") == "application/json" {
+		var newEndpoint mockingjay.Endpoint
+		if err := json.NewDecoder(r.Body).Decode(&newEndpoint); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
 
-	requestHeaders := make(mockingjay.Headers)
-	if r.FormValue("request.header.name") != "" {
-		requestHeaders[r.FormValue("request.header.name")] = strings.Split(r.FormValue("request.header.values"), "; ")
-	}
+		if err := newEndpoint.Request.Compile(); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
 
-	responseHeaders := make(mockingjay.Headers)
-	if r.FormValue("response.header.name") != "" {
-		responseHeaders[r.FormValue("response.header.name")] = strings.Split(r.FormValue("response.header.values"), "; ")
-	}
+		if err := a.service.AddEndpoint(newEndpoint); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		w.WriteHeader(http.StatusAccepted)
+	} else {
+		if err := r.ParseForm(); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
 
-	status, err := strconv.Atoi(r.FormValue("status"))
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
+		requestHeaders := make(mockingjay.Headers)
+		if r.FormValue("request.header.name") != "" {
+			requestHeaders[r.FormValue("request.header.name")] = strings.Split(r.FormValue("request.header.values"), "; ")
+		}
 
-	newEndpoint := mockingjay.Endpoint{
-		ID:          uuid.New(),
-		Description: r.FormValue("description"),
-		Request: mockingjay.Request{
-			Method:    r.FormValue("method"),
-			RegexPath: r.FormValue("regexpath"),
-			Path:      r.FormValue("path"),
-			Headers:   requestHeaders,
-			Body:      r.FormValue("request.body"),
-		},
-		Response: mockingjay.Response{
-			Status:  status,
-			Body:    r.FormValue("response.body"),
-			Headers: responseHeaders,
-		},
-		CDCs: nil,
-	}
+		responseHeaders := make(mockingjay.Headers)
+		if r.FormValue("response.header.name") != "" {
+			responseHeaders[r.FormValue("response.header.name")] = strings.Split(r.FormValue("response.header.values"), "; ")
+		}
 
-	if err := a.service.AddEndpoints(append(a.service.GetEndpoints(), newEndpoint)); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+		status, err := strconv.Atoi(r.FormValue("status"))
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
 
-	http.Redirect(w, r, "/", http.StatusMovedPermanently)
+		newEndpoint := mockingjay.Endpoint{
+			ID:          uuid.New(),
+			Description: r.FormValue("description"),
+			Request: mockingjay.Request{
+				Method:    r.FormValue("method"),
+				RegexPath: r.FormValue("regexpath"),
+				Path:      r.FormValue("path"),
+				Headers:   requestHeaders,
+				Body:      r.FormValue("request.body"),
+			},
+			Response: mockingjay.Response{
+				Status:  status,
+				Body:    r.FormValue("response.body"),
+				Headers: responseHeaders,
+			},
+			CDCs: nil,
+		}
+
+		if err := a.service.AddEndpoint(newEndpoint); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		http.Redirect(w, r, "/", http.StatusMovedPermanently)
+	}
 }
 
 func (a *AdminHandler) deleteEndpoints(w http.ResponseWriter, _ *http.Request) {
-	if err := a.service.AddEndpoints(nil); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+	a.service.Reset()
 	w.WriteHeader(http.StatusNoContent)
 }
 
@@ -180,17 +178,8 @@ func (a *AdminHandler) DeleteEndpoint(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	endpoints := a.service.GetEndpoints()
-	i := slices.IndexFunc(endpoints, func(endpoint mockingjay.Endpoint) bool {
-		return endpoint.ID == id
-	})
 
-	if i == -1 {
-		http.NotFound(w, r)
-		return
-	}
-
-	if err := a.service.AddEndpoints(slices.Delete(endpoints, i, i+1)); err != nil {
+	if err := a.service.DeleteEndpoint(id); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}

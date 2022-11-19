@@ -10,6 +10,7 @@ import (
 )
 
 func AssertEndpointsEqual(t *testing.T, got, want mockingjay.Endpoints) {
+	t.Helper()
 	assert.Equal(t, len(got), len(want))
 	for i, endpoint := range got {
 		AssertEndpointEqual(t, endpoint, want[i])
