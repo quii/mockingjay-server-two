@@ -1,6 +1,7 @@
 package specifications
 
 import (
+	"fmt"
 	"strings"
 	"testing"
 	"time"
@@ -8,6 +9,7 @@ import (
 	"github.com/alecthomas/assert/v2"
 	"github.com/google/uuid"
 	"github.com/quii/mockingjay-server-two/domain/mockingjay"
+	"golang.org/x/exp/slices"
 )
 
 func AssertEndpointsEqual(t *testing.T, got, want mockingjay.Endpoints) {
@@ -27,6 +29,19 @@ func AssertEndpointEqual(t *testing.T, got, want mockingjay.Endpoint) {
 	got.LoadedAt = time.Time{}
 	want.LoadedAt = time.Time{}
 	assert.Equal(t, got, want)
+}
+
+func AssertResponseMatches(t *testing.T, want, got mockingjay.Response) {
+	t.Helper()
+	assert.Equal(t, fudgeTheWhiteSpace(want.Body), fudgeTheWhiteSpace(got.Body), "body not equal")
+	assert.Equal(t, want.Status, want.Status, "status not equal")
+
+	for key, v := range want.Headers {
+		for _, value := range v {
+			i := slices.Index(got.Headers[key], value)
+			assert.NotEqual(t, -1, i, fmt.Sprintf("%q not found in %v", value, got.Headers[key]))
+		}
+	}
 }
 
 func fudgeTheWhiteSpace(in string) string {

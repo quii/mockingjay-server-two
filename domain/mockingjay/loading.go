@@ -9,13 +9,14 @@ import (
 	"github.com/quii/mockingjay-server-two"
 )
 
-type endpointsCue struct {
-	Endpoints []Endpoint
-}
-
-type testFixtureCue struct {
-	Fixtures []TestFixture
-}
+type (
+	endpointsCue struct {
+		Endpoints []Endpoint
+	}
+	testFixtureCue struct {
+		Fixtures []TestFixture
+	}
+)
 
 func NewEndpointsFromCue(basePath string) (Endpoints, error) {
 	var allEndpoints Endpoints

@@ -36,6 +36,7 @@ func NewReport(req *http.Request, endpoints mockingjay.Endpoints) Report {
 		},
 		CreatedAt: time.Now().UTC(),
 	}
+
 	matcher := newMatcher(req)
 	for _, endpoint := range endpoints {
 		match := matcher(endpoint)

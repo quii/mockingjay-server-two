@@ -147,7 +147,7 @@ func (a *AdminHandler) addEndpoint(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		if err := newEndpoint.Request.Compile(); err != nil {
+		if err := newEndpoint.Compile(); err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
@@ -200,7 +200,7 @@ func (a *AdminHandler) addEndpoint(w http.ResponseWriter, r *http.Request) {
 			CDCs:     nil,
 		}
 
-		if err := newEndpoint.Request.Compile(); err != nil {
+		if err := newEndpoint.Compile(); err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}

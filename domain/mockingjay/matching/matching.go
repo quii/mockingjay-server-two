@@ -1,7 +1,6 @@
 package matching
 
 import (
-	"io"
 	"net/http"
 	"net/textproto"
 
@@ -25,31 +24,39 @@ type Match struct {
 }
 
 func newMatcher(req *http.Request) func(mockingjay.Endpoint) RequestMatch {
-	var body []byte
-	if req.Body != nil {
-		defer req.Body.Close()
-		body, _ = io.ReadAll(req.Body)
-	}
+	got := mockingjay.NewRequestFromHTTP(req)
 
 	return func(e mockingjay.Endpoint) RequestMatch {
 		match := RequestMatch{
 			Endpoint: e,
 			Match: Match{
-				Path:    e.Request.MatchPath(req.URL.Path),
-				Method:  e.Request.Method == req.Method,
-				Headers: matchHeaders(e, req.Header),
-				Body:    string(body) == e.Request.Body,
+				Path:    matchPath(e.Request, got),
+				Method:  matchMethod(e.Request, got),
+				Headers: matchHeaders(e.Request, got),
+				Body:    matchBody(e.Request, got),
 			},
 		}
 		return match
 	}
 }
 
-func matchHeaders(e mockingjay.Endpoint, incomingHeaders http.Header) bool {
-	headersMatch := len(e.Request.Headers) == 0
+func matchBody(a, b mockingjay.Request) bool {
+	return a.Body == b.Body
+}
 
-	for key, values := range e.Request.Headers {
-		for _, valuesInIncomingRequestHeader := range incomingHeaders[textproto.CanonicalMIMEHeaderKey(key)] {
+func matchPath(a, b mockingjay.Request) bool {
+	return a.MatchPath(b.Path)
+}
+
+func matchMethod(a, b mockingjay.Request) bool {
+	return a.Method == b.Method
+}
+
+func matchHeaders(a, b mockingjay.Request) bool {
+	headersMatch := len(a.Headers) == 0
+
+	for key, values := range a.Headers {
+		for _, valuesInIncomingRequestHeader := range b.Headers[textproto.CanonicalMIMEHeaderKey(key)] {
 			for _, valuesInEndpoint := range values {
 				if valuesInIncomingRequestHeader == valuesInEndpoint {
 					headersMatch = true

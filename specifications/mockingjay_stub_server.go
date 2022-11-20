@@ -1,7 +1,6 @@
 package specifications
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/adamluzsi/testcase/pp"
@@ -9,7 +8,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/quii/mockingjay-server-two/domain/mockingjay"
 	"github.com/quii/mockingjay-server-two/domain/mockingjay/matching"
-	"golang.org/x/exp/slices"
 )
 
 type Admin interface {
@@ -37,15 +35,16 @@ func MockingjayStubServerSpec(t *testing.T, admin Admin, client Client, examples
 				assert.NoError(t, admin.AddEndpoints(endpoint))
 				endpoints, err := admin.GetEndpoints()
 				assert.NoError(t, err)
-				assert.Equal(t, 1, len(endpoints))
 
 				t.Cleanup(func() {
+					assert.Equal(t, 1, len(endpoints))
 					assert.NoError(t, admin.DeleteEndpoint(endpoints[0].ID))
 				})
+
 				res, report, err := client.Send(endpoint.Request)
 				assert.True(t, report.HadMatch, report)
 				assert.NoError(t, err)
-				assertResponseMatches(t, endpoint.Response, res)
+				AssertResponseMatches(t, endpoint.Response, res)
 			})
 		}
 
@@ -73,7 +72,7 @@ func MockingjayStubServerSpec(t *testing.T, admin Admin, client Client, examples
 						res, report, err := client.Send(request.Request)
 						assert.NoError(t, err)
 						assert.True(t, report.HadMatch, pp.Format(report))
-						assertResponseMatches(t, f.Endpoint.Response, res)
+						AssertResponseMatches(t, f.Endpoint.Response, res)
 					})
 				}
 
@@ -87,17 +86,4 @@ func MockingjayStubServerSpec(t *testing.T, admin Admin, client Client, examples
 			})
 		}
 	})
-}
-
-func assertResponseMatches(t *testing.T, want, got mockingjay.Response) {
-	t.Helper()
-	assert.Equal(t, fudgeTheWhiteSpace(want.Body), fudgeTheWhiteSpace(got.Body), "body not equal")
-	assert.Equal(t, want.Status, want.Status, "status not equal")
-
-	for key, v := range want.Headers {
-		for _, value := range v {
-			i := slices.Index(got.Headers[key], value)
-			assert.NotEqual(t, -1, i, fmt.Sprintf("%q not found in %v", value, got.Headers[key]))
-		}
-	}
 }

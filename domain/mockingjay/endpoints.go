@@ -1,10 +1,6 @@
 package mockingjay
 
 import (
-	"io"
-	"net/http"
-	"regexp"
-	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -19,7 +15,7 @@ type (
 		Request     Request   `json:"request"`
 		Response    Response  `json:"response"`
 		CDCs        []CDC
-		LoadedAt    time.Time
+		LoadedAt    time.Time `json:"loadedAt"`
 	}
 
 	CDC struct {
@@ -34,60 +30,23 @@ type (
 		Headers Headers `json:"headers,omitempty"`
 	}
 
-	Request struct {
-		Method    string  `json:"method,omitempty"`
-		RegexPath string  `json:"regexPath,omitempty"`
-		Path      string  `json:"path,omitempty"`
-		Headers   Headers `json:"headers,omitempty"`
-		Body      string  `json:"body,omitempty"`
-
-		compiledRegex *regexp.Regexp
-	}
-
 	Headers map[string][]string
 )
 
-func (r *Request) MatchPath(path string) bool {
-	if r.compiledRegex != nil {
-		matchString := r.compiledRegex.MatchString(path)
-		return matchString
+func (e *Endpoint) Compile() error {
+	if err := e.Request.compile(); err != nil {
+		return err
 	}
-	return r.Path == path
-}
-
-func (r *Request) Compile() error {
-	if r.RegexPath != "" {
-		rgx, err := regexp.Compile(r.RegexPath)
-		if err != nil {
-			return err
-		}
-		r.compiledRegex = rgx
+	if e.ID == uuid.Nil {
+		e.ID = uuid.New()
 	}
 	return nil
 }
 
-func (r *Request) ToHTTPRequest(basePath string) *http.Request {
-	req, _ := http.NewRequest(r.Method, basePath+r.Path, nil)
-
-	if r.Body != "" {
-		req.Body = io.NopCloser(strings.NewReader(r.Body))
-	}
-
-	for key, values := range r.Headers {
-		for _, value := range values {
-			req.Header.Add(key, value)
-		}
-	}
-	return req
-}
-
 func (e Endpoints) Compile() error {
 	for i := range e {
-		if err := e[i].Request.Compile(); err != nil {
+		if err := e[i].Compile(); err != nil {
 			return err
-		}
-		if e[i].ID == uuid.Nil {
-			e[i].ID = uuid.New()
 		}
 	}
 	return nil
