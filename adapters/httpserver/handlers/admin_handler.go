@@ -78,26 +78,6 @@ func NewAdminHandler(service AdminServiceService, devMode bool) *AdminHandler {
 	return app
 }
 
-func (a *AdminHandler) allReports(w http.ResponseWriter, r *http.Request) {
-	reports, err := a.service.Reports().GetAll()
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	if r.Header.Get("Accept") == contentTypeApplicationJSON {
-		writeJSON(w, reports)
-	} else {
-		t, err := a.getTemplates()
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		if err := t.ExecuteTemplate(w, "reports.gohtml", reports); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-		}
-	}
-}
-
 func (a *AdminHandler) getEndpoints(w http.ResponseWriter, r *http.Request) {
 	endpoints, err := a.service.Endpoints().GetAll()
 	if err != nil {
@@ -117,6 +97,29 @@ func (a *AdminHandler) getEndpoints(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		_ = t.ExecuteTemplate(w, "endpoints.gohtml", endpoints)
+	}
+}
+
+func (a *AdminHandler) allReports(w http.ResponseWriter, r *http.Request) {
+	reports, err := a.service.Reports().GetAll()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	slices.SortFunc(reports, func(a, b matching.Report) bool {
+		return a.CreatedAt.After(b.CreatedAt)
+	})
+	if r.Header.Get("Accept") == contentTypeApplicationJSON {
+		writeJSON(w, reports)
+	} else {
+		t, err := a.getTemplates()
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		if err := t.ExecuteTemplate(w, "reports.gohtml", reports); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
 	}
 }
 
