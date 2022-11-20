@@ -129,7 +129,7 @@ func (d WebDriver) GetReports() ([]matching.Report, error) {
 	page := d.browser.MustPage(d.reportsURL)
 	page.MustWaitNavigation()
 	page.MustElement("#reports")
-	elements := page.MustElements("#reports li")
+	elements := page.MustElements("tbody tr")
 	for range elements {
 		reports = append(reports, matching.Report{
 			ID:              uuid.UUID{},
