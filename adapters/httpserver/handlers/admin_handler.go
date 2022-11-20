@@ -136,7 +136,16 @@ func (a *AdminHandler) getReport(w http.ResponseWriter, r *http.Request) {
 		http.NotFound(w, r)
 		return
 	}
-	writeJSON(w, report)
+	if r.Header.Get("Accept") == contentTypeApplicationJSON {
+		writeJSON(w, report)
+	} else {
+		t, err := a.getTemplates()
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		_ = t.ExecuteTemplate(w, "report.gohtml", report)
+	}
 }
 
 func (a *AdminHandler) addEndpoint(w http.ResponseWriter, r *http.Request) {

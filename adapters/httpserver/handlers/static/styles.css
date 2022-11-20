@@ -5,6 +5,9 @@ tr.htmx-swapping td {
 .match {
     display: flex;
 }
+.container {
+    display: flex;
+}
 @media (prefers-color-scheme: dark) {
     body {
         background-color: black;

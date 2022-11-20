@@ -1,0 +1,34 @@
+{{if .HadMatch}}
+    <h2>Responded with</h2>
+    <dl>
+        <dt>Status</dt>
+        <dd>{{.SuccessfulMatch.Status}}</dd>
+        <dt>Body</dt>
+        <dd>{{.SuccessfulMatch.Body}}</dd>
+        {{template "header_list" .SuccessfulMatch.Headers}}
+    </dl>
+{{else}}
+        <h2>Failed matches</h2>
+        <table>
+            <thead>
+            <tr>
+                <th>Endpoint name</th>
+                <th>Path</th>
+                <th>Method</th>
+                <th>Headers</th>
+                <th>Body</th>
+            </tr>
+            </thead>
+            <tbody>
+            {{range .FailedMatches}}
+                <tr>
+                    <td>{{.Endpoint.Description}}</td>
+                    <td>{{template "cross_tick" .Match.Path}}</td>
+                    <td>{{template "cross_tick" .Match.Method}}</td>
+                    <td>{{template "cross_tick" .Match.Headers}}</td>
+                    <td>{{template "cross_tick" .Match.Body}}</td>
+                </tr>
+            {{end}}
+            </tbody>
+        </table>
+{{end}}
