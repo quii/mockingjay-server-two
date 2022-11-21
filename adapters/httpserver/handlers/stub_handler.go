@@ -3,7 +3,7 @@ package handlers
 import (
 	"net/http"
 
-	"github.com/quii/mockingjay-server-two/domain/mockingjay"
+	http2 "github.com/quii/mockingjay-server-two/domain/mockingjay/http"
 	"github.com/quii/mockingjay-server-two/domain/mockingjay/matching"
 )
 
@@ -39,7 +39,7 @@ func (s *StubHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	writeMJResponse(w, matchReport.SuccessfulMatch)
 }
 
-func writeMJResponse(w http.ResponseWriter, res mockingjay.Response) {
+func writeMJResponse(w http.ResponseWriter, res http2.Response) {
 	w.Header().Add(HeaderMockingjayMatched, "true")
 
 	for key, v := range res.Headers {

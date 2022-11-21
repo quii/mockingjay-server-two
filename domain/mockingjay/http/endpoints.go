@@ -1,4 +1,4 @@
-package mockingjay
+package http
 
 import (
 	"time"
@@ -24,14 +24,12 @@ type (
 		TimeoutMS int    `json:"timeoutMS"`
 	}
 
-	Response struct {
-		Status  int     `json:"status,omitempty"`
-		Body    string  `json:"body,omitempty"`
-		Headers Headers `json:"headers,omitempty"`
-	}
-
 	Headers map[string][]string
 )
+
+func SortEndpoint(a, b Endpoint) bool {
+	return a.LoadedAt.Before(b.LoadedAt)
+}
 
 func (e *Endpoint) Compile() error {
 	if err := e.Request.compile(); err != nil {

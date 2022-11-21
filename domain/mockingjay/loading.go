@@ -7,30 +7,31 @@ import (
 
 	"github.com/cue-exp/cueconfig"
 	"github.com/quii/mockingjay-server-two"
+	"github.com/quii/mockingjay-server-two/domain/mockingjay/http"
 )
 
 type (
 	endpointsCue struct {
-		Endpoints []Endpoint
+		Endpoints []http.Endpoint
 	}
 	testFixtureCue struct {
 		Fixtures []TestFixture
 	}
 )
 
-func NewEndpointsFromCue(basePath string) (Endpoints, error) {
-	var allEndpoints Endpoints
+func NewEndpointsFromCue(basePath string) (http.Endpoints, error) {
+	var allEndpoints http.Endpoints
 
 	dir, err := fs.ReadDir(os.DirFS(basePath), ".")
 	if err != nil {
-		return Endpoints{}, err
+		return http.Endpoints{}, err
 	}
 
 	for _, f := range dir {
 		var endpoints endpointsCue
 		path := basePath + f.Name()
 		if err := cueconfig.Load(path, mj.Schema, nil, nil, &endpoints); err != nil {
-			return Endpoints{}, fmt.Errorf("failed to parse %s, %v", path, err)
+			return http.Endpoints{}, fmt.Errorf("failed to parse %s, %v", path, err)
 		}
 		allEndpoints = append(allEndpoints, endpoints.Endpoints...)
 	}

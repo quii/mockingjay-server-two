@@ -1,5 +1,7 @@
 package crud
 
+import "golang.org/x/exp/slices"
+
 type CRUDesque[ID comparable, T any] interface {
 	GetAll() ([]T, error)
 	GetByID(ID) (T, bool, error)
@@ -7,13 +9,16 @@ type CRUDesque[ID comparable, T any] interface {
 	Delete(ID) error
 }
 
+type Sorter[T any] func(T, T) bool
+
 type CRUD[ID comparable, T any] struct {
-	dict map[ID]T
+	dict   map[ID]T
+	sorter Sorter[T]
 }
 
-func NewCRUD[ID comparable, T any]() *CRUD[ID, T] {
+func New[ID comparable, T any](sorter Sorter[T]) *CRUD[ID, T] {
 	items := make(map[ID]T)
-	return &CRUD[ID, T]{dict: items}
+	return &CRUD[ID, T]{dict: items, sorter: sorter}
 }
 
 func (r *CRUD[ID, T]) GetAll() ([]T, error) {
@@ -21,6 +26,7 @@ func (r *CRUD[ID, T]) GetAll() ([]T, error) {
 	for _, t := range r.dict {
 		items = append(items, t)
 	}
+	slices.SortFunc(items, r.sorter)
 	return items, nil
 }
 

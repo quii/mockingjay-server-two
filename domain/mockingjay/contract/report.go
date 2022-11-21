@@ -1,9 +1,11 @@
 package contract
 
-import "github.com/quii/mockingjay-server-two/domain/mockingjay"
+import (
+	"github.com/quii/mockingjay-server-two/domain/mockingjay/http"
+)
 
 type Report struct {
-	mockingjay.Endpoint
-	ResponseFromDownstream mockingjay.Response
+	http.Endpoint
+	ResponseFromDownstream http.Response
 	Passed                 bool `json:"passed"`
 }

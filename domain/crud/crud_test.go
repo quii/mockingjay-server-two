@@ -8,7 +8,9 @@ import (
 )
 
 func TestCRUD(t *testing.T) {
-	repo := crud.NewCRUD[string, int]()
+	repo := crud.New[string, int](func(x, y int) bool {
+		return x > y
+	})
 
 	t.Run("basic create and read", func(t *testing.T) {
 		assert.NoError(t, repo.Create("hello", 1))

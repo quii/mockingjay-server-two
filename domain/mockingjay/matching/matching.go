@@ -4,11 +4,11 @@ import (
 	"net/http"
 	"net/textproto"
 
-	"github.com/quii/mockingjay-server-two/domain/mockingjay"
+	http2 "github.com/quii/mockingjay-server-two/domain/mockingjay/http"
 )
 
 type RequestMatch struct {
-	Endpoint mockingjay.Endpoint
+	Endpoint http2.Endpoint
 	Match    Match `json:"match"`
 }
 
@@ -23,10 +23,10 @@ type Match struct {
 	Body    bool `json:"body"`
 }
 
-func newMatcher(req *http.Request) func(mockingjay.Endpoint) RequestMatch {
-	got := mockingjay.NewRequestFromHTTP(req)
+func newMatcher(req *http.Request) func(http2.Endpoint) RequestMatch {
+	got := http2.NewRequestFromHTTP(req)
 
-	return func(e mockingjay.Endpoint) RequestMatch {
+	return func(e http2.Endpoint) RequestMatch {
 		match := RequestMatch{
 			Endpoint: e,
 			Match: Match{
@@ -40,19 +40,19 @@ func newMatcher(req *http.Request) func(mockingjay.Endpoint) RequestMatch {
 	}
 }
 
-func matchBody(a, b mockingjay.Request) bool {
+func matchBody(a, b http2.Request) bool {
 	return a.Body == b.Body
 }
 
-func matchPath(a, b mockingjay.Request) bool {
+func matchPath(a, b http2.Request) bool {
 	return a.MatchPath(b.Path)
 }
 
-func matchMethod(a, b mockingjay.Request) bool {
+func matchMethod(a, b http2.Request) bool {
 	return a.Method == b.Method
 }
 
-func matchHeaders(a, b mockingjay.Request) bool {
+func matchHeaders(a, b http2.Request) bool {
 	headersMatch := len(a.Headers) == 0
 
 	for key, values := range a.Headers {

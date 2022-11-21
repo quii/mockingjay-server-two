@@ -10,7 +10,7 @@ import (
 	"github.com/quii/mockingjay-server-two/adapters/config"
 	"github.com/quii/mockingjay-server-two/adapters/httpserver"
 	"github.com/quii/mockingjay-server-two/domain/mockingjay"
-	"github.com/quii/mockingjay-server-two/domain/mockingjay/matching"
+	http2 "github.com/quii/mockingjay-server-two/domain/mockingjay/http"
 )
 
 func main() {
@@ -35,7 +35,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	var endpoints mockingjay.Endpoints
+	var endpoints http2.Endpoints
 	if endpointsFolder != nil && *endpointsFolder != "" {
 		endpoints, err = mockingjay.NewEndpointsFromCue(*endpointsFolder)
 		if err != nil {
@@ -43,7 +43,7 @@ func main() {
 		}
 	}
 
-	service, err := matching.NewMockingjayStubServerService(endpoints)
+	service, err := mockingjay.NewStubService(endpoints)
 	if err != nil {
 		log.Fatal(err)
 	}

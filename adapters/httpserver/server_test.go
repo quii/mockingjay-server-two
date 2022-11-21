@@ -14,7 +14,7 @@ import (
 	"github.com/quii/mockingjay-server-two/adapters/httpserver/drivers"
 	"github.com/quii/mockingjay-server-two/adapters/httpserver/handlers"
 	"github.com/quii/mockingjay-server-two/domain/mockingjay"
-	"github.com/quii/mockingjay-server-two/domain/mockingjay/matching"
+	http2 "github.com/quii/mockingjay-server-two/domain/mockingjay/http"
 	"github.com/quii/mockingjay-server-two/specifications"
 )
 
@@ -35,7 +35,7 @@ func TestApp(t *testing.T) {
 	defer stubServer.Close()
 
 	assert.NoError(t, examples.Compile())
-	service, err := matching.NewMockingjayStubServerService(nil)
+	service, err := mockingjay.NewStubService(nil)
 	assert.NoError(t, err)
 
 	stubServerHandler, adminHandler := httpserver.New(
@@ -65,22 +65,22 @@ func TestApp(t *testing.T) {
 	})
 
 	t.Run("smaller ad-hoc example", func(t *testing.T) {
-		endpoint := mockingjay.Endpoint{
+		endpoint := http2.Endpoint{
 			ID:          uuid.New(),
 			Description: "Hello",
-			Request: mockingjay.Request{
+			Request: http2.Request{
 				Method:    http.MethodGet,
 				RegexPath: "/happy-birthday/[a-z]+",
 				Path:      "/happy-birthday/elodie",
-				Headers: mockingjay.Headers{
+				Headers: http2.Headers{
 					"accept": []string{"application/json"},
 				},
 				Body: "walk the dog",
 			},
-			Response: mockingjay.Response{
+			Response: http2.Response{
 				Status: http.StatusOK,
 				Body:   `{"msg": "happy birthday"}`,
-				Headers: mockingjay.Headers{
+				Headers: http2.Headers{
 					"content-type": []string{"application/json"},
 				},
 			},
@@ -93,10 +93,10 @@ func TestApp(t *testing.T) {
 		assert.Equal(t, 1, len(endpoints))
 		specifications.AssertEndpointEqual(t, endpoints[0], endpoint)
 
-		_, report, err := httpDriver.Send(mockingjay.Request{
+		_, report, err := httpDriver.Send(http2.Request{
 			Method: http.MethodGet,
 			Path:   "/happy-birthday/milo",
-			Headers: mockingjay.Headers{
+			Headers: http2.Headers{
 				"accept": []string{"application/json"},
 			},
 			Body: "walk the dog",
@@ -132,9 +132,9 @@ func TestApp(t *testing.T) {
 	t.Run("put new configuration", func(t *testing.T) {
 		t.Run("400 if you put a bad configuration", func(t *testing.T) {
 			t.Run("invalid regex", func(t *testing.T) {
-				assert.Error(t, httpDriver.AddEndpoints(mockingjay.Endpoint{
+				assert.Error(t, httpDriver.AddEndpoints(http2.Endpoint{
 					Description: "lala",
-					Request: mockingjay.Request{
+					Request: http2.Request{
 						Method:    http.MethodGet,
 						RegexPath: "[", //invalid regex
 						Path:      "/lol",

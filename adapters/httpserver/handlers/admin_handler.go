@@ -14,9 +14,8 @@ import (
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	"github.com/quii/mockingjay-server-two/domain/crud"
-	"github.com/quii/mockingjay-server-two/domain/mockingjay"
+	http2 "github.com/quii/mockingjay-server-two/domain/mockingjay/http"
 	"github.com/quii/mockingjay-server-two/domain/mockingjay/matching"
-	"golang.org/x/exp/slices"
 )
 
 var (
@@ -36,7 +35,7 @@ const (
 
 type AdminServiceService interface {
 	Reports() crud.CRUDesque[uuid.UUID, matching.Report]
-	Endpoints() crud.CRUDesque[uuid.UUID, mockingjay.Endpoint]
+	Endpoints() crud.CRUDesque[uuid.UUID, http2.Endpoint]
 }
 
 type AdminHandler struct {
@@ -84,9 +83,6 @@ func (a *AdminHandler) getEndpoints(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	slices.SortFunc(endpoints, func(a, b mockingjay.Endpoint) bool {
-		return a.LoadedAt.Before(b.LoadedAt)
-	})
 
 	if r.Header.Get("Accept") == contentTypeApplicationJSON {
 		writeJSON(w, endpoints)
@@ -106,9 +102,7 @@ func (a *AdminHandler) allReports(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	slices.SortFunc(reports, func(a, b matching.Report) bool {
-		return a.CreatedAt.After(b.CreatedAt)
-	})
+
 	if r.Header.Get("Accept") == contentTypeApplicationJSON {
 		writeJSON(w, reports)
 	} else {
@@ -153,7 +147,7 @@ func (a *AdminHandler) getReport(w http.ResponseWriter, r *http.Request) {
 
 func (a *AdminHandler) addEndpoint(w http.ResponseWriter, r *http.Request) {
 	if r.Header.Get("Content-type") == contentTypeApplicationJSON {
-		var newEndpoint mockingjay.Endpoint
+		var newEndpoint http2.Endpoint
 		if err := json.NewDecoder(r.Body).Decode(&newEndpoint); err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
@@ -177,12 +171,12 @@ func (a *AdminHandler) addEndpoint(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		requestHeaders := make(mockingjay.Headers)
+		requestHeaders := make(http2.Headers)
 		if r.FormValue("request.header.name") != "" {
 			requestHeaders[r.FormValue("request.header.name")] = strings.Split(r.FormValue("request.header.values"), "; ")
 		}
 
-		responseHeaders := make(mockingjay.Headers)
+		responseHeaders := make(http2.Headers)
 		if r.FormValue("response.header.name") != "" {
 			responseHeaders[r.FormValue("response.header.name")] = strings.Split(r.FormValue("response.header.values"), "; ")
 		}
@@ -193,17 +187,17 @@ func (a *AdminHandler) addEndpoint(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		newEndpoint := mockingjay.Endpoint{
+		newEndpoint := http2.Endpoint{
 			ID:          uuid.New(),
 			Description: r.FormValue("description"),
-			Request: mockingjay.Request{
+			Request: http2.Request{
 				Method:    r.FormValue("method"),
 				RegexPath: r.FormValue("regexpath"),
 				Path:      r.FormValue("path"),
 				Headers:   requestHeaders,
 				Body:      r.FormValue("request.body"),
 			},
-			Response: mockingjay.Response{
+			Response: http2.Response{
 				Status:  status,
 				Body:    r.FormValue("response.body"),
 				Headers: responseHeaders,

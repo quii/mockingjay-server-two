@@ -7,6 +7,7 @@ import (
 	"github.com/alecthomas/assert/v2"
 	"github.com/google/uuid"
 	"github.com/quii/mockingjay-server-two/domain/mockingjay"
+	"github.com/quii/mockingjay-server-two/domain/mockingjay/http"
 	"github.com/quii/mockingjay-server-two/domain/mockingjay/matching"
 )
 
@@ -14,18 +15,18 @@ type Admin interface {
 	GetReports() ([]matching.Report, error)
 	DeleteReports() error
 
-	AddEndpoints(endpoints ...mockingjay.Endpoint) error
-	GetEndpoints() (mockingjay.Endpoints, error)
+	AddEndpoints(endpoints ...http.Endpoint) error
+	GetEndpoints() (http.Endpoints, error)
 	DeleteEndpoint(uuid uuid.UUID) error
 	DeleteEndpoints() error
 }
 
 type Client interface {
-	Send(request mockingjay.Request) (mockingjay.Response, matching.Report, error)
+	Send(request http.Request) (http.Response, matching.Report, error)
 	//CheckEndpoints() ([]contract.Report, error) - wip
 }
 
-func MockingjayStubServerSpec(t *testing.T, admin Admin, client Client, examples mockingjay.Endpoints, testFixtures []mockingjay.TestFixture) {
+func MockingjayStubServerSpec(t *testing.T, admin Admin, client Client, examples http.Endpoints, testFixtures []mockingjay.TestFixture) {
 	assert.NoError(t, admin.DeleteEndpoints())
 	assert.NoError(t, admin.DeleteReports())
 
@@ -64,7 +65,7 @@ func MockingjayStubServerSpec(t *testing.T, admin Admin, client Client, examples
 					assert.NoError(t, admin.AddEndpoints(f.Endpoint))
 					currentEndpoints, err := admin.GetEndpoints()
 					assert.NoError(t, err)
-					AssertEndpointsEqual(t, mockingjay.Endpoints{f.Endpoint}, currentEndpoints)
+					AssertEndpointsEqual(t, http.Endpoints{f.Endpoint}, currentEndpoints)
 				})
 
 				for _, request := range f.MatchingRequests {

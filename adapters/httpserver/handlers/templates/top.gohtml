@@ -5,6 +5,29 @@
     <meta charset="UTF-8"/>
     <script src="/static/htmx.min.js"></script>
     <link rel=stylesheet href="/static/styles.css" />
+    <style>
+        #reports tbody tr {
+            cursor: pointer;
+        }
+
+        table {
+            border: solid 1px hotpink;
+            border-collapse: collapse;
+            border-spacing: 0;
+            font-family: "Courier New";
+        }
+        table thead th {
+            background-color: hotpink;
+            border: solid 1px white;
+            color: white;
+            padding: 10px;
+            text-align: center;
+        }
+        table tbody td {
+            border: solid 1px hotpink;
+            padding: 10px;
+        }
+    </style>
 </head>
 <body hx-boost="true">
         <header>

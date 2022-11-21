@@ -1,4 +1,4 @@
-package mockingjay
+package http
 
 import (
 	"io"

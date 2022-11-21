@@ -5,34 +5,27 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/quii/mockingjay-server-two/domain/mockingjay"
-	"golang.org/x/exp/slices"
+	http2 "github.com/quii/mockingjay-server-two/domain/mockingjay/http"
 )
 
 type Reports []Report
 
-func (r Reports) Sort() {
-	slices.SortFunc(r, func(a, b Report) bool {
-		return a.CreatedAt.Before(b.CreatedAt)
-	})
-}
-
 type Report struct {
-	ID              uuid.UUID           `json:"ID"`
-	HadMatch        bool                `json:"hadMatch"`
-	IncomingRequest mockingjay.Request  `json:"incomingRequest"`
-	FailedMatches   []RequestMatch      `json:"failed_matches"`
-	SuccessfulMatch mockingjay.Response `json:"successfulMatch"`
-	CreatedAt       time.Time           `json:"createdAt"`
+	ID              uuid.UUID      `json:"ID"`
+	HadMatch        bool           `json:"hadMatch"`
+	IncomingRequest http2.Request  `json:"incomingRequest"`
+	FailedMatches   []RequestMatch `json:"failed_matches"`
+	SuccessfulMatch http2.Response `json:"successfulMatch"`
+	CreatedAt       time.Time      `json:"createdAt"`
 }
 
-func NewReport(req *http.Request, endpoints mockingjay.Endpoints) Report {
+func NewReport(req *http.Request, endpoints http2.Endpoints) Report {
 	overallReport := Report{
 		ID: uuid.New(),
-		IncomingRequest: mockingjay.Request{
+		IncomingRequest: http2.Request{
 			Method:  req.Method,
 			Path:    req.URL.String(),
-			Headers: mockingjay.Headers(req.Header),
+			Headers: http2.Headers(req.Header),
 		},
 		CreatedAt: time.Now().UTC(),
 	}
@@ -49,4 +42,8 @@ func NewReport(req *http.Request, endpoints mockingjay.Endpoints) Report {
 	}
 
 	return overallReport
+}
+
+func SortReport(a, b Report) bool {
+	return a.CreatedAt.Before(b.CreatedAt)
 }
