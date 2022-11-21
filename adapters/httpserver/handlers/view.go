@@ -5,9 +5,7 @@ import (
 	"html/template"
 	"io/fs"
 	"net/http"
-
-	http2 "github.com/quii/mockingjay-server-two/domain/mockingjay/http"
-	"github.com/quii/mockingjay-server-two/domain/mockingjay/matching"
+	"os"
 )
 
 type View struct {
@@ -15,19 +13,22 @@ type View struct {
 	templ   *template.Template
 }
 
-func (v *View) Endpoints(w http.ResponseWriter, accept string, endpoints []http2.Endpoint) {
-	v.render(w, accept, "endpoints.gohtml", endpoints)
+func NewContentNegotiatingRenderer(devMode bool) (*View, error) {
+	view := View{}
+	if devMode {
+		view.templFS = os.DirFS("./adapters/httpserver/handlers")
+	} else {
+		view.templFS = templates
+		templ, err := template.ParseFS(view.templFS, "templates/*.gohtml")
+		if err != nil {
+			return nil, err
+		}
+		view.templ = templ
+	}
+	return &view, nil
 }
 
-func (v *View) Reports(w http.ResponseWriter, accept string, reports []matching.Report) {
-	v.render(w, accept, "reports.gohtml", reports)
-}
-
-func (v *View) Report(w http.ResponseWriter, accept string, report matching.Report) {
-	v.render(w, accept, "report.gohtml", report)
-}
-
-func (v *View) render(w http.ResponseWriter, accept string, template string, thing any) {
+func (v *View) Render(w http.ResponseWriter, accept string, template string, thing any) {
 	switch accept {
 	case contentTypeApplicationJSON:
 		writeJSON(w, thing)

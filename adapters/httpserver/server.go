@@ -8,7 +8,11 @@ type MockingjayServerService interface {
 }
 
 func New(service MockingjayServerService, adminBaseURL string, devMode bool) (*handlers.StubHandler, *handlers.AdminHandler, error) {
-	adminHandler, err := handlers.NewAdminHandler(service, devMode)
+	renderer, err := handlers.NewContentNegotiatingRenderer(devMode)
+	if err != nil {
+		return nil, nil, err
+	}
+	adminHandler, err := handlers.NewAdminHandler(service, renderer)
 	if err != nil {
 		return nil, nil, err
 	}
