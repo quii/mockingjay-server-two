@@ -65,12 +65,20 @@ func NewAdminHandler(service AdminServiceService, renderer HTTPRenderer) (*Admin
 	adminRouter.HandleFunc(EndpointsPath+"{endpointIndex}", endpointHandler.DeleteEndpoint).Methods(http.MethodDelete)
 	adminRouter.HandleFunc(EndpointsPath, endpointHandler.addEndpoint).Methods(http.MethodPost)
 
+	staticHandler, err := newStaticHandler()
+	if err != nil {
+		return nil, err
+	}
+	adminRouter.PathPrefix("/static/").Handler(http.StripPrefix("/static/", staticHandler))
+
+	app.Handler = adminRouter
+	return app, nil
+}
+
+func newStaticHandler() (http.Handler, error) {
 	lol, err := fs.Sub(static, "static")
 	if err != nil {
 		return nil, err
 	}
-	adminRouter.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.FS(lol))))
-
-	app.Handler = adminRouter
-	return app, nil
+	return http.FileServer(http.FS(lol)), nil
 }
