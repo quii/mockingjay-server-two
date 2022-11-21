@@ -7,6 +7,10 @@ type MockingjayServerService interface {
 	handlers.AdminServiceService
 }
 
-func New(service MockingjayServerService, adminBaseURL string, devMode bool) (*handlers.StubHandler, *handlers.AdminHandler) {
-	return handlers.NewStubHandler(service, adminBaseURL), handlers.NewAdminHandler(service, devMode)
+func New(service MockingjayServerService, adminBaseURL string, devMode bool) (*handlers.StubHandler, *handlers.AdminHandler, error) {
+	adminHandler, err := handlers.NewAdminHandler(service, devMode)
+	if err != nil {
+		return nil, nil, err
+	}
+	return handlers.NewStubHandler(service, adminBaseURL), adminHandler, nil
 }

@@ -38,11 +38,12 @@ func TestApp(t *testing.T) {
 	service, err := mockingjay.NewStubService(nil)
 	assert.NoError(t, err)
 
-	stubServerHandler, adminHandler := httpserver.New(
+	stubServerHandler, adminHandler, err := httpserver.New(
 		service,
 		adminServer.URL,
 		config.DevModeOn,
 	)
+	assert.NoError(t, err)
 
 	stubServer.Config.Handler = stubServerHandler
 	adminServer.Config.Handler = adminHandler

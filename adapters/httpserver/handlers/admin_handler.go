@@ -45,7 +45,7 @@ type AdminHandler struct {
 	templ   *template.Template
 }
 
-func NewAdminHandler(service AdminServiceService, devMode bool) *AdminHandler {
+func NewAdminHandler(service AdminServiceService, devMode bool) (*AdminHandler, error) {
 	app := &AdminHandler{
 		service: service,
 	}
@@ -56,7 +56,7 @@ func NewAdminHandler(service AdminServiceService, devMode bool) *AdminHandler {
 		app.templFS = templates
 		templ, err := template.ParseFS(app.templFS, "templates/*.gohtml")
 		if err != nil {
-			panic(err) //todo: fixme
+			return nil, err
 		}
 		app.templ = templ
 	}
@@ -74,7 +74,7 @@ func NewAdminHandler(service AdminServiceService, devMode bool) *AdminHandler {
 	adminRouter.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.FS(lol))))
 
 	app.Handler = adminRouter
-	return app
+	return app, nil
 }
 
 func (a *AdminHandler) getEndpoints(w http.ResponseWriter, r *http.Request) {

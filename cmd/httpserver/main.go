@@ -47,7 +47,11 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	stubHandler, adminHandler := httpserver.New(service, *adminBaseURL, *devMode)
+
+	stubHandler, adminHandler, err := httpserver.New(service, *adminBaseURL, *devMode)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	printStartupMessage(endpointsFolder, adminPort, stubPort, adminBaseURL)
 
