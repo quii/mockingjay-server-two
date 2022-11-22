@@ -30,31 +30,15 @@ func MockingjayStubServerSpec(t *testing.T, admin Admin, client Client, examples
 	assert.NoError(t, admin.DeleteEndpoints())
 	assert.NoError(t, admin.DeleteReports())
 
+	stubServerUseCase := StubServerUseCase{
+		admin:  admin,
+		client: client,
+	}
+
 	t.Run("mj can be configured with request/response pairs (examples), which can then be called by a client with a request to get matching response", func(t *testing.T) {
-		for _, endpoint := range examples {
-			t.Run(endpoint.Description, func(t *testing.T) {
-				assert.NoError(t, admin.AddEndpoints(endpoint))
-				endpoints, err := admin.GetEndpoints()
-				assert.NoError(t, err)
-
-				t.Cleanup(func() {
-					assert.Equal(t, 1, len(endpoints))
-					assert.NoError(t, admin.DeleteEndpoint(endpoints[0].ID))
-				})
-
-				res, report, err := client.Send(endpoint.Request)
-				assert.True(t, report.HadMatch, report)
-				assert.NoError(t, err)
-				AssertResponseMatches(t, endpoint.Response, res)
-			})
+		for _, example := range examples {
+			stubServerUseCase.Test(t, example)
 		}
-
-		t.Run("a report of all requests made is available", func(t *testing.T) {
-			reports, err := admin.GetReports()
-			assert.NoError(t, err)
-			t.Log(reports)
-			assert.Equal(t, len(examples), len(reports))
-		})
 	})
 
 	t.Run("mj test fixtures", func(t *testing.T) {

@@ -130,9 +130,14 @@ func (d WebDriver) GetReports() ([]matching.Report, error) {
 	page.MustWaitNavigation()
 	page.MustElement("#reports")
 	elements := page.MustElements("tbody tr")
-	for range elements {
+	for _, e := range elements {
+		reportIDString := e.MustAttribute("data-attribute-id")
+		reportID, err := uuid.Parse(*reportIDString)
+		if err != nil {
+			return nil, err
+		}
 		reports = append(reports, matching.Report{
-			ID:              uuid.UUID{},
+			ID:              reportID,
 			HadMatch:        false,
 			IncomingRequest: http2.Request{},
 			FailedMatches:   nil,

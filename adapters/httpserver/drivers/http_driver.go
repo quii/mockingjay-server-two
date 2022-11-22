@@ -88,11 +88,16 @@ func (d HTTPDriver) Send(request http2.Request) (http2.Response, matching.Report
 		return http2.Response{}, report, nil
 	}
 
+	matchID, err := uuid.Parse(res.Header.Get(handlers.HeaderMockingjayMatchID))
+	if err != nil {
+		return http2.Response{}, matching.Report{}, err
+	}
+
 	return http2.Response{
 		Status:  res.StatusCode,
 		Body:    string(body),
 		Headers: http2.Headers(res.Header),
-	}, matching.Report{HadMatch: true}, nil
+	}, matching.Report{HadMatch: true, ID: matchID}, nil
 }
 
 func (d HTTPDriver) GetReport(location string) (matching.Report, error) {

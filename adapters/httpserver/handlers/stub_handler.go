@@ -28,6 +28,8 @@ func (s *StubHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	w.Header().Add(HeaderMockingjayMatchID, matchReport.ID.String())
+
 	if !matchReport.HadMatch {
 		w.Header().Add(HeaderMockingjayMatched, "false")
 		w.Header().Add("location", s.adminBaseURL+ReportsPath+"/"+matchReport.ID.String())

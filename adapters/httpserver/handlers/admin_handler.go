@@ -22,6 +22,7 @@ var (
 
 const (
 	HeaderMockingjayMatched    = "x-mockingjay-matched"
+	HeaderMockingjayMatchID    = "x-mockingjay-match-id"
 	ReportsPath                = "/match-reports"
 	EndpointsPath              = "/"
 	contentTypeApplicationJSON = "application/json"
