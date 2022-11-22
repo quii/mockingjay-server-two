@@ -1,4 +1,4 @@
-package specifications
+package usecases
 
 import (
 	"fmt"
@@ -39,7 +39,8 @@ func AssertResponseMatches(t *testing.T, want, got http.Response) {
 	for key, v := range want.Headers {
 		for _, value := range v {
 			i := slices.Index(got.Headers[key], value)
-			assert.NotEqual(t, -1, i, fmt.Sprintf("%q not found in %v", value, got.Headers[key]))
+			t.Log(got)
+			assert.NotEqual(t, -1, i, fmt.Sprintf("%q %q not found in %v", key, value, got.Headers[key]))
 		}
 	}
 }

@@ -1,6 +1,7 @@
 package http
 
 import (
+	"net/textproto"
 	"time"
 
 	"github.com/google/uuid"
@@ -27,6 +28,13 @@ type (
 	Headers map[string][]string
 )
 
+func (h Headers) Compile() {
+	for key, value := range h {
+		delete(h, key)
+		h[textproto.CanonicalMIMEHeaderKey(key)] = value
+	}
+}
+
 func SortEndpoint(a, b Endpoint) bool {
 	return a.LoadedAt.Before(b.LoadedAt)
 }
@@ -38,6 +46,8 @@ func (e *Endpoint) Compile() error {
 	if e.ID == uuid.Nil {
 		e.ID = uuid.New()
 	}
+	e.Request.Headers.Compile()
+	e.Response.Headers.Compile()
 	return nil
 }
 

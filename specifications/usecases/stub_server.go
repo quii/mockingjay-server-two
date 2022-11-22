@@ -1,4 +1,4 @@
-package specifications
+package usecases
 
 import (
 	"testing"
@@ -11,28 +11,29 @@ import (
 	"golang.org/x/exp/slices"
 )
 
-type StubServerUseCase struct {
-	admin  Admin
-	client Client
+type StubServer struct {
+	Admin  Admin
+	Client Client
 }
 
-func (s StubServerUseCase) Test(t *testing.T, endpoint http.Endpoint) {
+func (s StubServer) Test(t *testing.T, endpoint http.Endpoint) {
+	assert.NoError(t, s.Admin.DeleteEndpoints())
+	assert.NoError(t, s.Admin.DeleteReports())
+
 	t.Run("for "+endpoint.Description, func(t *testing.T) {
 		id := s.addEndpoint(t, endpoint)
 
-		t.Cleanup(func() {
-			assert.NoError(t, s.admin.DeleteEndpoint(id))
-		})
+		t.Cleanup(s.mustDeleteEndpoint(t, id))
 
 		report := s.assertEndpointRespondsCorrectly(t, endpoint)
 		s.assertReportCanBeFoundFor(t, report.ID)
 	})
 }
 
-func (s StubServerUseCase) assertEndpointRespondsCorrectly(t *testing.T, endpoint http.Endpoint) matching.Report {
+func (s StubServer) assertEndpointRespondsCorrectly(t *testing.T, endpoint http.Endpoint) matching.Report {
 	var theReport matching.Report
 	t.Run("the endpoint responds correctly to the request it was configured with", func(t *testing.T) {
-		res, report, err := s.client.Send(endpoint.Request)
+		res, report, err := s.Client.Send(endpoint.Request)
 		assert.True(t, report.HadMatch, report)
 		assert.NoError(t, err)
 		AssertResponseMatches(t, endpoint.Response, res)
@@ -42,11 +43,11 @@ func (s StubServerUseCase) assertEndpointRespondsCorrectly(t *testing.T, endpoin
 	return theReport
 }
 
-func (s StubServerUseCase) addEndpoint(t *testing.T, endpoint http.Endpoint) uuid.UUID {
+func (s StubServer) addEndpoint(t *testing.T, endpoint http.Endpoint) uuid.UUID {
 	var id uuid.UUID
 	t.Run("an endpoint can be added", func(t *testing.T) {
-		assert.NoError(t, s.admin.AddEndpoints(endpoint))
-		endpoints, err := s.admin.GetEndpoints()
+		assert.NoError(t, s.Admin.AddEndpoints(endpoint))
+		endpoints, err := s.Admin.GetEndpoints()
 		assert.NoError(t, err)
 		assert.Equal(t, 1, len(endpoints))
 		id = endpoints[0].ID
@@ -54,9 +55,9 @@ func (s StubServerUseCase) addEndpoint(t *testing.T, endpoint http.Endpoint) uui
 	return id
 }
 
-func (s StubServerUseCase) assertReportCanBeFoundFor(t *testing.T, id uuid.UUID) {
+func (s StubServer) assertReportCanBeFoundFor(t *testing.T, id uuid.UUID) {
 	t.Run("a report can be found", func(t *testing.T) {
-		reports, err := s.admin.GetReports()
+		reports, err := s.Admin.GetReports()
 		assert.NoError(t, err)
 		i := slices.IndexFunc(reports, func(r matching.Report) bool {
 			return r.ID == id
@@ -64,4 +65,11 @@ func (s StubServerUseCase) assertReportCanBeFoundFor(t *testing.T, id uuid.UUID)
 		t.Log(id)
 		assert.NotEqual(t, -1, i, pp.Format(reports))
 	})
+}
+
+func (s StubServer) mustDeleteEndpoint(t *testing.T, id uuid.UUID) func() {
+	return func() {
+		t.Helper()
+		assert.NoError(t, s.Admin.DeleteEndpoint(id))
+	}
 }

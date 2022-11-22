@@ -16,6 +16,7 @@ import (
 	"github.com/quii/mockingjay-server-two/domain/mockingjay"
 	http2 "github.com/quii/mockingjay-server-two/domain/mockingjay/http"
 	"github.com/quii/mockingjay-server-two/specifications"
+	"github.com/quii/mockingjay-server-two/specifications/usecases"
 )
 
 const (
@@ -87,23 +88,11 @@ func TestApp(t *testing.T) {
 			},
 			CDCs: nil,
 		}
-		assert.NoError(t, webDriver.DeleteEndpoints())
-		assert.NoError(t, webDriver.AddEndpoints(endpoint))
-		endpoints, err := webDriver.GetEndpoints()
-		assert.NoError(t, err)
-		assert.Equal(t, 1, len(endpoints))
-		specifications.AssertEndpointEqual(t, endpoints[0], endpoint)
-
-		_, report, err := httpDriver.Send(http2.Request{
-			Method: http.MethodGet,
-			Path:   "/happy-birthday/milo",
-			Headers: http2.Headers{
-				"accept": []string{"application/json"},
-			},
-			Body: "walk the dog",
-		})
-		assert.NoError(t, err)
-		assert.True(t, report.HadMatch)
+		assert.NoError(t, endpoint.Compile())
+		usecases.StubServer{
+			Admin:  webDriver,
+			Client: httpDriver,
+		}.Test(t, endpoint)
 	})
 
 	t.Run("view report", func(t *testing.T) {
