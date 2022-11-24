@@ -10,16 +10,17 @@ import (
 	"github.com/quii/mockingjay-server-two/domain/mockingjay/matching"
 )
 
+type CDCService interface {
+	GetReports(endpoint http2.Endpoint) ([]contract.Report, error)
+}
+
 type Service struct {
 	endpoints    crud.CRUDesque[uuid.UUID, http2.Endpoint]
 	matchReports crud.CRUDesque[uuid.UUID, matching.Report]
+	cdcService   CDCService
 }
 
-func (m *Service) CheckEndpoints() ([]contract.Report, error) {
-	return []contract.Report{{Passed: true}}, nil
-}
-
-func NewService(endpoints http2.Endpoints) (*Service, error) {
+func NewService(endpoints http2.Endpoints, cdcService CDCService) (*Service, error) {
 	reportsCRUD := crud.New[uuid.UUID, matching.Report](matching.SortReport)
 	endpointCRUD := crud.New[uuid.UUID, http2.Endpoint](http2.SortEndpoint)
 
@@ -31,7 +32,25 @@ func NewService(endpoints http2.Endpoints) (*Service, error) {
 	return &Service{
 		endpoints:    endpointCRUD,
 		matchReports: reportsCRUD,
+		cdcService:   cdcService,
 	}, nil
+}
+
+func (m *Service) CheckEndpoints() ([]contract.Report, error) {
+	var allReports []contract.Report
+
+	endpoints, err := m.endpoints.GetAll()
+	if err != nil {
+		return nil, err
+	}
+	for _, endpoint := range endpoints {
+		reports, err := m.cdcService.GetReports(endpoint)
+		if err != nil {
+			return nil, err
+		}
+		allReports = append(allReports, reports...)
+	}
+	return allReports, nil
 }
 
 func (m *Service) Reports() crud.CRUDesque[uuid.UUID, matching.Report] {

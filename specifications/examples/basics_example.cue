@@ -10,8 +10,16 @@ endpoints: [
 			path: basePath + "world"
 		}
 		response: {
-			body: "hello, world!"
+			body: """
+{
+  "message": "Hello World!"
+}
+
+"""
 		}
+		cdcs: [{
+			baseURL: "https://sandbox.api.service.nhs.uk/hello-world/"
+		}]
 	},
 	{
 		description: "hello pepper endpoint"

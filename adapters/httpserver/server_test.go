@@ -14,6 +14,7 @@ import (
 	"github.com/quii/mockingjay-server-two/adapters/httpserver/drivers"
 	"github.com/quii/mockingjay-server-two/adapters/httpserver/handlers"
 	"github.com/quii/mockingjay-server-two/domain/mockingjay"
+	"github.com/quii/mockingjay-server-two/domain/mockingjay/contract"
 	http2 "github.com/quii/mockingjay-server-two/domain/mockingjay/http"
 	"github.com/quii/mockingjay-server-two/specifications"
 	"github.com/quii/mockingjay-server-two/specifications/usecases"
@@ -25,21 +26,19 @@ const (
 )
 
 func TestApp(t *testing.T) {
-	examples, err := mockingjay.NewEndpointsFromCue(examplesDir)
-	assert.NoError(t, err)
-	fixtures, err := mockingjay.NewFixturesFromCue(fixturesDir)
-	assert.NoError(t, err)
+	var (
+		adminHandler, stubServerHandler http.Handler
+		stubServer                      = httptest.NewServer(stubServerHandler)
+		adminServer                     = httptest.NewServer(adminHandler)
+	)
 
-	stubServer := httptest.NewServer(nil)
-	adminServer := httptest.NewServer(nil)
-	defer adminServer.Close()
-	defer stubServer.Close()
+	t.Cleanup(stubServer.Close)
+	t.Cleanup(adminServer.Close)
 
-	assert.NoError(t, examples.Compile())
-	service, err := mockingjay.NewService(nil)
+	service, err := mockingjay.NewService(nil, contract.NewService(&http.Client{}))
 	assert.NoError(t, err)
 
-	stubServerHandler, adminHandler, err := httpserver.New(
+	stubServerHandler, adminHandler, err = httpserver.New(
 		service,
 		adminServer.URL,
 		config.DevModeOn,
@@ -57,6 +56,8 @@ func TestApp(t *testing.T) {
 	)
 	webDriver, cleanup := drivers.NewWebDriver(adminServer.URL, client, false)
 	t.Cleanup(cleanup)
+
+	examples, fixtures := mustLoadExamplesAndFixtures(t)
 
 	t.Run("configuring with website", func(t *testing.T) {
 		specifications.MockingjayStubServerSpec(t, webDriver, httpDriver, examples, fixtures)
@@ -146,4 +147,12 @@ func TestApp(t *testing.T) {
 			})
 		})
 	})
+}
+
+func mustLoadExamplesAndFixtures(t *testing.T) (http2.Endpoints, []mockingjay.TestFixture) {
+	examples, err := mockingjay.NewEndpointsFromCue(examplesDir)
+	assert.NoError(t, err)
+	fixtures, err := mockingjay.NewFixturesFromCue(fixturesDir)
+	assert.NoError(t, err)
+	return examples, fixtures
 }

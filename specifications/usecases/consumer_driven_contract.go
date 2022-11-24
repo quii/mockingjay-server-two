@@ -3,6 +3,7 @@ package usecases
 import (
 	"testing"
 
+	"github.com/adamluzsi/testcase/pp"
 	"github.com/alecthomas/assert/v2"
 	"github.com/google/uuid"
 	"github.com/quii/mockingjay-server-two/domain/mockingjay/http"
@@ -22,7 +23,7 @@ func (s ConsumerDrivenContract) Test(t *testing.T, endpoint http.Endpoint) {
 		results, err := s.Client.CheckEndpoints()
 		assert.NoError(t, err)
 		assert.Equal(t, len(results), 1)
-		assert.True(t, results[0].Passed)
+		assert.True(t, results[0].Passed, pp.Format(results))
 	})
 }
 

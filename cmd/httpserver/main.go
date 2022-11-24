@@ -5,11 +5,13 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/peterbourgon/ff/v3"
 	"github.com/quii/mockingjay-server-two/adapters/config"
 	"github.com/quii/mockingjay-server-two/adapters/httpserver"
 	"github.com/quii/mockingjay-server-two/domain/mockingjay"
+	"github.com/quii/mockingjay-server-two/domain/mockingjay/contract"
 	http2 "github.com/quii/mockingjay-server-two/domain/mockingjay/http"
 )
 
@@ -43,7 +45,9 @@ func main() {
 		}
 	}
 
-	service, err := mockingjay.NewService(endpoints)
+	httpClient := &http.Client{Timeout: 5 * time.Second}
+
+	service, err := mockingjay.NewService(endpoints, contract.NewService(httpClient))
 	if err != nil {
 		log.Fatal(err)
 	}
