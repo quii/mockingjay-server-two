@@ -19,6 +19,7 @@ func (s Service) GetReports(endpoint stub.Endpoint) ([]Report, error) {
 
 	for _, cdc := range endpoint.CDCs {
 		req := endpoint.Request.ToHTTPRequest(cdc.BaseURL)
+
 		res, err := s.httpClient.Do(req)
 		if err != nil {
 			return nil, err
