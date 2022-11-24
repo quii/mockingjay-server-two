@@ -1,6 +1,7 @@
 package mockingjay
 
-endpoints: [...#Endpoint]
+// As a user of MJ, you'll only need to provide endpoints
+endpoints?: [...#Endpoint]
 
 #Endpoint: {
 	description: string | *"\(request.method) \(request.path)"
@@ -27,4 +28,26 @@ endpoints: [...#Endpoint]
 	baseURL:   string
 	retries:   int | *0
 	timeoutMS: int | *5000
+}
+
+// The other schema are for tests, which you might want to do if you wish to file an issue
+stubFixtures?: [...#StubFixture]
+cdcFixtures?: [...#CDCFixture]
+
+#CDCFixture: {
+	description:        string
+	shouldBeCompatible: bool
+	got:                #Response
+	want:               #Response
+}
+
+#StubFixture: {
+	endpoint: #Endpoint
+	matchingRequests: [...#RequestDescription]
+	nonMatchingRequests: [...#RequestDescription]
+}
+
+#RequestDescription: {
+	request:     #Request
+	description: string
 }

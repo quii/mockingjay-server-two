@@ -15,7 +15,7 @@ type (
 		Endpoints []stub.Endpoint
 	}
 	testFixtureCue struct {
-		Fixtures []TestFixture
+		StubFixtures []TestFixture
 	}
 )
 
@@ -50,10 +50,10 @@ func NewFixturesFromCue(basePath string) ([]TestFixture, error) {
 	for _, f := range dir {
 		var fixtures testFixtureCue
 		path := basePath + f.Name()
-		if err := cueconfig.Load(path, mj.FixtureSchema, nil, nil, &fixtures); err != nil {
+		if err := cueconfig.Load(path, mj.Schema, nil, nil, &fixtures); err != nil {
 			return nil, fmt.Errorf("failed to parse %s, %v", path, err)
 		}
-		allFixtures = append(allFixtures, fixtures.Fixtures...)
+		allFixtures = append(allFixtures, fixtures.StubFixtures...)
 	}
 
 	return allFixtures, nil

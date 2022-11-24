@@ -18,14 +18,14 @@ type CompatibilityFixture struct {
 }
 
 type fixturesCue struct {
-	Fixtures []CompatibilityFixture
+	CDCFixtures []CompatibilityFixture
 }
 
 func TestIsResponseCompatible(t *testing.T) {
 	var fixtures fixturesCue
 	assert.NoError(t, cueconfig.Load("compatibility_tests.cue", mj.Schema, nil, nil, &fixtures))
 
-	for _, fixture := range fixtures.Fixtures {
+	for _, fixture := range fixtures.CDCFixtures {
 		t.Run(fixture.Description, func(t *testing.T) {
 			assert.Equal(t, fixture.ShouldBeCompatible, contract.IsResponseCompatible(fixture.Got, fixture.Want), pp.Diff(fixture.Got, fixture.Want))
 		})

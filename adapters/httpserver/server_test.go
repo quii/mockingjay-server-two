@@ -22,7 +22,7 @@ import (
 
 const (
 	examplesDir = "../../specifications/examples/"
-	fixturesDir = "../../specifications/testfixtures/"
+	fixturesDir = "../../specifications/stub_server_fixtures/"
 )
 
 func TestApp(t *testing.T) {
