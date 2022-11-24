@@ -45,5 +45,21 @@ fixtures: [
 			}
 		}
 		shouldBeCompatible: false
+	},
+	{
+		description: "json structure is the same, but value is different"
+		want : {
+			status: 200
+			body: """
+			{"message": "hello, Kat"}
+			"""
+		}
+		got : {
+			status: 200
+			body: """
+			{"message": "hello, Marc"}
+			"""
+		}
+		shouldBeCompatible: true
 	}
 ]

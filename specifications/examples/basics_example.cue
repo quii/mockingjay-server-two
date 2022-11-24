@@ -12,7 +12,7 @@ endpoints: [
 		response: {
 			body: """
 {
-  "message": "Hello World!"
+  "message": "Deliberately wrong value to show the CDC still passes due to structure being correct downstream"
 }
 
 """
