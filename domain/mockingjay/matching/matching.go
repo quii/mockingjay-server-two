@@ -32,7 +32,7 @@ func newMatcher(req *http.Request) func(stub.Endpoint) RequestMatch {
 			Match: Match{
 				Path:    matchPath(e.Request, got),
 				Method:  matchMethod(e.Request, got),
-				Headers: matchHeaders(e.Request, got),
+				Headers: MatchHeaders(e.Request.Headers, got.Headers),
 				Body:    matchBody(e.Request, got),
 			},
 		}
@@ -52,11 +52,11 @@ func matchMethod(a, b stub.Request) bool {
 	return a.Method == b.Method
 }
 
-func matchHeaders(a, b stub.Request) bool {
-	headersMatch := len(a.Headers) == 0
+func MatchHeaders(a, b stub.Headers) bool {
+	headersMatch := len(a) == 0
 
-	for key, values := range a.Headers {
-		for _, valuesInIncomingRequestHeader := range b.Headers[textproto.CanonicalMIMEHeaderKey(key)] {
+	for key, values := range a {
+		for _, valuesInIncomingRequestHeader := range b[textproto.CanonicalMIMEHeaderKey(key)] {
 			for _, valuesInEndpoint := range values {
 				if valuesInIncomingRequestHeader == valuesInEndpoint {
 					headersMatch = true
