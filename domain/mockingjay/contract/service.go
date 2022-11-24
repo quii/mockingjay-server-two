@@ -30,11 +30,11 @@ func (s Service) GetReports(endpoint stub.Endpoint) ([]Report, error) {
 }
 
 func createReport(endpoint stub.Endpoint, res *http.Response) Report {
-	responseFromDownstream := stub.NewResponseFromHTTP(res)
+	got := stub.NewResponseFromHTTP(res)
 	report := Report{
 		Endpoint:               endpoint,
-		ResponseFromDownstream: responseFromDownstream,
-		Passed:                 IsResponseCompatible(responseFromDownstream, endpoint.Response),
+		ResponseFromDownstream: got,
+		Passed:                 IsResponseCompatible(got, endpoint.Response),
 	}
 	return report
 }
