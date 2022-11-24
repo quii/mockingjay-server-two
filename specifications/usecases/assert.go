@@ -8,11 +8,11 @@ import (
 
 	"github.com/alecthomas/assert/v2"
 	"github.com/google/uuid"
-	"github.com/quii/mockingjay-server-two/domain/mockingjay/http"
+	"github.com/quii/mockingjay-server-two/domain/mockingjay/stub"
 	"golang.org/x/exp/slices"
 )
 
-func AssertEndpointsEqual(t *testing.T, got, want http.Endpoints) {
+func AssertEndpointsEqual(t *testing.T, got, want stub.Endpoints) {
 	t.Helper()
 	assert.Equal(t, len(got), len(want))
 	for i, endpoint := range got {
@@ -20,7 +20,7 @@ func AssertEndpointsEqual(t *testing.T, got, want http.Endpoints) {
 	}
 }
 
-func AssertEndpointEqual(t *testing.T, got, want http.Endpoint) {
+func AssertEndpointEqual(t *testing.T, got, want stub.Endpoint) {
 	t.Helper()
 	got.ID = uuid.UUID{}
 	want.ID = uuid.UUID{}
@@ -31,7 +31,7 @@ func AssertEndpointEqual(t *testing.T, got, want http.Endpoint) {
 	assert.Equal(t, got, want)
 }
 
-func AssertResponseMatches(t *testing.T, want, got http.Response) {
+func AssertResponseMatches(t *testing.T, want, got stub.Response) {
 	t.Helper()
 	assert.Equal(t, fudgeTheWhiteSpace(want.Body), fudgeTheWhiteSpace(got.Body), "body not equal")
 	assert.Equal(t, want.Status, want.Status, "status not equal")

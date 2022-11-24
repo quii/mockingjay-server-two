@@ -12,7 +12,7 @@ import (
 	"github.com/quii/mockingjay-server-two/adapters/httpserver"
 	"github.com/quii/mockingjay-server-two/domain/mockingjay"
 	"github.com/quii/mockingjay-server-two/domain/mockingjay/contract"
-	http2 "github.com/quii/mockingjay-server-two/domain/mockingjay/http"
+	"github.com/quii/mockingjay-server-two/domain/mockingjay/stub"
 )
 
 func main() {
@@ -37,7 +37,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	var endpoints http2.Endpoints
+	var endpoints stub.Endpoints
 	if endpointsFolder != nil && *endpointsFolder != "" {
 		endpoints, err = mockingjay.NewEndpointsFromCue(*endpointsFolder)
 		if err != nil {

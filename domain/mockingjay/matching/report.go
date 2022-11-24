@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	http2 "github.com/quii/mockingjay-server-two/domain/mockingjay/http"
+	"github.com/quii/mockingjay-server-two/domain/mockingjay/stub"
 )
 
 type Reports []Report
@@ -13,19 +13,19 @@ type Reports []Report
 type Report struct {
 	ID              uuid.UUID      `json:"ID"`
 	HadMatch        bool           `json:"hadMatch"`
-	IncomingRequest http2.Request  `json:"incomingRequest"`
+	IncomingRequest stub.Request   `json:"incomingRequest"`
 	FailedMatches   []RequestMatch `json:"failed_matches"`
-	SuccessfulMatch http2.Response `json:"successfulMatch"`
+	SuccessfulMatch stub.Response  `json:"successfulMatch"`
 	CreatedAt       time.Time      `json:"createdAt"`
 }
 
-func NewReport(req *http.Request, endpoints http2.Endpoints) Report {
+func NewReport(req *http.Request, endpoints stub.Endpoints) Report {
 	overallReport := Report{
 		ID: uuid.New(),
-		IncomingRequest: http2.Request{
+		IncomingRequest: stub.Request{
 			Method:  req.Method,
 			Path:    req.URL.String(),
-			Headers: http2.Headers(req.Header),
+			Headers: stub.Headers(req.Header),
 		},
 		CreatedAt: time.Now().UTC(),
 	}

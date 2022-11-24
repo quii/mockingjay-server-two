@@ -5,7 +5,7 @@ import (
 
 	"github.com/alecthomas/assert/v2"
 	"github.com/quii/mockingjay-server-two/domain/mockingjay"
-	"github.com/quii/mockingjay-server-two/domain/mockingjay/http"
+	"github.com/quii/mockingjay-server-two/domain/mockingjay/stub"
 	"github.com/quii/mockingjay-server-two/specifications/usecases"
 )
 
@@ -13,7 +13,7 @@ func MockingjayStubServerSpec(
 	t *testing.T,
 	admin usecases.Admin,
 	client usecases.StubServerClient,
-	examples http.Endpoints,
+	examples stub.Endpoints,
 	testFixtures []mockingjay.TestFixture,
 ) {
 	assert.NoError(t, admin.DeleteEndpoints())

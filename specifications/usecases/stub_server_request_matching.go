@@ -7,8 +7,8 @@ import (
 	"github.com/alecthomas/assert/v2"
 	"github.com/google/uuid"
 	"github.com/quii/mockingjay-server-two/domain/mockingjay"
-	"github.com/quii/mockingjay-server-two/domain/mockingjay/http"
 	"github.com/quii/mockingjay-server-two/domain/mockingjay/matching"
+	"github.com/quii/mockingjay-server-two/domain/mockingjay/stub"
 )
 
 type StubServerRequestMatching struct {
@@ -37,16 +37,16 @@ func (s StubServerRequestMatching) Test(t *testing.T, fixture mockingjay.TestFix
 	})
 }
 
-func (s StubServerRequestMatching) mustConfigureEndpoint(t *testing.T, endpoint http.Endpoint) uuid.UUID {
+func (s StubServerRequestMatching) mustConfigureEndpoint(t *testing.T, endpoint stub.Endpoint) uuid.UUID {
 	t.Helper()
 	assert.NoError(t, s.Admin.AddEndpoints(endpoint))
 	currentEndpoints, err := s.Admin.GetEndpoints()
 	assert.NoError(t, err)
-	AssertEndpointsEqual(t, http.Endpoints{endpoint}, currentEndpoints)
+	AssertEndpointsEqual(t, stub.Endpoints{endpoint}, currentEndpoints)
 	return currentEndpoints[0].ID
 }
 
-func (s StubServerRequestMatching) mustSend(t *testing.T, request http.Request) (http.Response, matching.Report) {
+func (s StubServerRequestMatching) mustSend(t *testing.T, request stub.Request) (stub.Response, matching.Report) {
 	t.Helper()
 	res, report, err := s.Client.Send(request)
 	assert.NoError(t, err)

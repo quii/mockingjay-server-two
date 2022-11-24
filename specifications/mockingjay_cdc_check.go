@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/alecthomas/assert/v2"
-	"github.com/quii/mockingjay-server-two/domain/mockingjay/http"
+	"github.com/quii/mockingjay-server-two/domain/mockingjay/stub"
 	"github.com/quii/mockingjay-server-two/specifications/usecases"
 )
 
@@ -12,7 +12,7 @@ func MockingjayConsumerDrivenContractSpec(
 	t *testing.T,
 	admin usecases.Admin,
 	cdcClient usecases.ConsumerDrivenContractChecker,
-	examples http.Endpoints,
+	examples stub.Endpoints,
 ) {
 	assert.NoError(t, admin.DeleteEndpoints())
 	assert.NoError(t, admin.DeleteReports())

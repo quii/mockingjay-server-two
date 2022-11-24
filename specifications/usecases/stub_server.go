@@ -6,8 +6,8 @@ import (
 	"github.com/adamluzsi/testcase/pp"
 	"github.com/alecthomas/assert/v2"
 	"github.com/google/uuid"
-	"github.com/quii/mockingjay-server-two/domain/mockingjay/http"
 	"github.com/quii/mockingjay-server-two/domain/mockingjay/matching"
+	"github.com/quii/mockingjay-server-two/domain/mockingjay/stub"
 	"golang.org/x/exp/slices"
 )
 
@@ -16,7 +16,7 @@ type StubServer struct {
 	Client StubServerClient
 }
 
-func (s StubServer) Test(t *testing.T, endpoint http.Endpoint) {
+func (s StubServer) Test(t *testing.T, endpoint stub.Endpoint) {
 	t.Run("stub server for "+endpoint.Description, func(t *testing.T) {
 		t.Cleanup(s.mustDeleteEndpoint(t, s.addEndpoint(t, endpoint)))
 		report := s.assertEndpointRespondsCorrectly(t, endpoint)
@@ -24,7 +24,7 @@ func (s StubServer) Test(t *testing.T, endpoint http.Endpoint) {
 	})
 }
 
-func (s StubServer) assertEndpointRespondsCorrectly(t *testing.T, endpoint http.Endpoint) matching.Report {
+func (s StubServer) assertEndpointRespondsCorrectly(t *testing.T, endpoint stub.Endpoint) matching.Report {
 	var theReport matching.Report
 	t.Run("the endpoint responds correctly to the request it was configured with", func(t *testing.T) {
 		res, report, err := s.Client.Send(endpoint.Request)
@@ -37,7 +37,7 @@ func (s StubServer) assertEndpointRespondsCorrectly(t *testing.T, endpoint http.
 	return theReport
 }
 
-func (s StubServer) addEndpoint(t *testing.T, endpoint http.Endpoint) uuid.UUID {
+func (s StubServer) addEndpoint(t *testing.T, endpoint stub.Endpoint) uuid.UUID {
 	var id uuid.UUID
 	t.Run("an endpoint can be added", func(t *testing.T) {
 		assert.NoError(t, s.Admin.AddEndpoints(endpoint))

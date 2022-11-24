@@ -1,11 +1,11 @@
 package contract
 
 import (
-	"github.com/quii/mockingjay-server-two/domain/mockingjay/http"
+	"github.com/quii/mockingjay-server-two/domain/mockingjay/stub"
 )
 
 type Report struct {
-	http.Endpoint
-	ResponseFromDownstream http.Response
+	stub.Endpoint
+	ResponseFromDownstream stub.Response
 	Passed                 bool `json:"passed"`
 }

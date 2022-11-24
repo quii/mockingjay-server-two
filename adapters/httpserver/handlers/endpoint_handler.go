@@ -9,7 +9,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
-	http2 "github.com/quii/mockingjay-server-two/domain/mockingjay/http"
+	"github.com/quii/mockingjay-server-two/domain/mockingjay/stub"
 )
 
 type EndpointHandler struct {
@@ -28,7 +28,7 @@ func (a *EndpointHandler) allEndpoints(w http.ResponseWriter, r *http.Request) {
 
 func (a *EndpointHandler) addEndpoint(w http.ResponseWriter, r *http.Request) {
 	if r.Header.Get("Content-type") == contentTypeApplicationJSON {
-		var newEndpoint http2.Endpoint
+		var newEndpoint stub.Endpoint
 		if err := json.NewDecoder(r.Body).Decode(&newEndpoint); err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
@@ -52,12 +52,12 @@ func (a *EndpointHandler) addEndpoint(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		requestHeaders := make(http2.Headers)
+		requestHeaders := make(stub.Headers)
 		if r.FormValue("request.header.name") != "" {
 			requestHeaders[r.FormValue("request.header.name")] = strings.Split(r.FormValue("request.header.values"), "; ")
 		}
 
-		responseHeaders := make(http2.Headers)
+		responseHeaders := make(stub.Headers)
 		if r.FormValue("response.header.name") != "" {
 			responseHeaders[r.FormValue("response.header.name")] = strings.Split(r.FormValue("response.header.values"), "; ")
 		}
@@ -68,17 +68,17 @@ func (a *EndpointHandler) addEndpoint(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		newEndpoint := http2.Endpoint{
+		newEndpoint := stub.Endpoint{
 			ID:          uuid.New(),
 			Description: r.FormValue("description"),
-			Request: http2.Request{
+			Request: stub.Request{
 				Method:    r.FormValue("method"),
 				RegexPath: r.FormValue("regexpath"),
 				Path:      r.FormValue("path"),
 				Headers:   requestHeaders,
 				Body:      r.FormValue("request.body"),
 			},
-			Response: http2.Response{
+			Response: stub.Response{
 				Status:  status,
 				Body:    r.FormValue("response.body"),
 				Headers: responseHeaders,

@@ -6,23 +6,23 @@ import (
 	"github.com/google/uuid"
 	"github.com/quii/mockingjay-server-two/domain/crud"
 	"github.com/quii/mockingjay-server-two/domain/mockingjay/contract"
-	http2 "github.com/quii/mockingjay-server-two/domain/mockingjay/http"
 	"github.com/quii/mockingjay-server-two/domain/mockingjay/matching"
+	"github.com/quii/mockingjay-server-two/domain/mockingjay/stub"
 )
 
 type CDCService interface {
-	GetReports(endpoint http2.Endpoint) ([]contract.Report, error)
+	GetReports(endpoint stub.Endpoint) ([]contract.Report, error)
 }
 
 type Service struct {
-	endpoints    crud.CRUDesque[uuid.UUID, http2.Endpoint]
+	endpoints    crud.CRUDesque[uuid.UUID, stub.Endpoint]
 	matchReports crud.CRUDesque[uuid.UUID, matching.Report]
 	cdcService   CDCService
 }
 
-func NewService(endpoints http2.Endpoints, cdcService CDCService) (*Service, error) {
+func NewService(endpoints stub.Endpoints, cdcService CDCService) (*Service, error) {
 	reportsCRUD := crud.New[uuid.UUID, matching.Report](matching.SortReport)
-	endpointCRUD := crud.New[uuid.UUID, http2.Endpoint](http2.SortEndpoint)
+	endpointCRUD := crud.New[uuid.UUID, stub.Endpoint](stub.SortEndpoint)
 
 	for _, endpoint := range endpoints {
 		if err := endpointCRUD.Create(endpoint.ID, endpoint); err != nil {
@@ -57,7 +57,7 @@ func (m *Service) Reports() crud.CRUDesque[uuid.UUID, matching.Report] {
 	return m.matchReports
 }
 
-func (m *Service) Endpoints() crud.CRUDesque[uuid.UUID, http2.Endpoint] {
+func (m *Service) Endpoints() crud.CRUDesque[uuid.UUID, stub.Endpoint] {
 	return m.endpoints
 }
 

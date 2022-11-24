@@ -3,7 +3,7 @@ package contract
 import (
 	"net/http"
 
-	http2 "github.com/quii/mockingjay-server-two/domain/mockingjay/http"
+	"github.com/quii/mockingjay-server-two/domain/mockingjay/stub"
 )
 
 type Service struct {
@@ -14,7 +14,7 @@ func NewService(httpClient *http.Client) *Service {
 	return &Service{httpClient: httpClient}
 }
 
-func (s Service) GetReports(endpoint http2.Endpoint) ([]Report, error) {
+func (s Service) GetReports(endpoint stub.Endpoint) ([]Report, error) {
 	var allReports []Report
 
 	for _, cdc := range endpoint.CDCs {
@@ -29,16 +29,12 @@ func (s Service) GetReports(endpoint http2.Endpoint) ([]Report, error) {
 	return allReports, nil
 }
 
-func createReport(endpoint http2.Endpoint, res *http.Response) Report {
-	responseFromDownstream := http2.NewResponseFromHTTP(res)
+func createReport(endpoint stub.Endpoint, res *http.Response) Report {
+	responseFromDownstream := stub.NewResponseFromHTTP(res)
 	report := Report{
 		Endpoint:               endpoint,
 		ResponseFromDownstream: responseFromDownstream,
 		Passed:                 IsResponseCompatible(responseFromDownstream, endpoint.Response),
 	}
 	return report
-}
-
-func IsResponseCompatible(got, want http2.Response) bool {
-	return got.Status == want.Status && got.Body == want.Body //todo: match headers, re-use the other code probs
 }

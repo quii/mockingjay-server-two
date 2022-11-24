@@ -6,7 +6,7 @@ import (
 	"github.com/adamluzsi/testcase/pp"
 	"github.com/alecthomas/assert/v2"
 	"github.com/google/uuid"
-	"github.com/quii/mockingjay-server-two/domain/mockingjay/http"
+	"github.com/quii/mockingjay-server-two/domain/mockingjay/stub"
 )
 
 type ConsumerDrivenContract struct {
@@ -14,7 +14,7 @@ type ConsumerDrivenContract struct {
 	Client ConsumerDrivenContractChecker
 }
 
-func (s ConsumerDrivenContract) Test(t *testing.T, endpoint http.Endpoint) {
+func (s ConsumerDrivenContract) Test(t *testing.T, endpoint stub.Endpoint) {
 	if len(endpoint.CDCs) == 0 {
 		return
 	}
@@ -27,7 +27,7 @@ func (s ConsumerDrivenContract) Test(t *testing.T, endpoint http.Endpoint) {
 	})
 }
 
-func (s ConsumerDrivenContract) addEndpoint(t *testing.T, endpoint http.Endpoint) uuid.UUID {
+func (s ConsumerDrivenContract) addEndpoint(t *testing.T, endpoint stub.Endpoint) uuid.UUID {
 	var id uuid.UUID
 	t.Run("an endpoint can be added", func(t *testing.T) {
 		assert.NoError(t, s.Admin.AddEndpoints(endpoint))

@@ -9,8 +9,8 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/quii/mockingjay-server-two/domain/crud"
 	"github.com/quii/mockingjay-server-two/domain/mockingjay/contract"
-	http2 "github.com/quii/mockingjay-server-two/domain/mockingjay/http"
 	"github.com/quii/mockingjay-server-two/domain/mockingjay/matching"
+	"github.com/quii/mockingjay-server-two/domain/mockingjay/stub"
 )
 
 var (
@@ -32,7 +32,7 @@ const (
 
 type AdminServiceService interface {
 	Reports() crud.CRUDesque[uuid.UUID, matching.Report]
-	Endpoints() crud.CRUDesque[uuid.UUID, http2.Endpoint]
+	Endpoints() crud.CRUDesque[uuid.UUID, stub.Endpoint]
 	CheckEndpoints() ([]contract.Report, error)
 }
 

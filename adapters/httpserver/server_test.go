@@ -15,7 +15,7 @@ import (
 	"github.com/quii/mockingjay-server-two/adapters/httpserver/handlers"
 	"github.com/quii/mockingjay-server-two/domain/mockingjay"
 	"github.com/quii/mockingjay-server-two/domain/mockingjay/contract"
-	http2 "github.com/quii/mockingjay-server-two/domain/mockingjay/http"
+	"github.com/quii/mockingjay-server-two/domain/mockingjay/stub"
 	"github.com/quii/mockingjay-server-two/specifications"
 	"github.com/quii/mockingjay-server-two/specifications/usecases"
 )
@@ -26,19 +26,12 @@ const (
 )
 
 func TestApp(t *testing.T) {
-	var (
-		adminHandler, stubServerHandler http.Handler
-		stubServer                      = httptest.NewServer(stubServerHandler)
-		adminServer                     = httptest.NewServer(adminHandler)
-	)
-
-	t.Cleanup(stubServer.Close)
-	t.Cleanup(adminServer.Close)
+	stubServer, adminServer := startServers(t)
 
 	service, err := mockingjay.NewService(nil, contract.NewService(&http.Client{}))
 	assert.NoError(t, err)
 
-	stubServerHandler, adminHandler, err = httpserver.New(
+	stubServerHandler, adminHandler, err := httpserver.New(
 		service,
 		adminServer.URL,
 		config.DevModeOn,
@@ -63,7 +56,7 @@ func TestApp(t *testing.T) {
 		specifications.MockingjayStubServerSpec(t, webDriver, httpDriver, examples, fixtures)
 	})
 
-	t.Run("configuring with http api", func(t *testing.T) {
+	t.Run("configuring with stub api", func(t *testing.T) {
 		specifications.MockingjayStubServerSpec(t, httpDriver, httpDriver, examples, fixtures)
 	})
 
@@ -72,22 +65,22 @@ func TestApp(t *testing.T) {
 	})
 
 	t.Run("smaller ad-hoc example", func(t *testing.T) {
-		endpoint := http2.Endpoint{
+		endpoint := stub.Endpoint{
 			ID:          uuid.New(),
 			Description: "Hello",
-			Request: http2.Request{
+			Request: stub.Request{
 				Method:    http.MethodGet,
 				RegexPath: "/happy-birthday/[a-z]+",
 				Path:      "/happy-birthday/elodie",
-				Headers: http2.Headers{
+				Headers: stub.Headers{
 					"accept": []string{"application/json"},
 				},
 				Body: "walk the dog",
 			},
-			Response: http2.Response{
+			Response: stub.Response{
 				Status: http.StatusOK,
 				Body:   `{"msg": "happy birthday"}`,
-				Headers: http2.Headers{
+				Headers: stub.Headers{
 					"content-type": []string{"application/json"},
 				},
 			},
@@ -127,9 +120,9 @@ func TestApp(t *testing.T) {
 	t.Run("put new configuration", func(t *testing.T) {
 		t.Run("400 if you put a bad configuration", func(t *testing.T) {
 			t.Run("invalid regex", func(t *testing.T) {
-				assert.Error(t, httpDriver.AddEndpoints(http2.Endpoint{
+				assert.Error(t, httpDriver.AddEndpoints(stub.Endpoint{
 					Description: "lala",
-					Request: http2.Request{
+					Request: stub.Request{
 						Method:    http.MethodGet,
 						RegexPath: "[", //invalid regex
 						Path:      "/lol",
@@ -149,7 +142,15 @@ func TestApp(t *testing.T) {
 	})
 }
 
-func mustLoadExamplesAndFixtures(t *testing.T) (http2.Endpoints, []mockingjay.TestFixture) {
+func startServers(t *testing.T) (*httptest.Server, *httptest.Server) {
+	stubServer := httptest.NewServer(nil)
+	adminServer := httptest.NewServer(nil)
+	t.Cleanup(stubServer.Close)
+	t.Cleanup(adminServer.Close)
+	return stubServer, adminServer
+}
+
+func mustLoadExamplesAndFixtures(t *testing.T) (stub.Endpoints, []mockingjay.TestFixture) {
 	examples, err := mockingjay.NewEndpointsFromCue(examplesDir)
 	assert.NoError(t, err)
 	fixtures, err := mockingjay.NewFixturesFromCue(fixturesDir)

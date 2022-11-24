@@ -12,8 +12,8 @@ import (
 	"github.com/google/uuid"
 	"github.com/quii/mockingjay-server-two/adapters/httpserver/drivers/internal/pageobjects"
 	"github.com/quii/mockingjay-server-two/adapters/httpserver/handlers"
-	http2 "github.com/quii/mockingjay-server-two/domain/mockingjay/http"
 	"github.com/quii/mockingjay-server-two/domain/mockingjay/matching"
+	"github.com/quii/mockingjay-server-two/domain/mockingjay/stub"
 )
 
 type WebDriver struct {
@@ -58,8 +58,8 @@ func NewWebDriver(adminServerURL string, client *http.Client, debug bool) (*WebD
 	}, cleanup
 }
 
-func (d WebDriver) GetEndpoints() (http2.Endpoints, error) {
-	var endpoints http2.Endpoints
+func (d WebDriver) GetEndpoints() (stub.Endpoints, error) {
+	var endpoints stub.Endpoints
 
 	endpointsPage, err := d.browser.Page(proto.TargetCreateTarget{URL: d.endpointsURL})
 	endpointsPage.MustWaitNavigation()
@@ -83,7 +83,7 @@ func (d WebDriver) GetEndpoints() (http2.Endpoints, error) {
 	return endpoints, nil
 }
 
-func (d WebDriver) AddEndpoints(es ...http2.Endpoint) error {
+func (d WebDriver) AddEndpoints(es ...stub.Endpoint) error {
 	page := d.browser.MustPage(d.endpointsURL)
 	for _, endpoint := range es {
 		form, err := page.Element("form")
@@ -139,9 +139,9 @@ func (d WebDriver) GetReports() ([]matching.Report, error) {
 		reports = append(reports, matching.Report{
 			ID:              reportID,
 			HadMatch:        false,
-			IncomingRequest: http2.Request{},
+			IncomingRequest: stub.Request{},
 			FailedMatches:   nil,
-			SuccessfulMatch: http2.Response{},
+			SuccessfulMatch: stub.Response{},
 			CreatedAt:       time.Time{},
 		})
 	}

@@ -9,10 +9,10 @@ import (
 	"github.com/go-rod/rod"
 	"github.com/go-rod/rod/lib/proto"
 	"github.com/google/uuid"
-	"github.com/quii/mockingjay-server-two/domain/mockingjay/http"
+	"github.com/quii/mockingjay-server-two/domain/mockingjay/stub"
 )
 
-func EndpointFromMarkup(el *rod.Element) (http.Endpoint, error) {
+func EndpointFromMarkup(el *rod.Element) (stub.Endpoint, error) {
 	getRequestField := func(field string) string {
 		return el.MustElement(fmt.Sprintf(`[data-request-field=%s]`, field)).MustText()
 	}
@@ -22,34 +22,34 @@ func EndpointFromMarkup(el *rod.Element) (http.Endpoint, error) {
 	statusText := getResponseField("status")
 	statusCode, err := strconv.Atoi(statusText)
 	if err != nil {
-		return http.Endpoint{}, err
+		return stub.Endpoint{}, err
 	}
 
 	rawUUID := el.MustAttribute(`data-id`)
 	if rawUUID == nil {
-		return http.Endpoint{}, errors.New("markup must be broken, no data-id attribute found")
+		return stub.Endpoint{}, errors.New("markup must be broken, no data-id attribute found")
 	}
 
 	id, err := uuid.Parse(*rawUUID)
 	if err != nil {
-		return http.Endpoint{}, err
+		return stub.Endpoint{}, err
 	}
 
 	if id.String() == "" {
-		return http.Endpoint{}, errors.New("couldnt get an id for endpoint")
+		return stub.Endpoint{}, errors.New("couldnt get an id for endpoint")
 	}
 
-	endpoint := http.Endpoint{
+	endpoint := stub.Endpoint{
 		ID:          id,
 		Description: el.MustElement(`[data-field=description`).MustText(),
-		Request: http.Request{
+		Request: stub.Request{
 			Method:    getRequestField("method"),
 			RegexPath: getRequestField("regexPath"),
 			Path:      getRequestField("path"),
 			Headers:   extractHeadersFromMarkup(el, `[data-request-field=headers] dl`),
 			Body:      getRequestField("body"),
 		},
-		Response: http.Response{
+		Response: stub.Response{
 			Status:  statusCode,
 			Body:    getResponseField("body"),
 			Headers: extractHeadersFromMarkup(el, `[data-response-field=headers] dl`),
@@ -58,11 +58,11 @@ func EndpointFromMarkup(el *rod.Element) (http.Endpoint, error) {
 	return endpoint, nil
 }
 
-func InsertEndpoint(form *rod.Element, endpoint http.Endpoint) error {
+func InsertEndpoint(form *rod.Element, endpoint stub.Endpoint) error {
 	fillTextWith := func(name string, value string) {
 		form.MustElement(fmt.Sprintf(`*[name="%s"]`, name)).MustInput(value)
 	}
-	addHeaders := func(prefix string, headers http.Headers) {
+	addHeaders := func(prefix string, headers stub.Headers) {
 		for k, v := range headers {
 			form.MustElement(fmt.Sprintf(`*[name="%s.header.name"]`, prefix)).MustInput(k)
 			form.MustElement(fmt.Sprintf(`*[name="%s.header.values"]`, prefix)).MustInput(strings.Join(v, "; "))
@@ -89,13 +89,13 @@ func InsertEndpoint(form *rod.Element, endpoint http.Endpoint) error {
 	return nil
 }
 
-func extractHeadersFromMarkup(el *rod.Element, selector string) http.Headers {
-	var requestHeaders http.Headers
+func extractHeadersFromMarkup(el *rod.Element, selector string) stub.Headers {
+	var requestHeaders stub.Headers
 	dl := el.MustElement(selector)
 	listItems := dl.MustElements("*")
 
 	if len(listItems) > 0 {
-		requestHeaders = make(http.Headers)
+		requestHeaders = make(stub.Headers)
 		currentKey := ""
 		for _, item := range listItems {
 			if item.String() == "<dt>" {

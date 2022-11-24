@@ -10,8 +10,8 @@ import (
 	"github.com/google/uuid"
 	"github.com/quii/mockingjay-server-two/adapters/httpserver/handlers"
 	"github.com/quii/mockingjay-server-two/domain/mockingjay/contract"
-	http2 "github.com/quii/mockingjay-server-two/domain/mockingjay/http"
 	"github.com/quii/mockingjay-server-two/domain/mockingjay/matching"
+	"github.com/quii/mockingjay-server-two/domain/mockingjay/stub"
 )
 
 type HTTPDriver struct {
@@ -90,37 +90,37 @@ func (d HTTPDriver) GetReports() ([]matching.Report, error) {
 	return reports, nil
 }
 
-func (d HTTPDriver) Send(request http2.Request) (http2.Response, matching.Report, error) {
+func (d HTTPDriver) Send(request stub.Request) (stub.Response, matching.Report, error) {
 	req := request.ToHTTPRequest(d.stubServerURL)
 
 	res, err := d.client.Do(req)
 	if err != nil {
-		return http2.Response{}, matching.Report{}, err
+		return stub.Response{}, matching.Report{}, err
 	}
 
 	defer res.Body.Close()
 	body, err := io.ReadAll(res.Body)
 	if err != nil {
-		return http2.Response{}, matching.Report{}, err
+		return stub.Response{}, matching.Report{}, err
 	}
 
 	if res.Header.Get(handlers.HeaderMockingjayMatched) == "false" {
 		report, err := d.GetReport(res.Header.Get("location"))
 		if err != nil {
-			return http2.Response{}, report, err
+			return stub.Response{}, report, err
 		}
-		return http2.Response{}, report, nil
+		return stub.Response{}, report, nil
 	}
 
 	matchID, err := uuid.Parse(res.Header.Get(handlers.HeaderMockingjayMatchID))
 	if err != nil {
-		return http2.Response{}, matching.Report{}, err
+		return stub.Response{}, matching.Report{}, err
 	}
 
-	return http2.Response{
+	return stub.Response{
 		Status:  res.StatusCode,
 		Body:    string(body),
-		Headers: http2.Headers(res.Header),
+		Headers: stub.Headers(res.Header),
 	}, matching.Report{HadMatch: true, ID: matchID}, nil
 }
 
@@ -144,7 +144,7 @@ func (d HTTPDriver) GetReport(location string) (matching.Report, error) {
 	return matchReport, nil
 }
 
-func (d HTTPDriver) AddEndpoints(es ...http2.Endpoint) error {
+func (d HTTPDriver) AddEndpoints(es ...stub.Endpoint) error {
 	for _, e := range es {
 		endpointJSON, err := json.Marshal(e)
 		if err != nil {
@@ -170,7 +170,7 @@ func (d HTTPDriver) AddEndpoints(es ...http2.Endpoint) error {
 	return nil
 }
 
-func (d HTTPDriver) GetEndpoints() (http2.Endpoints, error) {
+func (d HTTPDriver) GetEndpoints() (stub.Endpoints, error) {
 	res, err := d.client.Get(d.endpointsURL)
 	if err != nil {
 		return nil, err
@@ -179,7 +179,7 @@ func (d HTTPDriver) GetEndpoints() (http2.Endpoints, error) {
 	if res.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("unexpected status %d from %s", res.StatusCode, d.endpointsURL)
 	}
-	var endpoints http2.Endpoints
+	var endpoints stub.Endpoints
 
 	if err := json.NewDecoder(res.Body).Decode(&endpoints); err != nil {
 		return nil, err
