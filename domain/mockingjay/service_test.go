@@ -17,7 +17,7 @@ import (
 func TestService_CheckEndpoints(t *testing.T) {
 	httpClient := &http.Client{}
 
-	service, _ := mockingjay.NewService(nil, contract.NewService(httpClient))
+	service := mockingjay.NewService(contract.NewService(httpClient))
 	downstreamService := httptest.NewServer(handlers.NewStubHandler(service, "n/a"))
 	t.Cleanup(downstreamService.Close)
 

@@ -20,20 +20,15 @@ type Service struct {
 	cdcService   CDCService
 }
 
-func NewService(endpoints stub.Endpoints, cdcService CDCService) (*Service, error) {
+func NewService(cdcService CDCService) *Service {
 	reportsCRUD := crud.New[uuid.UUID, matching.Report](matching.SortReport)
 	endpointCRUD := crud.New[uuid.UUID, stub.Endpoint](stub.SortEndpoint)
 
-	for _, endpoint := range endpoints {
-		if err := endpointCRUD.Create(endpoint.ID, endpoint); err != nil {
-			return nil, err
-		}
-	}
 	return &Service{
 		endpoints:    endpointCRUD,
 		matchReports: reportsCRUD,
 		cdcService:   cdcService,
-	}, nil
+	}
 }
 
 func (m *Service) CheckEndpoints() ([]contract.Report, error) {

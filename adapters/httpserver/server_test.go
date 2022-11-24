@@ -28,8 +28,7 @@ const (
 func TestApp(t *testing.T) {
 	stubServer, adminServer := startServers(t)
 
-	service, err := mockingjay.NewService(nil, contract.NewService(&http.Client{}))
-	assert.NoError(t, err)
+	service := mockingjay.NewService(contract.NewService(&http.Client{}))
 
 	stubServerHandler, adminHandler, err := httpserver.New(
 		service,

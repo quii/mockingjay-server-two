@@ -47,9 +47,11 @@ func main() {
 
 	httpClient := &http.Client{Timeout: 5 * time.Second}
 
-	service, err := mockingjay.NewService(endpoints, contract.NewService(httpClient))
-	if err != nil {
-		log.Fatal(err)
+	service := mockingjay.NewService(contract.NewService(httpClient))
+	for _, endpoint := range endpoints {
+		if err := service.Endpoints().Create(endpoint.ID, endpoint); err != nil {
+			log.Fatal(err)
+		}
 	}
 
 	stubHandler, adminHandler, err := httpserver.New(service, *adminBaseURL, *devMode)
