@@ -2,6 +2,7 @@ package usecases
 
 import (
 	"github.com/google/uuid"
+	"github.com/quii/mockingjay-server-two/domain/mockingjay/contract"
 	"github.com/quii/mockingjay-server-two/domain/mockingjay/http"
 	"github.com/quii/mockingjay-server-two/domain/mockingjay/matching"
 )
@@ -16,7 +17,10 @@ type Admin interface {
 	DeleteEndpoints() error
 }
 
-type Client interface {
+type StubServerClient interface {
 	Send(request http.Request) (http.Response, matching.Report, error)
-	//CheckEndpoints() ([]contract.Report, error) - wip
+}
+
+type ConsumerDrivenContractChecker interface {
+	CheckEndpoints() ([]contract.Report, error)
 }

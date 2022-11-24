@@ -8,6 +8,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	"github.com/quii/mockingjay-server-two/domain/crud"
+	"github.com/quii/mockingjay-server-two/domain/mockingjay/contract"
 	http2 "github.com/quii/mockingjay-server-two/domain/mockingjay/http"
 	"github.com/quii/mockingjay-server-two/domain/mockingjay/matching"
 )
@@ -25,12 +26,14 @@ const (
 	HeaderMockingjayMatchID    = "x-mockingjay-match-id"
 	ReportsPath                = "/match-reports"
 	EndpointsPath              = "/"
+	CDCPath                    = "/cdc"
 	contentTypeApplicationJSON = "application/json"
 )
 
 type AdminServiceService interface {
 	Reports() crud.CRUDesque[uuid.UUID, matching.Report]
 	Endpoints() crud.CRUDesque[uuid.UUID, http2.Endpoint]
+	CheckEndpoints() ([]contract.Report, error)
 }
 
 type HTTPRenderer interface {
@@ -57,6 +60,11 @@ func NewAdminHandler(service AdminServiceService, renderer HTTPRenderer) (*Admin
 		renderer: renderer,
 	}
 
+	cdcHandler := CDCHandler{
+		service:  service,
+		renderer: renderer,
+	}
+
 	adminRouter := mux.NewRouter()
 	adminRouter.HandleFunc(ReportsPath, reportHandler.allReports).Methods(http.MethodGet)
 	adminRouter.HandleFunc(ReportsPath, reportHandler.deleteReports).Methods(http.MethodDelete)
@@ -65,6 +73,8 @@ func NewAdminHandler(service AdminServiceService, renderer HTTPRenderer) (*Admin
 	adminRouter.HandleFunc(EndpointsPath, endpointHandler.allEndpoints).Methods(http.MethodGet)
 	adminRouter.HandleFunc(EndpointsPath+"{endpointIndex}", endpointHandler.DeleteEndpoint).Methods(http.MethodDelete)
 	adminRouter.HandleFunc(EndpointsPath, endpointHandler.addEndpoint).Methods(http.MethodPost)
+
+	adminRouter.HandleFunc(CDCPath, cdcHandler.checkContracts).Methods(http.MethodGet)
 
 	staticHandler, err := newStaticHandler()
 	if err != nil {

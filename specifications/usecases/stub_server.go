@@ -13,11 +13,11 @@ import (
 
 type StubServer struct {
 	Admin  Admin
-	Client Client
+	Client StubServerClient
 }
 
 func (s StubServer) Test(t *testing.T, endpoint http.Endpoint) {
-	t.Run("for "+endpoint.Description, func(t *testing.T) {
+	t.Run("stub server for "+endpoint.Description, func(t *testing.T) {
 		t.Cleanup(s.mustDeleteEndpoint(t, s.addEndpoint(t, endpoint)))
 		report := s.assertEndpointRespondsCorrectly(t, endpoint)
 		s.assertReportCanBeFoundFor(t, report.ID)

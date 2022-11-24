@@ -9,6 +9,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/quii/mockingjay-server-two/adapters/httpserver/handlers"
+	"github.com/quii/mockingjay-server-two/domain/mockingjay/contract"
 	http2 "github.com/quii/mockingjay-server-two/domain/mockingjay/http"
 	"github.com/quii/mockingjay-server-two/domain/mockingjay/matching"
 )
@@ -18,6 +19,7 @@ type HTTPDriver struct {
 	reportsURL    string
 	endpointsURL  string
 	client        *http.Client
+	cdcURL        string
 }
 
 func (d HTTPDriver) DeleteReports() error {
@@ -35,6 +37,27 @@ func (d HTTPDriver) DeleteReports() error {
 	return nil
 }
 
+func (d HTTPDriver) CheckEndpoints() ([]contract.Report, error) {
+	req, err := http.NewRequest(http.MethodGet, d.cdcURL, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	res, err := d.client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer res.Body.Close()
+	if res.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(res.Body)
+		return nil, fmt.Errorf("unepxected %d from %s, %s", res.StatusCode, d.cdcURL, string(body))
+	}
+
+	var reports []contract.Report
+	err = json.NewDecoder(res.Body).Decode(&reports)
+	return reports, err
+}
+
 func NewHTTPDriver(stubServerURL string, adminServerURL string, client *http.Client) *HTTPDriver {
 	client.Transport = acceptJSONDecorator{transport: http.DefaultTransport}
 	return &HTTPDriver{
@@ -42,6 +65,7 @@ func NewHTTPDriver(stubServerURL string, adminServerURL string, client *http.Cli
 		client:        client,
 		reportsURL:    adminServerURL + handlers.ReportsPath,
 		endpointsURL:  adminServerURL + handlers.EndpointsPath,
+		cdcURL:        adminServerURL + handlers.CDCPath,
 	}
 }
 

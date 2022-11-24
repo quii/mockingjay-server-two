@@ -9,7 +9,13 @@ import (
 	"github.com/quii/mockingjay-server-two/specifications/usecases"
 )
 
-func MockingjayStubServerSpec(t *testing.T, admin usecases.Admin, client usecases.Client, examples http.Endpoints, testFixtures []mockingjay.TestFixture) {
+func MockingjayStubServerSpec(
+	t *testing.T,
+	admin usecases.Admin,
+	client usecases.StubServerClient,
+	examples http.Endpoints,
+	testFixtures []mockingjay.TestFixture,
+) {
 	assert.NoError(t, admin.DeleteEndpoints())
 	assert.NoError(t, admin.DeleteReports())
 

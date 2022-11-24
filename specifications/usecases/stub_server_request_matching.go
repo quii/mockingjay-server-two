@@ -13,7 +13,7 @@ import (
 
 type StubServerRequestMatching struct {
 	Admin  Admin
-	Client Client
+	Client StubServerClient
 }
 
 func (s StubServerRequestMatching) Test(t *testing.T, fixture mockingjay.TestFixture) {

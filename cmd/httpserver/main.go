@@ -43,7 +43,7 @@ func main() {
 		}
 	}
 
-	service, err := mockingjay.NewStubService(endpoints)
+	service, err := mockingjay.NewService(endpoints)
 	if err != nil {
 		log.Fatal(err)
 	}

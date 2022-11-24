@@ -5,16 +5,21 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/quii/mockingjay-server-two/domain/crud"
+	"github.com/quii/mockingjay-server-two/domain/mockingjay/contract"
 	http2 "github.com/quii/mockingjay-server-two/domain/mockingjay/http"
 	"github.com/quii/mockingjay-server-two/domain/mockingjay/matching"
 )
 
-type StubService struct {
+type Service struct {
 	endpoints    crud.CRUDesque[uuid.UUID, http2.Endpoint]
 	matchReports crud.CRUDesque[uuid.UUID, matching.Report]
 }
 
-func NewStubService(endpoints http2.Endpoints) (*StubService, error) {
+func (m *Service) CheckEndpoints() ([]contract.Report, error) {
+	return []contract.Report{{Passed: true}}, nil
+}
+
+func NewService(endpoints http2.Endpoints) (*Service, error) {
 	reportsCRUD := crud.New[uuid.UUID, matching.Report](matching.SortReport)
 	endpointCRUD := crud.New[uuid.UUID, http2.Endpoint](http2.SortEndpoint)
 
@@ -23,21 +28,21 @@ func NewStubService(endpoints http2.Endpoints) (*StubService, error) {
 			return nil, err
 		}
 	}
-	return &StubService{
+	return &Service{
 		endpoints:    endpointCRUD,
 		matchReports: reportsCRUD,
 	}, nil
 }
 
-func (m *StubService) Reports() crud.CRUDesque[uuid.UUID, matching.Report] {
+func (m *Service) Reports() crud.CRUDesque[uuid.UUID, matching.Report] {
 	return m.matchReports
 }
 
-func (m *StubService) Endpoints() crud.CRUDesque[uuid.UUID, http2.Endpoint] {
+func (m *Service) Endpoints() crud.CRUDesque[uuid.UUID, http2.Endpoint] {
 	return m.endpoints
 }
 
-func (m *StubService) CreateMatchReport(r *http.Request) (matching.Report, error) {
+func (m *Service) CreateMatchReport(r *http.Request) (matching.Report, error) {
 	endpoints, err := m.endpoints.GetAll()
 	if err != nil {
 		return matching.Report{}, err

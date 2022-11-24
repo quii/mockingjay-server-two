@@ -36,7 +36,7 @@ func TestApp(t *testing.T) {
 	defer stubServer.Close()
 
 	assert.NoError(t, examples.Compile())
-	service, err := mockingjay.NewStubService(nil)
+	service, err := mockingjay.NewService(nil)
 	assert.NoError(t, err)
 
 	stubServerHandler, adminHandler, err := httpserver.New(
@@ -64,6 +64,10 @@ func TestApp(t *testing.T) {
 
 	t.Run("configuring with http api", func(t *testing.T) {
 		specifications.MockingjayStubServerSpec(t, httpDriver, httpDriver, examples, fixtures)
+	})
+
+	t.Run("consumer driven contracts", func(t *testing.T) {
+		specifications.MockingjayConsumerDrivenContractSpec(t, httpDriver, httpDriver, examples)
 	})
 
 	t.Run("smaller ad-hoc example", func(t *testing.T) {
