@@ -17,14 +17,8 @@ type StubServer struct {
 }
 
 func (s StubServer) Test(t *testing.T, endpoint http.Endpoint) {
-	assert.NoError(t, s.Admin.DeleteEndpoints())
-	assert.NoError(t, s.Admin.DeleteReports())
-
 	t.Run("for "+endpoint.Description, func(t *testing.T) {
-		id := s.addEndpoint(t, endpoint)
-
-		t.Cleanup(s.mustDeleteEndpoint(t, id))
-
+		t.Cleanup(s.mustDeleteEndpoint(t, s.addEndpoint(t, endpoint)))
 		report := s.assertEndpointRespondsCorrectly(t, endpoint)
 		s.assertReportCanBeFoundFor(t, report.ID)
 	})
