@@ -5,13 +5,12 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/adamluzsi/testcase/pp"
-	"github.com/alecthomas/assert/v2"
 	"github.com/google/uuid"
 	"github.com/quii/mockingjay-server-two/adapters/httpserver/handlers"
 	"github.com/quii/mockingjay-server-two/domain/mockingjay"
 	"github.com/quii/mockingjay-server-two/domain/mockingjay/contract"
 	"github.com/quii/mockingjay-server-two/domain/mockingjay/stub"
+	"github.com/quii/mockingjay-server-two/specifications/usecases"
 )
 
 func TestService_CheckEndpoints(t *testing.T) {
@@ -20,6 +19,7 @@ func TestService_CheckEndpoints(t *testing.T) {
 	service := mockingjay.NewService(contract.NewService(httpClient))
 	downstreamService := httptest.NewServer(handlers.NewStubHandler(service, "n/a"))
 	t.Cleanup(downstreamService.Close)
+	driver := mockingjay.NewDriver(service)
 
 	endpoint := stub.Endpoint{
 		ID: uuid.New(),
@@ -40,12 +40,13 @@ func TestService_CheckEndpoints(t *testing.T) {
 		},
 	}
 
-	assert.NoError(t, service.Endpoints().Create(endpoint.ID, endpoint))
+	usecases.ConsumerDrivenContract{
+		Admin:  driver,
+		Client: driver,
+	}.Test(t, endpoint)
 
-	t.Run("it can check the cdcs", func(t *testing.T) {
-		reports, err := service.CheckEndpoints()
-		assert.NoError(t, err)
-		assert.Equal(t, len(endpoint.CDCs), len(reports))
-		assert.True(t, reports[0].Passed(), pp.Format(reports[0]))
-	})
+	usecases.StubServer{
+		Admin:  driver,
+		Client: driver,
+	}.Test(t, endpoint)
 }

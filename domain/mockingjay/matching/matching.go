@@ -1,7 +1,6 @@
 package matching
 
 import (
-	"net/http"
 	"net/textproto"
 
 	"github.com/quii/mockingjay-server-two/domain/mockingjay/stub"
@@ -23,9 +22,7 @@ type Match struct {
 	Body    bool `json:"body"`
 }
 
-func newMatcher(req *http.Request) func(stub.Endpoint) RequestMatch {
-	got := stub.NewRequestFromHTTP(req)
-
+func newMatcher(got stub.Request) func(stub.Endpoint) RequestMatch {
 	return func(e stub.Endpoint) RequestMatch {
 		match := RequestMatch{
 			Endpoint: e,

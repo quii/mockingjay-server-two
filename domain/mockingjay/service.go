@@ -1,8 +1,6 @@
 package mockingjay
 
 import (
-	"net/http"
-
 	"github.com/google/uuid"
 	"github.com/quii/mockingjay-server-two/domain/crud"
 	"github.com/quii/mockingjay-server-two/domain/mockingjay/contract"
@@ -56,7 +54,7 @@ func (m *Service) Endpoints() crud.CRUDesque[uuid.UUID, stub.Endpoint] {
 	return m.endpoints
 }
 
-func (m *Service) CreateMatchReport(r *http.Request) (matching.Report, error) {
+func (m *Service) CreateMatchReport(r stub.Request) (matching.Report, error) {
 	endpoints, err := m.endpoints.GetAll()
 	if err != nil {
 		return matching.Report{}, err

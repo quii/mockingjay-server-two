@@ -8,7 +8,7 @@ import (
 )
 
 type StubServerService interface {
-	CreateMatchReport(r *http.Request) (matching.Report, error)
+	CreateMatchReport(r stub.Request) (matching.Report, error)
 }
 
 type StubHandler struct {
@@ -21,7 +21,7 @@ func NewStubHandler(service StubServerService, adminBaseURL string) *StubHandler
 }
 
 func (s *StubHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	matchReport, err := s.service.CreateMatchReport(r)
+	matchReport, err := s.service.CreateMatchReport(stub.NewRequestFromHTTP(r))
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)

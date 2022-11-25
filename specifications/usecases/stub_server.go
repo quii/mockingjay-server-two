@@ -27,10 +27,10 @@ func (s StubServer) Test(t *testing.T, endpoint stub.Endpoint) {
 func (s StubServer) assertEndpointRespondsCorrectly(t *testing.T, endpoint stub.Endpoint) matching.Report {
 	var theReport matching.Report
 	t.Run("the endpoint responds correctly to the request it was configured with", func(t *testing.T) {
-		res, report, err := s.Client.Send(endpoint.Request)
+		report, err := s.Client.Send(endpoint.Request)
 		assert.True(t, report.HadMatch, report)
 		assert.NoError(t, err)
-		AssertResponseMatches(t, endpoint.Response, res)
+		AssertResponseMatches(t, endpoint.Response, report.SuccessfulMatch)
 		theReport.ID = report.ID
 	})
 

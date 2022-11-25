@@ -90,38 +90,38 @@ func (d HTTPDriver) GetReports() ([]matching.Report, error) {
 	return reports, nil
 }
 
-func (d HTTPDriver) Send(request stub.Request) (stub.Response, matching.Report, error) {
+func (d HTTPDriver) Send(request stub.Request) (matching.Report, error) {
 	req := request.ToHTTPRequest(d.stubServerURL)
 
 	res, err := d.client.Do(req)
 	if err != nil {
-		return stub.Response{}, matching.Report{}, err
+		return matching.Report{}, err
 	}
 
 	defer res.Body.Close()
 	body, err := io.ReadAll(res.Body)
 	if err != nil {
-		return stub.Response{}, matching.Report{}, err
+		return matching.Report{}, err
 	}
 
 	if res.Header.Get(handlers.HeaderMockingjayMatched) == "false" {
 		report, err := d.GetReport(res.Header.Get("location"))
 		if err != nil {
-			return stub.Response{}, report, err
+			return report, err
 		}
-		return stub.Response{}, report, nil
+		return report, nil
 	}
 
 	matchID, err := uuid.Parse(res.Header.Get(handlers.HeaderMockingjayMatchID))
 	if err != nil {
-		return stub.Response{}, matching.Report{}, err
+		return matching.Report{}, err
 	}
 
-	return stub.Response{
+	return matching.Report{HadMatch: true, ID: matchID, SuccessfulMatch: stub.Response{
 		Status:  res.StatusCode,
 		Body:    string(body),
 		Headers: stub.Headers(res.Header),
-	}, matching.Report{HadMatch: true, ID: matchID}, nil
+	}}, nil
 }
 
 func (d HTTPDriver) GetReport(location string) (matching.Report, error) {

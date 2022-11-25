@@ -18,7 +18,7 @@ type Admin interface {
 }
 
 type StubServerClient interface {
-	Send(request stub.Request) (stub.Response, matching.Report, error)
+	Send(request stub.Request) (matching.Report, error)
 }
 
 type ConsumerDrivenContractChecker interface {

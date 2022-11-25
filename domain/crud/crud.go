@@ -1,6 +1,8 @@
 package crud
 
-import "golang.org/x/exp/slices"
+import (
+	"golang.org/x/exp/slices"
+)
 
 type CRUDesque[ID comparable, T any] interface {
 	GetAll() ([]T, error)

@@ -1,7 +1,6 @@
 package matching
 
 import (
-	"net/http"
 	"time"
 
 	"github.com/google/uuid"
@@ -19,15 +18,11 @@ type Report struct {
 	CreatedAt       time.Time      `json:"createdAt"`
 }
 
-func NewReport(req *http.Request, endpoints stub.Endpoints) Report {
+func NewReport(req stub.Request, endpoints stub.Endpoints) Report {
 	overallReport := Report{
-		ID: uuid.New(),
-		IncomingRequest: stub.Request{
-			Method:  req.Method,
-			Path:    req.URL.String(),
-			Headers: stub.Headers(req.Header),
-		},
-		CreatedAt: time.Now().UTC(),
+		ID:              uuid.New(),
+		IncomingRequest: req,
+		CreatedAt:       time.Now().UTC(),
 	}
 
 	matcher := newMatcher(req)
