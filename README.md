@@ -13,7 +13,7 @@ The sequel (re-write) of [Mockingjay-server](https://github.com/quii/mockingjay-
 
 ## Run it locally in dev mode
 
-`go run cmd/httpserver/main.go -endpoints=specifications/examples/ -dev-mode=true`
+`make run`
 
 ## Hopes and dreams
 

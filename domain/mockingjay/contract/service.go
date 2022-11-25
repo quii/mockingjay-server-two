@@ -35,14 +35,14 @@ func (s Service) newReport(cdc stub.CDC, endpoint stub.Endpoint) Report {
 	req := endpoint.Request.ToHTTPRequest(cdc.BaseURL)
 	res, err := s.httpClient.Do(req)
 	if err != nil {
-		report.Errors = ErrCompatibilityProblems{Errors: []string{fmt.Sprintf("could not reach %s, %s", req.URL, err)}}
+		report.Errors = []string{fmt.Sprintf("could not reach %s, %s", req.URL, err)}
 		return report
 	}
 
 	report.ResponseFromDownstream = stub.NewResponseFromHTTP(res)
-
-	compatible, problems := IsResponseCompatible(report.ResponseFromDownstream, endpoint.Response)
-	report.Passed = compatible
-	report.Errors = problems
+	errors := IsResponseCompatible(report.ResponseFromDownstream, endpoint.Response)
+	for _, err := range errors {
+		report.Errors = append(report.Errors, err.Error())
+	}
 	return report
 }

@@ -46,6 +46,6 @@ func TestService_CheckEndpoints(t *testing.T) {
 		reports, err := service.CheckEndpoints()
 		assert.NoError(t, err)
 		assert.Equal(t, len(endpoint.CDCs), len(reports))
-		assert.True(t, reports[0].Passed, pp.Format(reports[0]))
+		assert.True(t, reports[0].Passed(), pp.Format(reports[0]))
 	})
 }

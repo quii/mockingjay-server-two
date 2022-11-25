@@ -16,7 +16,7 @@ tr.htmx-swapping td {
 nav ul {
     display: flex;
     padding: 0;
-    margin: 0;
+    margin: 0 0 1em 0;
 }
 nav ul li {
     display: block;

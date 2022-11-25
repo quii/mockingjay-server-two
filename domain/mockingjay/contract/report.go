@@ -5,10 +5,13 @@ import (
 )
 
 type Report struct {
-	Endpoint               stub.Endpoint            `json:"endpoint"`
-	ResponseFromDownstream stub.Response            `json:"responseFromDownstream"`
-	URL                    string                   `json:"URL"`
-	Passed                 bool                     `json:"passed"`
-	Errors                 ErrCompatibilityProblems `json:"errors"`
-	Ignore                 bool                     `json:"ignore"`
+	Endpoint               stub.Endpoint `json:"endpoint"`
+	ResponseFromDownstream stub.Response `json:"responseFromDownstream"`
+	URL                    string        `json:"URL"`
+	Ignore                 bool          `json:"ignore"`
+	Errors                 []string      `json:"errors"`
+}
+
+func (r Report) Passed() bool {
+	return len(r.Errors) == 0
 }

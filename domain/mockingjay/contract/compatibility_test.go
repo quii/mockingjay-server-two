@@ -27,8 +27,8 @@ func TestIsResponseCompatible(t *testing.T) {
 
 	for _, fixture := range fixtures.CDCFixtures {
 		t.Run(fixture.Description, func(t *testing.T) {
-			compatible, _ := contract.IsResponseCompatible(fixture.Got, fixture.Want)
-			assert.Equal(t, fixture.ShouldBeCompatible, compatible, pp.Diff(fixture.Got, fixture.Want))
+			compatibility := contract.IsResponseCompatible(fixture.Got, fixture.Want)
+			assert.Equal(t, fixture.ShouldBeCompatible, len(compatibility) == 0, pp.Diff(fixture.Got, fixture.Want))
 		})
 	}
 }

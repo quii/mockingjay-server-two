@@ -7,3 +7,6 @@ unit-tests:
 
 lint:
 	golangci-lint run
+
+run:
+	go run cmd/httpserver/main.go -endpoints=specifications/examples/ -dev-mode=true

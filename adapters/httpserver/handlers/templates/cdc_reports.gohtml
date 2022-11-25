@@ -14,7 +14,13 @@
             <td>{{.Endpoint.Description}}</td>
             <td>{{.URL}}</td>
             <td class="status">{{template "cross_tick" .Passed}}</td>
-            <td>{{.Errors}}</td>
+            <td>
+                <ul>
+                    {{range .Errors}}
+                        <li>{{.}}</li>
+                    {{end}}
+                </ul>
+            </td>
         </tr>
     {{end}}
     </tbody>

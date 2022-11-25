@@ -2,49 +2,54 @@ package contract
 
 import (
 	"encoding/json"
+	"errors"
 
 	"github.com/quii/mockingjay-server-two/domain/mockingjay/contract/jsonequaliser"
 	"github.com/quii/mockingjay-server-two/domain/mockingjay/matching"
 	"github.com/quii/mockingjay-server-two/domain/mockingjay/stub"
 )
 
-func IsResponseCompatible(got, want stub.Response) (bool, ErrCompatibilityProblems) {
-	errors := ErrCompatibilityProblems{}
+func IsResponseCompatible(got, want stub.Response) []error {
+	var errors []error
 
 	if want.Status != got.Status {
-		errors.Errors = append(errors.Errors, ErrorWrongStatus{
+		errors = append(errors, ErrorWrongStatus{
 			Got:  got.Status,
 			Want: want.Status,
-		}.Error())
+		})
 	}
 
-	bodyMatched, bodyErrs := matchBodies(got.Body, want.Body)
+	bodyMatched, err := matchBodies(got.Body, want.Body)
 	if !bodyMatched {
-		errors.Errors = append(errors.Errors, ErrJSONBodyMismatch{Problems: bodyErrs}.Error())
+		errors = append(errors, err)
 	}
 
 	if !matching.MatchHeaders(want.Headers, got.Headers) {
-		errors.Errors = append(errors.Errors, ErrHeadersIncorrect.Error())
+		errors = append(errors, ErrHeadersIncorrect)
 	}
 
-	return len(errors.Errors) == 0, errors
+	return errors
 }
 
-func matchBodies(got, want string) (bool, map[string]string) {
+func matchBodies(got, want string) (bool, error) {
 	if isJSON(want) {
 		messages, err := jsonequaliser.IsCompatible(want, got)
 
 		if err != nil {
-			return false, map[string]string{"error": err.Error()}
+			return false, err
 		}
 		if len(messages) > 0 {
-			return false, messages
+			return false, ErrJSONBodyMismatch{Problems: messages}
 		}
 
 		return true, nil
 	}
 
-	return want == got, nil
+	if want != got {
+		return false, errors.New("mismatched response bodies")
+	}
+
+	return true, nil
 }
 
 func isJSON(s string) bool {

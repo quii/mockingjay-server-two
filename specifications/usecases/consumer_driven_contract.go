@@ -23,7 +23,7 @@ func (s ConsumerDrivenContract) Test(t *testing.T, endpoint stub.Endpoint) {
 		results, err := s.Client.CheckEndpoints()
 		assert.NoError(t, err)
 		for _, result := range results {
-			assert.True(t, result.Passed || result.Ignore, pp.Format(results))
+			assert.True(t, result.Passed() || result.Ignore, pp.Format(results))
 		}
 	})
 }

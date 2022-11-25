@@ -7,9 +7,6 @@ import (
 )
 
 type (
-	ErrCompatibilityProblems struct {
-		Errors []string `json:"errors,omitempty"`
-	}
 	ErrorWrongStatus struct {
 		Got  int `json:"got"`
 		Want int `json:"want"`
@@ -18,13 +15,6 @@ type (
 		Problems map[string]string `json:"problems,omitempty"`
 	}
 )
-
-func (e ErrCompatibilityProblems) Error() string {
-	if len(e.Errors) == 0 {
-		return ""
-	}
-	return fmt.Sprintf("failed compatibility check: %s", strings.Join(e.Errors, ", "))
-}
 
 var (
 	ErrHeadersIncorrect = errors.New("headers are incorrect")
