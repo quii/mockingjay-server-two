@@ -28,6 +28,7 @@ endpoints?: [...#Endpoint]
 	baseURL:   string
 	retries:   int | *0
 	timeoutMS: int | *5000
+	ignore?:    bool | false
 }
 
 // The other schema are for tests, which you might want to do if you wish to file an issue

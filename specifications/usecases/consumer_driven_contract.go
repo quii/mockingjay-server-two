@@ -22,8 +22,9 @@ func (s ConsumerDrivenContract) Test(t *testing.T, endpoint stub.Endpoint) {
 		t.Cleanup(s.mustDeleteEndpoint(t, s.addEndpoint(t, endpoint)))
 		results, err := s.Client.CheckEndpoints()
 		assert.NoError(t, err)
-		assert.Equal(t, len(results), 1)
-		assert.True(t, results[0].Passed, pp.Format(results))
+		for _, result := range results {
+			assert.True(t, result.Passed || result.Ignore, pp.Format(results))
+		}
 	})
 }
 

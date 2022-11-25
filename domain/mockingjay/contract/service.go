@@ -1,6 +1,7 @@
 package contract
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/quii/mockingjay-server-two/domain/mockingjay/stub"
@@ -18,24 +19,30 @@ func (s Service) GetReports(endpoint stub.Endpoint) ([]Report, error) {
 	var allReports []Report
 
 	for _, cdc := range endpoint.CDCs {
-		req := endpoint.Request.ToHTTPRequest(cdc.BaseURL)
-
-		res, err := s.httpClient.Do(req)
-		if err != nil {
-			return nil, err
-		}
-		allReports = append(allReports, createReport(endpoint, res))
+		allReports = append(allReports, s.newReport(cdc, endpoint))
 	}
 
 	return allReports, nil
 }
 
-func createReport(endpoint stub.Endpoint, res *http.Response) Report {
-	got := stub.NewResponseFromHTTP(res)
+func (s Service) newReport(cdc stub.CDC, endpoint stub.Endpoint) Report {
 	report := Report{
-		Endpoint:               endpoint,
-		ResponseFromDownstream: got,
-		Passed:                 IsResponseCompatible(got, endpoint.Response),
+		Endpoint: endpoint,
+		Ignore:   cdc.Ignore,
+		URL:      cdc.BaseURL,
 	}
+
+	req := endpoint.Request.ToHTTPRequest(cdc.BaseURL)
+	res, err := s.httpClient.Do(req)
+	if err != nil {
+		report.Errors = ErrCompatibilityProblems{Errors: []string{fmt.Sprintf("could not reach %s, %s", req.URL, err)}}
+		return report
+	}
+
+	report.ResponseFromDownstream = stub.NewResponseFromHTTP(res)
+
+	compatible, problems := IsResponseCompatible(report.ResponseFromDownstream, endpoint.Response)
+	report.Passed = compatible
+	report.Errors = problems
 	return report
 }

@@ -8,9 +8,42 @@ tr.htmx-swapping td {
 .container {
     display: flex;
 }
-@media (prefers-color-scheme: dark) {
-    body {
-        background-color: black;
-        color: white;
-    }
+
+#reports tbody tr {
+    cursor: pointer;
+}
+
+nav ul {
+    display: flex;
+    padding: 0;
+    margin: 0;
+}
+nav ul li {
+    display: block;
+    list-style: none;
+    margin: 0em 1em 0em 0em;
+}
+
+body {
+    font-family: 'Courier Prime', monospace;
+}
+table {
+    border: solid 1px darkslategrey;
+    border-collapse: collapse;
+    border-spacing: 0;
+}
+table thead th {
+    background-color: darkslategrey;
+    border: solid 1px white;
+    color: white;
+    padding: 10px;
+    text-align: center;
+}
+table tbody td {
+    border: solid 1px darkslategrey;
+    padding: 10px;
+}
+
+td.status {
+    text-align: center;
 }

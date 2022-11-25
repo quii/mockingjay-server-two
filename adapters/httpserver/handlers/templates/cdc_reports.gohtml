@@ -1,0 +1,22 @@
+{{template "top" .}}
+<table id="cdc">
+    <thead>
+    <tr>
+        <th>Description</th>
+        <th>Checked against</th>
+        <th>Passed</th>
+        <th>Errors</th>
+    </tr>
+    </thead>
+    <tbody>
+    {{range .}}
+        <tr>
+            <td>{{.Endpoint.Description}}</td>
+            <td>{{.URL}}</td>
+            <td class="status">{{template "cross_tick" .Passed}}</td>
+            <td>{{.Errors}}</td>
+        </tr>
+    {{end}}
+    </tbody>
+</table>
+{{template "bottom" .}}

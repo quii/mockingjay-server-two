@@ -40,7 +40,11 @@ func main() {
 	var endpoints stub.Endpoints
 	if endpointsFolder != nil && *endpointsFolder != "" {
 		endpoints, err = mockingjay.NewEndpointsFromCue(*endpointsFolder)
+		log.Println("found", len(endpoints))
 		if err != nil {
+			log.Fatal(err)
+		}
+		if err := endpoints.Compile(); err != nil {
 			log.Fatal(err)
 		}
 	}

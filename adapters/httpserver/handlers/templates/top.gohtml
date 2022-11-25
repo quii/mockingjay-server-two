@@ -5,28 +5,11 @@
     <meta charset="UTF-8"/>
     <script src="/static/htmx.min.js"></script>
     <link rel=stylesheet href="/static/styles.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        #reports tbody tr {
-            cursor: pointer;
-        }
 
-        table {
-            border: solid 1px hotpink;
-            border-collapse: collapse;
-            border-spacing: 0;
-            font-family: "Courier New";
-        }
-        table thead th {
-            background-color: hotpink;
-            border: solid 1px white;
-            color: white;
-            padding: 10px;
-            text-align: center;
-        }
-        table tbody td {
-            border: solid 1px hotpink;
-            padding: 10px;
-        }
     </style>
 </head>
 <body hx-boost="true">
@@ -37,6 +20,7 @@
             <ul >
                 <li><a href="/" class="menu-item active">Endpoints</a></li>
                 <li><a href="/match-reports">Matches</a></li>
+                <li><a href="/cdc">Consumer driven contracts</a></li>
                 <li><a href="https://twitter.com/quii">@quii</a></li>
                 <li><a href="https://github.com/quii">Github</a></li>
             </ul>

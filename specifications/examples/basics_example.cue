@@ -29,5 +29,9 @@ endpoints: [
 		response: {
 			body: "hello pepper!"
 		}
+		cdcs: [{
+			baseURL: "https://sandbox.api.service.nhs.uk/hello-world/"
+			ignore:  true // useful if you know an endpoint is not working but still want to run MJ successfully (it'll non 0 exit otherwise)
+		}]
 	},
 ]

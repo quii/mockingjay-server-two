@@ -22,10 +22,10 @@
             {{range .FailedMatches}}
                 <tr>
                     <td>{{.Endpoint.Description}}</td>
-                    <td>{{template "cross_tick" .Match.Path}}</td>
-                    <td>{{template "cross_tick" .Match.Method}}</td>
-                    <td>{{template "cross_tick" .Match.Headers}}</td>
-                    <td>{{template "cross_tick" .Match.Body}}</td>
+                    <td class="status">{{template "cross_tick" .Match.Path}}</td>
+                    <td class="status">{{template "cross_tick" .Match.Method}}</td>
+                    <td class="status">{{template "cross_tick" .Match.Headers}}</td>
+                    <td class="status">{{template "cross_tick" .Match.Body}}</td>
                 </tr>
             {{end}}
             </tbody>

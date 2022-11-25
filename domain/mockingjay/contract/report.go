@@ -5,7 +5,10 @@ import (
 )
 
 type Report struct {
-	stub.Endpoint
-	ResponseFromDownstream stub.Response
-	Passed                 bool `json:"passed"`
+	Endpoint               stub.Endpoint            `json:"endpoint"`
+	ResponseFromDownstream stub.Response            `json:"responseFromDownstream"`
+	URL                    string                   `json:"URL"`
+	Passed                 bool                     `json:"passed"`
+	Errors                 ErrCompatibilityProblems `json:"errors"`
+	Ignore                 bool                     `json:"ignore"`
 }

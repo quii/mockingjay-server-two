@@ -23,6 +23,7 @@ type (
 		BaseURL   string `json:"baseURL"`
 		Retries   int    `json:"retries"`
 		TimeoutMS int    `json:"timeoutMS"`
+		Ignore    bool   `json:"ignore"`
 	}
 
 	Headers map[string][]string
