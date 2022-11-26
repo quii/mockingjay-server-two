@@ -6,7 +6,6 @@ import (
 	"github.com/adamluzsi/testcase/pp"
 	"github.com/alecthomas/assert/v2"
 	"github.com/google/uuid"
-	"github.com/quii/mockingjay-server-two/domain/mockingjay"
 	"github.com/quii/mockingjay-server-two/domain/mockingjay/matching"
 	"github.com/quii/mockingjay-server-two/domain/mockingjay/stub"
 )
@@ -16,7 +15,7 @@ type StubServerRequestMatching struct {
 	Client StubServerClient
 }
 
-func (s StubServerRequestMatching) Test(t *testing.T, fixture mockingjay.TestFixture) {
+func (s StubServerRequestMatching) Test(t *testing.T, fixture TestFixture) {
 	t.Run(fixture.Endpoint.Description, func(t *testing.T) {
 		t.Cleanup(s.mustDeleteEndpoint(t, s.mustConfigureEndpoint(t, fixture.Endpoint)))
 

@@ -8,12 +8,10 @@ import (
 	"github.com/quii/mockingjay-server-two/specifications/usecases"
 )
 
-func MockingjayConsumerDrivenContractSpec(
-	t *testing.T,
-	admin usecases.Admin,
-	cdcClient usecases.ConsumerDrivenContractChecker,
-	examples stub.Endpoints,
-) {
+func MockingjayConsumerDrivenContractSpec(t *testing.T, admin usecases.Admin, cdcClient usecases.ConsumerDrivenContractChecker, specroot string) {
+	examples, err := stub.NewEndpointsFromCue(specroot + examplesDir)
+	assert.NoError(t, err)
+
 	assert.NoError(t, admin.DeleteEndpoints())
 	assert.NoError(t, admin.DeleteReports())
 

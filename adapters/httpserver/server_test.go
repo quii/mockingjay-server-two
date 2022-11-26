@@ -20,11 +20,6 @@ import (
 	"github.com/quii/mockingjay-server-two/specifications/usecases"
 )
 
-const (
-	examplesDir = "../../specifications/examples/"
-	fixturesDir = "../../specifications/stub_server_fixtures/"
-)
-
 func TestApp(t *testing.T) {
 	stubServer, adminServer := startServers(t)
 
@@ -49,18 +44,16 @@ func TestApp(t *testing.T) {
 	webDriver, cleanup := drivers.NewWebDriver(adminServer.URL, client, false)
 	t.Cleanup(cleanup)
 
-	examples, fixtures := mustLoadExamplesAndFixtures(t)
-
 	t.Run("configuring with website", func(t *testing.T) {
-		specifications.MockingjayStubServerSpec(t, webDriver, httpDriver, examples, fixtures)
+		specifications.MockingjayStubServerSpec(t, webDriver, httpDriver, "../../specifications")
 	})
 
 	t.Run("configuring with stub api", func(t *testing.T) {
-		specifications.MockingjayStubServerSpec(t, httpDriver, httpDriver, examples, fixtures)
+		specifications.MockingjayStubServerSpec(t, httpDriver, httpDriver, "../../specifications")
 	})
 
 	t.Run("consumer driven contracts", func(t *testing.T) {
-		specifications.MockingjayConsumerDrivenContractSpec(t, httpDriver, httpDriver, examples)
+		specifications.MockingjayConsumerDrivenContractSpec(t, httpDriver, httpDriver, "../../specifications")
 	})
 
 	t.Run("smaller ad-hoc example", func(t *testing.T) {
@@ -146,12 +139,4 @@ func startServers(t *testing.T) (*httptest.Server, *httptest.Server) {
 	t.Cleanup(stubServer.Close)
 	t.Cleanup(adminServer.Close)
 	return stubServer, adminServer
-}
-
-func mustLoadExamplesAndFixtures(t *testing.T) (stub.Endpoints, []mockingjay.TestFixture) {
-	examples, err := mockingjay.NewEndpointsFromCue(examplesDir)
-	assert.NoError(t, err)
-	fixtures, err := mockingjay.NewFixturesFromCue(fixturesDir)
-	assert.NoError(t, err)
-	return examples, fixtures
 }

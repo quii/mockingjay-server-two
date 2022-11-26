@@ -1,4 +1,4 @@
-package acceptance_tests_test
+package main_test
 
 import (
 	"fmt"
@@ -6,17 +6,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/alecthomas/assert/v2"
 	"github.com/quii/mockingjay-server-two/adapters"
 	"github.com/quii/mockingjay-server-two/adapters/config"
 	"github.com/quii/mockingjay-server-two/adapters/httpserver/drivers"
-	"github.com/quii/mockingjay-server-two/domain/mockingjay"
 	"github.com/quii/mockingjay-server-two/specifications"
-)
-
-const (
-	examplesDir = "../../../specifications/examples/"
-	fixturesDir = "../../../specifications/stub_server_fixtures/"
 )
 
 func TestMockingjay(t *testing.T) {
@@ -24,10 +17,6 @@ func TestMockingjay(t *testing.T) {
 		t.Skip()
 	}
 
-	fixtures, err := mockingjay.NewFixturesFromCue(fixturesDir)
-	assert.NoError(t, err)
-	examples, err := mockingjay.NewEndpointsFromCue(examplesDir)
-	assert.NoError(t, err)
 	adapters.StartDockerServer(t, config.DefaultStubServerPort, config.DefaultAdminServerPort)
 
 	httpDriver := drivers.NewHTTPDriver(
@@ -37,5 +26,5 @@ func TestMockingjay(t *testing.T) {
 			Timeout: 1 * time.Second,
 		},
 	)
-	specifications.MockingjayStubServerSpec(t, httpDriver, httpDriver, examples, fixtures)
+	specifications.MockingjayStubServerSpec(t, httpDriver, httpDriver, "../../specifications")
 }

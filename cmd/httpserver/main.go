@@ -39,7 +39,7 @@ func main() {
 
 	var endpoints stub.Endpoints
 	if endpointsFolder != nil && *endpointsFolder != "" {
-		endpoints, err = mockingjay.NewEndpointsFromCue(*endpointsFolder)
+		endpoints, err = stub.NewEndpointsFromCue(*endpointsFolder)
 		log.Println("found", len(endpoints))
 		if err != nil {
 			log.Fatal(err)

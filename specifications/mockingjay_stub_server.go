@@ -4,18 +4,26 @@ import (
 	"testing"
 
 	"github.com/alecthomas/assert/v2"
-	"github.com/quii/mockingjay-server-two/domain/mockingjay"
 	"github.com/quii/mockingjay-server-two/domain/mockingjay/stub"
 	"github.com/quii/mockingjay-server-two/specifications/usecases"
+)
+
+const (
+	examplesDir = "/examples/"
+	fixturesDir = "/stub_server_fixtures/"
 )
 
 func MockingjayStubServerSpec(
 	t *testing.T,
 	admin usecases.Admin,
 	client usecases.StubServerClient,
-	examples stub.Endpoints,
-	testFixtures []mockingjay.TestFixture,
+	specRoot string,
 ) {
+	fixtures, err := usecases.NewFixturesFromCue(specRoot + fixturesDir)
+	assert.NoError(t, err)
+	examples, err := stub.NewEndpointsFromCue(specRoot + examplesDir)
+	assert.NoError(t, err)
+
 	assert.NoError(t, admin.DeleteEndpoints())
 	assert.NoError(t, admin.DeleteReports())
 
@@ -32,7 +40,7 @@ func MockingjayStubServerSpec(
 		stubServerUseCase.Test(t, example)
 	}
 
-	for _, f := range testFixtures {
+	for _, f := range fixtures {
 		requestMatchingUseCase.Test(t, f)
 	}
 }
