@@ -41,6 +41,10 @@ func (d Driver) DeleteReports() error {
 
 func (d Driver) AddEndpoints(endpoints ...stub.Endpoint) error {
 	return collections.ForAll(endpoints, func(e stub.Endpoint) error {
+		//todo: Maybe service shouldn't expose its crud, and instead have a method that encpasulates compiling, so the rest of the system doesn't have to know
+		if err := e.Compile(); err != nil {
+			return err
+		}
 		return d.service.Endpoints().Create(e.ID, e)
 	})
 }

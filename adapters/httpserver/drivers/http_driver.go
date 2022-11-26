@@ -22,6 +22,17 @@ type HTTPDriver struct {
 	cdcURL        string
 }
 
+func NewHTTPDriver(stubServerURL string, adminServerURL string, client *http.Client) *HTTPDriver {
+	client.Transport = acceptJSONDecorator{transport: http.DefaultTransport}
+	return &HTTPDriver{
+		stubServerURL: stubServerURL,
+		client:        client,
+		reportsURL:    adminServerURL + handlers.ReportsPath,
+		endpointsURL:  adminServerURL + handlers.EndpointsPath,
+		cdcURL:        adminServerURL + handlers.CDCPath,
+	}
+}
+
 func (d HTTPDriver) DeleteReports() error {
 	req, err := http.NewRequest(http.MethodDelete, d.reportsURL, nil)
 	if err != nil {
@@ -56,17 +67,6 @@ func (d HTTPDriver) CheckEndpoints() ([]contract.Report, error) {
 	var reports []contract.Report
 	err = json.NewDecoder(res.Body).Decode(&reports)
 	return reports, err
-}
-
-func NewHTTPDriver(stubServerURL string, adminServerURL string, client *http.Client) *HTTPDriver {
-	client.Transport = acceptJSONDecorator{transport: http.DefaultTransport}
-	return &HTTPDriver{
-		stubServerURL: stubServerURL,
-		client:        client,
-		reportsURL:    adminServerURL + handlers.ReportsPath,
-		endpointsURL:  adminServerURL + handlers.EndpointsPath,
-		cdcURL:        adminServerURL + handlers.CDCPath,
-	}
 }
 
 func (d HTTPDriver) GetReports() ([]matching.Report, error) {

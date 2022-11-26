@@ -20,6 +20,8 @@ import (
 	"github.com/quii/mockingjay-server-two/specifications/usecases"
 )
 
+const specRoot = "../../specifications"
+
 func TestApp(t *testing.T) {
 	stubServer, adminServer := startServers(t)
 
@@ -45,15 +47,15 @@ func TestApp(t *testing.T) {
 	t.Cleanup(cleanup)
 
 	t.Run("configuring with website", func(t *testing.T) {
-		specifications.MockingjayStubServerSpec(t, webDriver, httpDriver, "../../specifications")
+		specifications.MockingjayStubServerSpec(t, webDriver, httpDriver, specRoot)
 	})
 
 	t.Run("configuring with stub api", func(t *testing.T) {
-		specifications.MockingjayStubServerSpec(t, httpDriver, httpDriver, "../../specifications")
+		specifications.MockingjayStubServerSpec(t, httpDriver, httpDriver, specRoot)
 	})
 
 	t.Run("consumer driven contracts", func(t *testing.T) {
-		specifications.MockingjayConsumerDrivenContractSpec(t, httpDriver, httpDriver, "../../specifications")
+		specifications.MockingjayConsumerDrivenContractSpec(t, httpDriver, httpDriver, specRoot)
 	})
 
 	t.Run("smaller ad-hoc example", func(t *testing.T) {
