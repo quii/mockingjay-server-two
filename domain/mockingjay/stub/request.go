@@ -17,14 +17,6 @@ type Request struct {
 	compiledRegex *regexp.Regexp
 }
 
-func (r *Request) MatchPath(path string) bool {
-	if r.compiledRegex != nil {
-		matchString := r.compiledRegex.MatchString(path)
-		return matchString
-	}
-	return r.Path == path
-}
-
 func NewRequestFromHTTP(req *http.Request) Request {
 	var body string
 	if req.Body != nil {
@@ -39,6 +31,14 @@ func NewRequestFromHTTP(req *http.Request) Request {
 		Headers: Headers(req.Header),
 		Body:    body,
 	}
+}
+
+func (r *Request) MatchPath(path string) bool {
+	if r.compiledRegex != nil {
+		matchString := r.compiledRegex.MatchString(path)
+		return matchString
+	}
+	return r.Path == path
 }
 
 func (r *Request) ToHTTPRequest(basePath string) *http.Request {

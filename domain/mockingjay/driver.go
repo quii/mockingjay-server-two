@@ -8,12 +8,6 @@ import (
 	"github.com/quii/mockingjay-server-two/domain/mockingjay/stub"
 )
 
-/*
-thoughts.
-
-looking at this, all Driiver does it translate these "actors" into CRUD calls. Maybe the use cases can just be powered by CRUD
-*/
-
 type Driver struct {
 	service *Service
 }

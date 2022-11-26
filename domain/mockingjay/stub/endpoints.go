@@ -1,7 +1,6 @@
 package stub
 
 import (
-	"net/textproto"
 	"time"
 
 	"github.com/google/uuid"
@@ -25,16 +24,7 @@ type (
 		TimeoutMS int    `json:"timeoutMS"`
 		Ignore    bool   `json:"ignore"`
 	}
-
-	Headers map[string][]string
 )
-
-func (h Headers) Compile() {
-	for key, value := range h {
-		delete(h, key)
-		h[textproto.CanonicalMIMEHeaderKey(key)] = value
-	}
-}
 
 func SortEndpoint(a, b Endpoint) bool {
 	return a.LoadedAt.Before(b.LoadedAt)
@@ -50,8 +40,8 @@ func (e *Endpoint) Compile() error {
 	if e.LoadedAt.IsZero() {
 		e.LoadedAt = time.Now()
 	}
-	e.Request.Headers.Compile()
-	e.Response.Headers.Compile()
+	e.Request.Headers.compile()
+	e.Response.Headers.compile()
 	return nil
 }
 

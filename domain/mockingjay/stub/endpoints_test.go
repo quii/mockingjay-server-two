@@ -9,12 +9,24 @@ import (
 )
 
 func TestEndpoint_Compile(t *testing.T) {
-	t.Run("when compiling, sets the loaded time", func(t *testing.T) {
+	t.Run("sets the loaded time", func(t *testing.T) {
 		beforeCompile := time.Now()
 		endpoint := stub.Endpoint{
 			LoadedAt: time.Time{},
 		}
 		assert.NoError(t, endpoint.Compile())
 		assert.True(t, endpoint.LoadedAt.After(beforeCompile))
+	})
+
+	t.Run("sets headers into canonical format", func(t *testing.T) {
+		endpoint := stub.Endpoint{Request: stub.Request{Headers: map[string][]string{
+			"aCCEPt": {"application/json"},
+		}}, Response: stub.Response{Headers: map[string][]string{
+			"cOnTenT-tyPE": {"application/json"},
+		}}}
+
+		assert.NoError(t, endpoint.Compile())
+		assert.Equal(t, endpoint.Request.Headers["Accept"], []string{"application/json"})
+		assert.Equal(t, endpoint.Response.Headers["Content-Type"], []string{"application/json"})
 	})
 }
