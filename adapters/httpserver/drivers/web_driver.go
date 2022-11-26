@@ -78,6 +78,9 @@ func (d WebDriver) GetEndpoints() (stub.Endpoints, error) {
 		if err != nil {
 			return nil, err
 		}
+		if err := endpoint.Compile(); err != nil {
+			return nil, err
+		}
 		endpoints = append(endpoints, endpoint)
 	}
 	return endpoints, nil

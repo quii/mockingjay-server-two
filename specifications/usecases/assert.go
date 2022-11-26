@@ -28,6 +28,7 @@ func AssertEndpointEqual(t *testing.T, got, want stub.Endpoint) {
 	want.Response.Body = fudgeTheWhiteSpace(want.Response.Body)
 	got.LoadedAt = time.Time{}
 	want.LoadedAt = time.Time{}
+
 	assert.Equal(t, got, want)
 }
 

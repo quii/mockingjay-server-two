@@ -3,7 +3,6 @@ package usecases
 import (
 	"fmt"
 	"io/fs"
-	"log"
 	"os"
 
 	"github.com/cue-exp/cueconfig"
@@ -25,15 +24,10 @@ type (
 )
 
 type testFixtureCue struct {
-	StubFixtures []TestFixture
+	Fixtures []TestFixture
 }
 
 func NewFixturesFromCue(basePath string) ([]TestFixture, error) {
-	path, err := os.Getwd()
-	if err != nil {
-		log.Println(err)
-	}
-	fmt.Println(path)
 	var allFixtures []TestFixture
 
 	dir, err := fs.ReadDir(os.DirFS(basePath), ".")
@@ -47,7 +41,7 @@ func NewFixturesFromCue(basePath string) ([]TestFixture, error) {
 		if err := cueconfig.Load(path, mj.Schema, nil, nil, &fixtures); err != nil {
 			return nil, fmt.Errorf("failed to parse %s, %v", path, err)
 		}
-		allFixtures = append(allFixtures, fixtures.StubFixtures...)
+		allFixtures = append(allFixtures, fixtures.Fixtures...)
 	}
 
 	return allFixtures, nil

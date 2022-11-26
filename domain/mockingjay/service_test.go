@@ -13,7 +13,7 @@ import (
 
 const specRoot = "../../specifications"
 
-func TestService_CheckEndpoints(t *testing.T) {
+func TestService(t *testing.T) {
 	service := mockingjay.NewService(contract.NewService(&http.Client{}))
 	downstreamService := httptest.NewServer(handlers.NewStubHandler(service, "n/a"))
 	t.Cleanup(downstreamService.Close)

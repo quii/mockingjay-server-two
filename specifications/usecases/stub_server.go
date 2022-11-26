@@ -56,7 +56,6 @@ func (s StubServer) assertReportCanBeFoundFor(t *testing.T, id uuid.UUID) {
 		i := slices.IndexFunc(reports, func(r matching.Report) bool {
 			return r.ID == id
 		})
-		t.Log(id)
 		assert.NotEqual(t, -1, i, pp.Format(reports))
 	})
 }

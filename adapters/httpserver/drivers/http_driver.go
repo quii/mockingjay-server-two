@@ -184,6 +184,9 @@ func (d HTTPDriver) GetEndpoints() (stub.Endpoints, error) {
 	if err := json.NewDecoder(res.Body).Decode(&endpoints); err != nil {
 		return nil, err
 	}
+	if err := endpoints.Compile(); err != nil {
+		return nil, err
+	}
 	return endpoints, nil
 }
 

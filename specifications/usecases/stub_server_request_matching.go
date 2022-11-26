@@ -17,6 +17,7 @@ type StubServerRequestMatching struct {
 
 func (s StubServerRequestMatching) Test(t *testing.T, fixture TestFixture) {
 	t.Run(fixture.Endpoint.Description, func(t *testing.T) {
+		assert.NoError(t, fixture.Endpoint.Compile())
 		t.Cleanup(s.mustDeleteEndpoint(t, s.mustConfigureEndpoint(t, fixture.Endpoint)))
 
 		for _, request := range fixture.MatchingRequests {
