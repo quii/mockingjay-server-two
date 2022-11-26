@@ -12,6 +12,8 @@ import (
 	"github.com/quii/mockingjay-server-two/specifications"
 )
 
+const specRoot = "../../specifications"
+
 func TestMockingjay(t *testing.T) {
 	if testing.Short() {
 		t.Skip()
@@ -26,5 +28,6 @@ func TestMockingjay(t *testing.T) {
 			Timeout: 1 * time.Second,
 		},
 	)
-	specifications.MockingjayStubServerSpec(t, httpDriver, httpDriver, "../../specifications")
+	specifications.MockingjayStubServerSpec(t, httpDriver, httpDriver, specRoot)
+	specifications.MockingjayStubServerSpec(t, httpDriver, httpDriver, specRoot)
 }
