@@ -65,7 +65,6 @@ func TestApp(t *testing.T) {
 
 	t.Run("smaller ad-hoc example", func(t *testing.T) {
 		endpoint := stub.Endpoint{
-			ID:          uuid.New(),
 			Description: "Hello",
 			Request: stub.Request{
 				Method:    http.MethodGet,

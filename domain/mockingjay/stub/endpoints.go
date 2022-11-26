@@ -47,6 +47,9 @@ func (e *Endpoint) Compile() error {
 	if e.ID == uuid.Nil {
 		e.ID = uuid.New()
 	}
+	if e.LoadedAt.IsZero() {
+		e.LoadedAt = time.Now()
+	}
 	e.Request.Headers.Compile()
 	e.Response.Headers.Compile()
 	return nil

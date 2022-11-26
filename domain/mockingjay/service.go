@@ -46,14 +46,6 @@ func (m *Service) CheckEndpoints() ([]contract.Report, error) {
 	return allReports, nil
 }
 
-func (m *Service) Reports() crud.CRUDesque[uuid.UUID, matching.Report] {
-	return m.matchReports
-}
-
-func (m *Service) Endpoints() crud.CRUDesque[uuid.UUID, stub.Endpoint] {
-	return m.endpoints
-}
-
 func (m *Service) CreateMatchReport(r stub.Request) (matching.Report, error) {
 	endpoints, err := m.endpoints.GetAll()
 	if err != nil {
@@ -64,4 +56,12 @@ func (m *Service) CreateMatchReport(r stub.Request) (matching.Report, error) {
 		return matching.Report{}, err
 	}
 	return matchReport, nil
+}
+
+func (m *Service) Reports() crud.CRUDesque[uuid.UUID, matching.Report] {
+	return m.matchReports
+}
+
+func (m *Service) Endpoints() crud.CRUDesque[uuid.UUID, stub.Endpoint] {
+	return m.endpoints
 }

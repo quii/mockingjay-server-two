@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
@@ -39,8 +38,6 @@ func (a *EndpointHandler) addEndpoint(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		newEndpoint.LoadedAt = time.Now().UTC()
-
 		if err := a.service.Endpoints().Create(newEndpoint.ID, newEndpoint); err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
@@ -69,7 +66,6 @@ func (a *EndpointHandler) addEndpoint(w http.ResponseWriter, r *http.Request) {
 		}
 
 		newEndpoint := stub.Endpoint{
-			ID:          uuid.New(),
 			Description: r.FormValue("description"),
 			Request: stub.Request{
 				Method:    r.FormValue("method"),
@@ -83,8 +79,7 @@ func (a *EndpointHandler) addEndpoint(w http.ResponseWriter, r *http.Request) {
 				Body:    r.FormValue("response.body"),
 				Headers: responseHeaders,
 			},
-			LoadedAt: time.Now().UTC(),
-			CDCs:     nil,
+			CDCs: nil,
 		}
 
 		if err := newEndpoint.Compile(); err != nil {
