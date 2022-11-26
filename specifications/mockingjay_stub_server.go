@@ -36,11 +36,6 @@ func MockingjayStubServerSpec(
 		Client: client,
 	}
 
-	for _, example := range examples {
-		stubServerUseCase.Test(t, example)
-	}
-
-	for _, f := range fixtures {
-		requestMatchingUseCase.Test(t, f)
-	}
+	usecases.RunAllAgainst[stub.Endpoint](t, examples, stubServerUseCase)
+	usecases.RunAllAgainst[usecases.TestFixture](t, fixtures, requestMatchingUseCase)
 }

@@ -20,7 +20,5 @@ func MockingjayConsumerDrivenContractSpec(t *testing.T, admin usecases.Admin, cd
 		Client: cdcClient,
 	}
 
-	for _, example := range examples {
-		cdcUseCase.Test(t, example)
-	}
+	usecases.RunAllAgainst[stub.Endpoint](t, examples, cdcUseCase)
 }
