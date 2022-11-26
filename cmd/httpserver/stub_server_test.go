@@ -29,5 +29,5 @@ func TestMockingjay(t *testing.T) {
 		},
 	)
 	specifications.MockingjayStubServerSpec(t, httpDriver, httpDriver, specRoot)
-	specifications.MockingjayStubServerSpec(t, httpDriver, httpDriver, specRoot)
+	specifications.MockingjayConsumerDrivenContractSpec(t, httpDriver, httpDriver, specRoot)
 }
