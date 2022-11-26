@@ -29,4 +29,18 @@ func TestEndpoint_Compile(t *testing.T) {
 		assert.Equal(t, endpoint.Request.Headers["Accept"], []string{"application/json"})
 		assert.Equal(t, endpoint.Response.Headers["Content-Type"], []string{"application/json"})
 	})
+
+	t.Run("compile all", func(t *testing.T) {
+		beforeCompile := time.Now()
+
+		endpoints := stub.Endpoints{
+			stub.Endpoint{},
+			stub.Endpoint{},
+		}
+
+		assert.NoError(t, endpoints.Compile())
+		for _, endpoint := range endpoints {
+			assert.True(t, endpoint.LoadedAt.After(beforeCompile))
+		}
+	})
 }
