@@ -3,7 +3,6 @@ package main_test
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"os"
 	"path/filepath"
 	"testing"
@@ -44,18 +43,8 @@ func (C *CDCDriver) CheckEndpoints() ([]contract.Report, error) {
 	}
 
 	var reports []contract.Report
-	log.Println("stdout =  ", stdout)
 	err = json.Unmarshal([]byte(stdout), &reports)
 	return reports, err
-}
-
-func (C *CDCDriver) GetReports() ([]matching.Report, error) {
-	//TODO implement me
-	panic("implement me")
-}
-
-func (C *CDCDriver) DeleteReports() error {
-	return nil
 }
 
 func (C *CDCDriver) AddEndpoints(endpoints ...stub.Endpoint) error {
@@ -88,6 +77,14 @@ func (C *CDCDriver) DeleteEndpoint(_ uuid.UUID) error {
 	return nil
 }
 
+func (C *CDCDriver) GetReports() ([]matching.Report, error) {
+	panic("implement me")
+}
+
 func (C *CDCDriver) DeleteEndpoints() error {
+	return nil
+}
+
+func (C *CDCDriver) DeleteReports() error {
 	return nil
 }

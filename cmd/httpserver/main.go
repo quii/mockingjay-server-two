@@ -27,19 +27,22 @@ func main() {
 		endpointsFolder = fs.String("endpoints", "", "folder for endpoints")
 		cdcMode         = fs.Bool("cdc", config.CDCModeOff, "Run the CDCs")
 		_               = fs.String("config", "", "config file (optional)")
+
+		err       error
+		endpoints stub.Endpoints
+
+		httpClient = &http.Client{Timeout: 5 * time.Second}
+		service    = mockingjay.NewService(contract.NewService(httpClient))
 	)
 
-	err := ff.Parse(fs, os.Args[1:],
+	if err := ff.Parse(fs, os.Args[1:],
 		ff.WithEnvVarPrefix("mockingjay"),
 		ff.WithConfigFileFlag("config"),
 		ff.WithConfigFileParser(ff.PlainParser),
-	)
-
-	if err != nil {
+	); err != nil {
 		log.Fatal(err)
 	}
 
-	var endpoints stub.Endpoints
 	if endpointsFolder != nil && *endpointsFolder != "" {
 		endpoints, err = stub.NewEndpointsFromCue(*endpointsFolder)
 		if err != nil {
@@ -48,14 +51,10 @@ func main() {
 		if err := endpoints.Compile(); err != nil {
 			log.Fatal(err)
 		}
-	}
-
-	httpClient := &http.Client{Timeout: 5 * time.Second}
-
-	service := mockingjay.NewService(contract.NewService(httpClient))
-	for _, endpoint := range endpoints {
-		if err := service.Endpoints().Create(endpoint.ID, endpoint); err != nil {
-			log.Fatal(err)
+		for _, endpoint := range endpoints {
+			if err := service.Endpoints().Create(endpoint.ID, endpoint); err != nil {
+				log.Fatal(err)
+			}
 		}
 	}
 
