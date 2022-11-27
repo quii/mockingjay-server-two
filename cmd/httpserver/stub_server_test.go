@@ -14,12 +14,12 @@ import (
 
 const specRoot = "../../specifications"
 
-func TestMockingjay(t *testing.T) {
+func TestMockingjayStubServer(t *testing.T) {
 	if testing.Short() {
 		t.Skip()
 	}
 
-	adapters.StartDockerServer(t, config.DefaultStubServerPort, config.DefaultAdminServerPort)
+	adapters.StartMockingjayServer(t, config.DefaultStubServerPort, config.DefaultAdminServerPort)
 
 	httpDriver := drivers.NewHTTPDriver(
 		fmt.Sprintf("http://localhost:%s", config.DefaultStubServerPort),

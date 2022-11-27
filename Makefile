@@ -10,3 +10,6 @@ lint:
 
 run:
 	go run cmd/httpserver/main.go -endpoints=specifications/examples/ -dev-mode=true
+
+run-cdcs:
+	go run cmd/httpserver/main.go -endpoints=specifications/examples/ -dev-mode=true -cdc=true

@@ -22,12 +22,11 @@ var (
 )
 
 const (
-	HeaderMockingjayMatched    = "x-mockingjay-matched"
-	HeaderMockingjayMatchID    = "x-mockingjay-match-id"
-	ReportsPath                = "/match-reports"
-	EndpointsPath              = "/"
-	CDCPath                    = "/cdc"
-	contentTypeApplicationJSON = "application/json"
+	HeaderMockingjayMatched = "x-mockingjay-matched"
+	HeaderMockingjayMatchID = "x-mockingjay-match-id"
+	ReportsPath             = "/match-reports"
+	EndpointsPath           = "/"
+	CDCPath                 = "/cdc"
 )
 
 type AdminServiceService interface {

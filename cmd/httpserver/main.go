@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	"log"
 	"net/http"
@@ -24,6 +25,7 @@ func main() {
 		stubPort        = fs.String("stub-port", config.DefaultStubServerPort, "stub server port")
 		devMode         = fs.Bool("dev-mode", config.DevModeOff, "dev mode allows templates to be refreshed, logs, etc")
 		endpointsFolder = fs.String("endpoints", "", "folder for endpoints")
+		cdcMode         = fs.Bool("cdc", config.CDCModeOff, "Run the CDCs")
 		_               = fs.String("config", "", "config file (optional)")
 	)
 
@@ -40,7 +42,6 @@ func main() {
 	var endpoints stub.Endpoints
 	if endpointsFolder != nil && *endpointsFolder != "" {
 		endpoints, err = stub.NewEndpointsFromCue(*endpointsFolder)
-		log.Println("found", len(endpoints))
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -56,6 +57,15 @@ func main() {
 		if err := service.Endpoints().Create(endpoint.ID, endpoint); err != nil {
 			log.Fatal(err)
 		}
+	}
+
+	if cdcMode != nil && *cdcMode {
+		reports, err := service.CheckEndpoints()
+		if err != nil {
+			log.Fatal(err)
+		}
+		_ = json.NewEncoder(os.Stdout).Encode(reports)
+		os.Exit(0)
 	}
 
 	stubHandler, adminHandler, err := httpserver.New(service, *adminBaseURL, *devMode)

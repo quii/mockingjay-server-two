@@ -2,10 +2,20 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"html/template"
 	"io/fs"
 	"net/http"
 	"os"
+
+	"cuelang.org/go/cue/cuecontext"
+)
+
+const (
+	contentTypeJSON = "application/json"
+	contentTypeCue  = "application/cue"
+	templateDir     = "./adapters/httpserver/handlers"
+	templatePattern = "templates/*.gohtml"
 )
 
 type View struct {
@@ -16,10 +26,10 @@ type View struct {
 func NewContentNegotiatingRenderer(devMode bool) (*View, error) {
 	view := View{}
 	if devMode {
-		view.templFS = os.DirFS("./adapters/httpserver/handlers")
+		view.templFS = os.DirFS(templateDir)
 	} else {
 		view.templFS = templates
-		templ, err := template.ParseFS(view.templFS, "templates/*.gohtml")
+		templ, err := template.ParseFS(view.templFS, templatePattern)
 		if err != nil {
 			return nil, err
 		}
@@ -30,8 +40,10 @@ func NewContentNegotiatingRenderer(devMode bool) (*View, error) {
 
 func (v *View) Render(w http.ResponseWriter, accept string, template string, thing any) {
 	switch accept {
-	case contentTypeApplicationJSON:
+	case contentTypeJSON:
 		writeJSON(w, thing)
+	case contentTypeCue:
+		writeCue(w, thing)
 	default:
 		t, err := v.getTemplates()
 		if err != nil {
@@ -42,8 +54,15 @@ func (v *View) Render(w http.ResponseWriter, accept string, template string, thi
 	}
 }
 
+func writeCue(w http.ResponseWriter, content any) {
+	c := cuecontext.New()
+	w.Header().Add("content-type", contentTypeCue)
+	encode := c.Encode(content)
+	_, _ = fmt.Fprint(w, encode)
+}
+
 func writeJSON(w http.ResponseWriter, content any) {
-	w.Header().Add("content-type", contentTypeApplicationJSON)
+	w.Header().Add("content-type", contentTypeJSON)
 	_ = json.NewEncoder(w).Encode(content)
 }
 
@@ -51,5 +70,5 @@ func (v *View) getTemplates() (*template.Template, error) {
 	if v.templ != nil {
 		return v.templ, nil
 	}
-	return template.ParseFS(v.templFS, "templates/*.gohtml")
+	return template.ParseFS(v.templFS, templatePattern)
 }

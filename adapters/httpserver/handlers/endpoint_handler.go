@@ -26,7 +26,7 @@ func (a *EndpointHandler) allEndpoints(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *EndpointHandler) addEndpoint(w http.ResponseWriter, r *http.Request) {
-	if r.Header.Get("Content-type") == contentTypeApplicationJSON {
+	if r.Header.Get("Content-type") == contentTypeJSON {
 		var newEndpoint stub.Endpoint
 		if err := json.NewDecoder(r.Body).Decode(&newEndpoint); err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)

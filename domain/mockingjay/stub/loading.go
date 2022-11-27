@@ -10,7 +10,7 @@ import (
 )
 
 type (
-	endpointsCue struct {
+	EndpointsCue struct {
 		Endpoints []Endpoint
 	}
 )
@@ -24,7 +24,7 @@ func NewEndpointsFromCue(basePath string) (Endpoints, error) {
 	}
 
 	for _, f := range dir {
-		var endpoints endpointsCue
+		var endpoints EndpointsCue
 		path := basePath + f.Name()
 		if err := cueconfig.Load(path, mj.Schema, nil, nil, &endpoints); err != nil {
 			return Endpoints{}, fmt.Errorf("failed to parse %s, %v", path, err)
