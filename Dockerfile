@@ -8,7 +8,7 @@ RUN go mod download
 
 COPY . .
 
-RUN go build -o svr cmd/httpserver/main.go
+RUN go build -o svr cmd/mockingjay/main.go
 
 FROM alpine:3.16.2
 COPY --from=builder /app/specifications/examples ./examples
