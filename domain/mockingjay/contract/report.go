@@ -15,3 +15,7 @@ type Report struct {
 func (r Report) Passed() bool {
 	return len(r.Errors) == 0
 }
+
+func (r Report) PassedOrIgnored() bool {
+	return r.Passed() || r.Ignore
+}

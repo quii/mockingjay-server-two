@@ -19,11 +19,13 @@ func (s ConsumerDrivenContract) Test(t *testing.T, endpoint stub.Endpoint) {
 		return
 	}
 	t.Run("cdc for "+endpoint.Description, func(t *testing.T) {
-		t.Cleanup(s.mustDeleteEndpoint(t, s.addEndpoint(t, endpoint)))
+		id := s.addEndpoint(t, endpoint)
+		t.Cleanup(s.mustDeleteEndpoint(t, id))
+
 		results, err := s.Client.CheckEndpoints()
 		assert.NoError(t, err)
 		for _, result := range results {
-			assert.True(t, result.Passed() || result.Ignore, pp.Format(results))
+			assert.True(t, result.PassedOrIgnored(), pp.Format(results))
 		}
 	})
 }

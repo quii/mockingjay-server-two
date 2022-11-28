@@ -28,8 +28,7 @@ func main() {
 		cdcMode         = fs.Bool("cdc", config.CDCModeOff, "Run the CDCs")
 		_               = fs.String("config", "", "config file (optional)")
 
-		err       error
-		endpoints stub.Endpoints
+		err error
 
 		httpClient = &http.Client{Timeout: 5 * time.Second}
 		service    = mockingjay.NewService(contract.NewService(httpClient))
@@ -44,26 +43,11 @@ func main() {
 	}
 
 	if endpointsFolder != nil && *endpointsFolder != "" {
-		endpoints, err = stub.NewEndpointsFromCue(*endpointsFolder)
-		if err != nil {
-			log.Fatal(err)
-		}
-		if err := endpoints.Compile(); err != nil {
-			log.Fatal(err)
-		}
-		for _, endpoint := range endpoints {
-			if err := service.Endpoints().Create(endpoint.ID, endpoint); err != nil {
-				log.Fatal(err)
-			}
-		}
+		loadEndpoints(service, *endpointsFolder)
 	}
 
 	if cdcMode != nil && *cdcMode {
-		reports, err := service.CheckEndpoints()
-		if err != nil {
-			log.Fatal(err)
-		}
-		_ = json.NewEncoder(os.Stdout).Encode(reports)
+		runCDCs(service)
 		os.Exit(0)
 	}
 
@@ -82,6 +66,29 @@ func main() {
 
 	if err := http.ListenAndServe(":"+*stubPort, stubHandler); err != nil {
 		log.Fatal(err)
+	}
+}
+
+func runCDCs(service *mockingjay.Service) {
+	reports, err := service.CheckEndpoints()
+	if err != nil {
+		log.Fatal(err)
+	}
+	_ = json.NewEncoder(os.Stdout).Encode(reports)
+}
+
+func loadEndpoints(service *mockingjay.Service, folder string) {
+	endpoints, err := stub.NewEndpointsFromCue(folder)
+	if err != nil {
+		log.Fatal(err)
+	}
+	if err := endpoints.Compile(); err != nil {
+		log.Fatal(err)
+	}
+	for _, endpoint := range endpoints {
+		if err := service.Endpoints().Create(endpoint.ID, endpoint); err != nil {
+			log.Fatal(err)
+		}
 	}
 }
 
