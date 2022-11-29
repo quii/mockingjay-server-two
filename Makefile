@@ -9,7 +9,7 @@ lint:
 	golangci-lint run
 
 run:
-	go run cmd/httpserver/main.go -endpoints=specifications/examples/ -dev-mode=true
+	go run cmd/mockingjay/main.go -endpoints=specifications/examples/ -dev-mode=true
 
 run-cdcs:
-	go run cmd/httpserver/main.go -endpoints=specifications/examples/ -dev-mode=true -cdc=true
+	go run cmd/mockingjay/main.go -endpoints=specifications/examples/ -dev-mode=true -cdc=true
